@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace BDUtil
+namespace BDUtil.Raw
 {
     /// A set which provides an index into its elements.
     /// They're basically dictionaries, but the key is often embedded or derivable from the data:

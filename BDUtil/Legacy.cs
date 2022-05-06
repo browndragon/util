@@ -1,14 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace BDUtil
 {
     public static class Legacies
     {
-        public static Legacy<T> AsLegacy<T>(this IContainer<T> thiz)
+        public static Legacy<T> AsLegacy<T>(this Raw.IContainer<T> thiz)
         => new(thiz, thiz.Contains);
         public static Legacy<T> AsLegacy<T>(this IReadOnlyCollection<T> thiz, Func<T, bool> containz = default)
         => new(thiz, containz);

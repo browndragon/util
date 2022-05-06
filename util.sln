@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BDUtil", "BDUtil\BDUtil.csproj", "{E89AA5CA-8F58-4C34-8319-8A702DA79652}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BDUtil.Linq", "BDUtil.Linq\BDUtil.Linq.csproj", "{7E54DC01-682D-4CD4-8209-1F8AF830A206}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BDUtil.Tests", "BDUtil.Tests\BDUtil.Tests.csproj", "{EF355B42-B126-43E8-82D2-7551E05A6FB8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -28,5 +28,9 @@ Global
 		{A01A89BB-13A0-49CD-85D7-3B8D377B8617}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A01A89BB-13A0-49CD-85D7-3B8D377B8617}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A01A89BB-13A0-49CD-85D7-3B8D377B8617}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF355B42-B126-43E8-82D2-7551E05A6FB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF355B42-B126-43E8-82D2-7551E05A6FB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF355B42-B126-43E8-82D2-7551E05A6FB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF355B42-B126-43E8-82D2-7551E05A6FB8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

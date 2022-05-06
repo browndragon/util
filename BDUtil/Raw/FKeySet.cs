@@ -1,6 +1,6 @@
 using System;
 
-namespace BDUtil
+namespace BDUtil.Raw
 {
     public class FKeySet<K, T> : KeySet<K, T>
     {

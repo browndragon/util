@@ -1,40 +1,36 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using NUnit.Framework;
-using UnityEngine;
-using UnityEngine.TestTools;
+using Xunit;
 
-namespace UTI.Tests
+namespace BDUtil.Raw
 {
-    public class RawTableTest
+    public class TableTest
     {
-        [Test]
+        [Fact]
         public void AddContains()
         {
-            Raw.Table<string, int, byte> map = new() { { ("a", 1), 2 } };
+            Table<string, int, byte> map = new() { { ("a", 1), 2 } };
             Assert.Throws<Exception>(() => map.Add("a", 1, (byte)3));
             map.Add("a", 2, (byte)3);
             map.Add("c", 3, (byte)4);
             map.Add("b", 1, (byte)5);
-            CollectionAssert.AreEquivalent(
+            Assert.Equal(
                 new KeyValuePair<(string, int), byte>[] {
                     new(("a", 1), 2), new(("a", 2), 3),new(("c", 3), 4),new(("b", 1), 5),
                 },
                 map
             );
-            CollectionAssert.AreEquivalent(
+            Assert.Equal(
                 new[] {
                     ("a", 1), ("a", 2), ("c", 3), ("b", 1),
                 },
                 map.Keys
             );
-            CollectionAssert.AreEquivalent(
+            Assert.Equal(
                 new[] { "a", "c", "b" },
                 map.Rows.Keys
             );
-            CollectionAssert.AreEquivalent(
+            Assert.Equal(
                 new[] { 1, 2, 3 },
                 map.Cols.Keys
             );

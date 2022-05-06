@@ -32,7 +32,7 @@ namespace BDUtil
         public void CopyTo(Array array, int index) { }
     }
     /// A generic empty collection.
-    public readonly struct None<T> : ICollection<T>, IEnumerator<T>, IContainer<T>, IReadOnlyList<T>, IList<T>
+    public readonly struct None<T> : ICollection<T>, IEnumerator<T>, Raw.IContainer<T>, IReadOnlyList<T>, IList<T>
     {
         public static readonly None<T> Default = default;
         public T this[int index] => throw new IndexOutOfRangeException();

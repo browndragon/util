@@ -36,17 +36,27 @@ namespace BDUtil
             }
         }
 
-        public static bool RemoveKey<K, V>(this IRemoveKey<K, V> thiz, K key) => thiz.RemoveKey(key, out var _);
-        public static bool ContainsKey<K, V>(this ITryGetValue<K, V> thiz, K key) => thiz.TryGetValue(key, out var _);
+        public static bool RemoveKey<K, V>(this Raw.IRemoveKey<K, V> thiz, K key) => thiz.RemoveKey(key, out var _);
+        public static bool ContainsKey<K, V>(this Raw.ITryGetValue<K, V> thiz, K key) => thiz.TryGetValue(key, out var _);
 
-        public static V GetValueOrDefault<K, V>(this ITryGetValue<K, V> thiz, K key, V @default = default) => thiz.TryGetValue(key, out var value) ? value : @default;
-        public static V GetValueOrDefault<K, V>(this IReadOnlyDictionary<K, V> thiz, K key, V @default = default) => thiz.TryGetValue(key, out var value) ? value : @default;
-        public static V GetValueOrDefault<T, K, V>(this T thiz, K key, V @default = default)
-        where T : ITryGetValue<K, V>, IReadOnlyDictionary<K, V>
-        => ((ITryGetValue<K, V>)thiz).TryGetValue(key, out var value) ? value : @default;
+        // public static V GetValueOrDefault<K, V, V1, V2>(this ITryGetValue<K, V1> thiz, K key, V2 @default = default)
+        // where V1 : V
+        // where V2 : V
+        // => thiz.TryGetValue(key, out var value) ? value : @default;
+
+        // public static V GetValueOrDefault<K, V, V1, V2>(this IReadOnlyDictionary<K, V1> thiz, K key, V2 @default = default)
+        // where V1 : V
+        // where V2 : V
+        // => thiz.TryGetValue(key, out V1 value) ? value : @default;
+
+        // public static V GetValueOrDefault<T, K, V, V1, V2>(this T thiz, K key, V @default = default)
+        // where T : ITryGetValue<K, V1>, IReadOnlyDictionary<K, V1>
+        // where V1 : V
+        // where V2 : V
+        // => ((ITryGetValue<K, V1>)thiz).TryGetValue(key, out V1 value) ? value : @default;
 
         public static V GetValueOrInsertNew<T, K, V>(this T thiz, K key)
-        where T : ICollection<KeyValuePair<K, V>>, ITryGetValue<K, V>
+        where T : ICollection<KeyValuePair<K, V>>, Raw.ITryGetValue<K, V>
         where V : new()
         {
             if (!thiz.TryGetValue(key, out var value))
@@ -59,12 +69,12 @@ namespace BDUtil
 
         // Multimap operations.
         public static void AddValue<T, K, TV, V>(this T thiz, K key, V value)
-        where T : ICollection<KeyValuePair<K, TV>>, ITryGetValue<K, TV>
+        where T : ICollection<KeyValuePair<K, TV>>, Raw.ITryGetValue<K, TV>
         where TV : ICollection<V>, new()
         => thiz.GetValueOrInsertNew<T, K, TV>(key).Add(value);
 
         public static bool RemoveValue<T, K, TV, V>(this T thiz, K key, V value)
-        where T : ICollection<KeyValuePair<K, TV>>, ITryGetValue<K, TV>
+        where T : ICollection<KeyValuePair<K, TV>>, Raw.ITryGetValue<K, TV>
         where TV : ICollection<V>, new()
         => thiz.TryGetValue(key, out var tv) && tv.Remove(value);
 

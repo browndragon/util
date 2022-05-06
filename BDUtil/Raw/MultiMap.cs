@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace BDUtil
+namespace BDUtil.Raw
 {
     /// A 1:N Key/Value store.
     public class MultiMap<K, V> : Collection<KeyValuePair<K, V>, KeyValuePair<K, V>>, IReadOnlyMultiMap<K, V>

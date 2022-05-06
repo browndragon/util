@@ -4,4 +4,14 @@
     <LangVersion>9.0</LangVersion>
     <TargetFramework>net4.7.1</TargetFramework>
   </PropertyGroup>
+
+  <Target Name="CopyDLLs" AfterTargets="Build">
+    <Message Text="Executing CopyDLLs task" Importance="High" />
+
+    <Copy
+      SourceFiles="$(TargetDir)$(ProjectName).dll;$(TargetDir)$(ProjectName).pdb"
+      DestinationFolder="../BDUtil.Unity/Packages/net.dundrago.BDUtil/Runtime/$(ProjectName)" />
+
+    <Message Text="Copied build files" Importance="High" />
+  </Target>
 </Project>

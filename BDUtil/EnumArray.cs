@@ -1,14 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 
 namespace BDUtil
 {
     /// Map from U<->T
     [Serializable]
-    public class EnumArray<U, T> : IDictionary<U, T>, IReadOnlyDictionary<U, T>, ITryGetValue<U, T>, IRemoveKey<U, T>
+    public class EnumArray<U, T> : IDictionary<U, T>, IReadOnlyDictionary<U, T>, Raw.ITryGetValue<U, T>, Raw.IRemoveKey<U, T>
     where U : Enum
     {
         public readonly T[] Data = new T[EnumData<U>.Span];

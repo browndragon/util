@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace BDUtil
+namespace BDUtil.Raw
 {
     public class BiMap<K, V> : Map<K, V>, IReadOnlyBiMap<K, V>
     {

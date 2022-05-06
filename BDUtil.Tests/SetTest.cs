@@ -1,53 +1,48 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using NUnit.Framework;
-using UnityEngine;
-using UnityEngine.TestTools;
+using Xunit;
 
-namespace UTI.Tests
+namespace BDUtil.Raw
 {
-    public class RawSetTest
+    public class SetTest
     {
-        [Test]
+        [Fact]
         public void Iteration()
         {
-            Raw.Set<string> order = new();
-            CollectionAssert.IsEmpty(order);
+            Set<string> order = new();
+            Assert.Empty(order);
             order.Add("a");
-            CollectionAssert.AreEquivalent(new[] { "a" }, order);
+            Assert.Equal(new[] { "a" }, order);
 
             order.Add("b");
-            CollectionAssert.AreEquivalent(new[] { "a", "b" }, order);
+            Assert.Equal(new[] { "a", "b" }, order);
 
             order.Add("c");
             order.Remove("b");
             order.Add("d");
-            CollectionAssert.AreEquivalent(new[] { "a", "c", "d" }, order);
-            CollectionAssert.AreNotEquivalent(order, None.Default);
+            Assert.Equal(new[] { "a", "c", "d" }, order);
+            Assert.NotEqual(order, None<string>.Default);
             order.Clear();
-            CollectionAssert.AreEquivalent(order, None.Default);
+            Assert.Equal(order, None<string>.Default);
         }
-        [Test]
+        [Fact]
         public void AddRemoveContains()
         {
-            Raw.Set<string> order = new() { "a", "b" };
+            Set<string> order = new() { "a", "b" };
 
-            Assert.AreEqual(2, order.Count);
+            Assert.Equal(2, order.Count);
             Assert.Throws<Exception>(() => order.Add("a"));
             order.Add("c");
-            Assert.AreEqual(3, order.Count);
-            Assert.That(order.Contains("a"));
-            Assert.That(!order.Contains("d"));
-            Assert.That(order.Remove("a"));
-            Assert.AreEqual(2, order.Count);
-            Assert.That(!order.Remove("a"));
-            Assert.AreEqual(2, order.Count);
-            Assert.That(!order.Contains("a"));
-            Assert.That(order.Contains("b"));
+            Assert.Equal(3, order.Count);
+            Assert.Contains("a", order);
+            Assert.DoesNotContain("d", order);
+            Assert.True(order.Remove("a"));
+            Assert.Equal(2, order.Count);
+            Assert.True(!order.Remove("a"));
+            Assert.Equal(2, order.Count);
+            Assert.DoesNotContain("a", order);
+            Assert.Contains("b", order);
             order.Clear();
-            Assert.AreEqual(0, order.Count);
+            Assert.Empty(order);
         }
     }
 }

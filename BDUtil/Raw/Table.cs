@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace BDUtil
+namespace BDUtil.Raw
 {
     /// A 1:1 Dictionary, where the Key is decomposable into Row and Column parts.
     public class Table<R, C, V> : Map<(R r, C c), V>

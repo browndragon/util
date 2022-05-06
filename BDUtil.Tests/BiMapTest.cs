@@ -1,38 +1,33 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using NUnit.Framework;
-using UnityEngine;
-using UnityEngine.TestTools;
+using Xunit;
 
-namespace UTI.Tests
+namespace BDUtil.Raw
 {
-    public class RawBiMapTest
+    public class BiMapTest
     {
-        [Test]
+        [Fact]
         public void ForwardUniqueValue()
         {
-            Raw.BiMap<string, int> map = new() { { "a", 1 } };
+            BiMap<string, int> map = new() { { "a", 1 } };
             Assert.Throws<Exception>(() => map.Add(new("a", 1)));
-            Assert.AreEqual(1, map["a"]);
-            CollectionAssert.AreEquivalent(new[] { "a" }, map.Reverse[1]);
+            Assert.Equal(1, map["a"]);
+            Assert.Equal(new[] { "a" }, map.Reverse[1]);
         }
-        [Test]
+        [Fact]
         public void ForwardUniqueKey()
         {
-            Raw.BiMap<string, int> map = new() { { "a", 1 } };
+            BiMap<string, int> map = new() { { "a", 1 } };
             Assert.Throws<Exception>(() => map.Add(new("a", 2)));
-            Assert.AreEqual(1, map["a"]);
-            CollectionAssert.AreEquivalent(new[] { "a" }, map.Reverse[1]);
+            Assert.Equal(1, map["a"]);
+            Assert.Equal(new[] { "a" }, map.Reverse[1]);
         }
-        [Test]
+        [Fact]
         public void BackwardNonUnique()
         {
-            Raw.BiMap<string, int> map = new() { { "a", 1 }, { "b", 1 } };
-            Assert.AreEqual(1, map["a"]);
-            Assert.AreEqual(1, map["b"]);
-            CollectionAssert.AreEquivalent(new[] { "a", "b" }, map.Reverse[1]);
+            BiMap<string, int> map = new() { { "a", 1 }, { "b", 1 } };
+            Assert.Equal(1, map["a"]);
+            Assert.Equal(1, map["b"]);
+            Assert.Equal(new[] { "a", "b" }, map.Reverse[1]);
         }
     }
 }

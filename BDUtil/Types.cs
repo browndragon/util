@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace BDUtil
 {
+    /// Utilities to walk a type's hierarchy.
     public static class Types
     {
         public static bool NoBlacklist(Type _) => false;

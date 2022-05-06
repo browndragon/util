@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace BDUtil
+namespace BDUtil.Raw
 {
     /// IReadOnlyCollection doesn't declare Contains, and it's very reasonable to ask this of e.g. keysets.
     public interface IContainer<T> : IReadOnlyCollection<T> { public bool Contains(T t); }
@@ -91,7 +91,7 @@ namespace BDUtil
             }
             public static implicit operator bool(Entry entry) => entry.HasValue;
         }
-        protected Entry GetEntry(K key) => new(key, Index.GetValueOrDefault(key));
+        protected Entry GetEntry(K key) => new(key, Index.TryGetValue(key, out var value) ? value : default);
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
     /// The core operation of a readonly dictionary: dereference.
