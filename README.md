@@ -52,7 +52,22 @@ TODO: implement nuget.
 * `Objects` has extensions for throwing exceptions on false or null (`OrThrow()`), true or nonnull (`AndThrow()`), and implementing equality & comparison overrides.
 * `Types` has an extension for walking the type tree of an object.
 
-## Care and feeding
-Doing a build stamps a new BDUtil.dll into the unity package, so it's important to explicitly build before pushing.
-Otherwise, the unity lib won't be able to see your changes!
+## Unity extensions in `BDUtil.Unity`
+### Structure
+Unity completely owns this directory, so its `sln` and `csproj` should not be manually edited.
+The outer `.sln` and in particular `../BDUtil/BDUtil.csproj`'s build step will put a copy of the built `.dll` & `.pdb` into `BDUtil.Unity/Packages/new.dundrago.BDUtil/BDUtil/*`, which is how Unity gets access to the rest of this library.
+The Unity package is implemented at `BDUtil.Unity/Packages/net.dundrago.BDUtil/package.json`.
 
+### API
+All of the datatypes in `Raw` are extended (same name, but in the root namespace; implementations in `Collections`) to be Unity-serializable assuming that their underlying types are unity serializable (figuring out how to make that happen is your problem!).
+
+But wait, there's more!
+* `Pool/` supports `Pooled` objects which can be added to a `Registry` while active or a `Pool` while inactive, both of which can be queried.
+* `CameraExt` has utility extensions.
+* `ComponentsExt` has extensions for working with collections of `GameObjects` or `Components`, translating between them, searching nearby, etc. It's basically Linq for components.
+* `EditorUtils` solves some very specific editor-interactive problems which make it easier to write inspector scripts. They're also safe to call from live code.
+  * `InstantiateWithLink` creates instances of a prefab & remembers the link (without this, they're flattened out and changes to the prefab no longer cascade).
+  * `CloneInactive` creates instances of a prefab with the prefab object set inactive, so that you can modify the child before its `Awake` method is called.
+  * `DestroyChildrenByPlaystate` does an immediate destroy from the editor, or a standard end of frame destroy if called during play.
+* `GameControllers` makes use of the `GameController` unity reserved tag -- which doesn't do anything! -- to build a parallel concept to `Camera.main`.
+* `VectorExt` contains math extensions on `Vector2` and `3` and both of their `Int` types and `Bound`s and `Rectangle`s.
