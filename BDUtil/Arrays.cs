@@ -6,6 +6,9 @@ namespace BDUtil
 {
     public static class Arrays
     {
+        public static bool IsEmpty(this string thiz) => thiz == null || thiz.Length <= 0;
+        public static bool IsEmpty<T>(this T[] thiz) => thiz == null || thiz.Length <= 0;
+
         public static bool IsValidIndex(this Array thiz, int index) => index >= 0 && index < thiz.Length;
 
         public static void CopyTo(this IEnumerable thiz, Array array, int index)

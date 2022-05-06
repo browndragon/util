@@ -5,7 +5,6 @@ namespace BDUtil
 {
     public static class Objects
     {
-        public static bool IsEmpty(this string thiz) => thiz == null || thiz.Length <= 0;
         public static void OrThrow(this bool thiz, string tmpl = default, params object[] args)
         {
             if (!thiz) throw new Exception(string.Format(tmpl ?? "Unexpected False", args));

@@ -9,7 +9,9 @@ namespace BDUtil
     public class EnumArray<U, T> : IDictionary<U, T>, IReadOnlyDictionary<U, T>, Raw.ITryGetValue<U, T>, Raw.IRemoveKey<U, T>
     where U : Enum
     {
-        public readonly T[] Data = new T[EnumData<U>.Span];
+        // This would be readonly, etc -- but unity makes that frustrating from otherwise C#able code.
+        // So! Pretend that this is a hidden readonly member please.
+        public T[] Data = new T[EnumData<U>.Span];
 
         public T this[U key]
         {
