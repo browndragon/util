@@ -8,9 +8,9 @@ If you're coming from Unity3d, you can install this into your project using the
 [package manager add git](https://docs.unity3d.com/Manual/upm-ui-giturl.html) and specifying this project's:
 [git folder query parameter](https://forum.unity.com/threads/some-feedback-on-package-manager-git-support.743345/#post-5425311) (deep breath!):
 ```
-https://github.com/browndragon/util.git?path=/BDUtil.Unity/Packages/net.dundrago.BDUtil
+https://github.com/browndragon/util.git?path=/BDUtil.Unity/Packages/org.dawnborn.BDUtil
 ```
-the package path is (or should be!) `net.dundrago.bdutil`.
+the package path is (or should be!) `org.dawnborn.bdutil`.
 
 ### C#
 TODO: implement nuget.
@@ -55,8 +55,8 @@ TODO: implement nuget.
 ## Unity extensions in `BDUtil.Unity`
 ### Structure
 Unity completely owns this directory, so its `sln` and `csproj` should not be manually edited.
-The outer `.sln` and in particular `../BDUtil/BDUtil.csproj`'s build step will put a copy of the built `.dll` & `.pdb` into `BDUtil.Unity/Packages/new.dundrago.BDUtil/BDUtil/*`, which is how Unity gets access to the rest of this library.
-The Unity package is implemented at `BDUtil.Unity/Packages/net.dundrago.BDUtil/package.json`.
+The outer `.sln` and in particular `../BDUtil/BDUtil.csproj`'s build step will put a copy of the built `.dll` & `.pdb` into `BDUtil.Unity/Packages/org.dawnborn.BDUtil/BDUtil/*`, which is how Unity gets access to the rest of this library.
+The Unity package is implemented at `BDUtil.Unity/Packages/org.dawnborn.BDUtil/package.json`.
 
 ### API
 All of the datatypes in `Raw` are extended (same name, but in the root namespace; implementations in `Collections`) to be Unity-serializable assuming that their underlying types are unity serializable (figuring out how to make that happen is your problem!).

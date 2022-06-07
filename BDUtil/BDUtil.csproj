@@ -10,7 +10,7 @@
 
     <Copy
       SourceFiles="$(TargetDir)$(ProjectName).dll;$(TargetDir)$(ProjectName).pdb"
-      DestinationFolder="../BDUtil.Unity/Packages/net.dundrago.BDUtil/Runtime/$(ProjectName)" />
+      DestinationFolder="../BDUtil.Unity/Packages/org.dawnborn.BDUtil/Runtime/$(ProjectName)" />
 
     <Message Text="Copied build files" Importance="High" />
   </Target>

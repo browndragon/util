@@ -1,8 +1,12 @@
 {
-    "name": "net.dundrago.bdutil.Runtime",
-    "rootNamespace": "BDUtil",
-    "references": [],
-    "includePlatforms": [],
+    "name": "org.dawnborn.bdutil.Editor",
+    "rootNamespace": "BDUtil.Editor",
+    "references": [
+        "org.dawnborn.bdutil.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

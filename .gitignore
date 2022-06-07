@@ -185,7 +185,7 @@ PublishScripts/
 # except build/, which is used as an MSBuild target.
 !**/[Pp]ackages/build/
 # and the very specific package we implemented all of our extension in:
-!BDUtil.Unity/Packages/net.dundrago.BDUtil/
+!BDUtil.Unity/Packages/org.dawnborn.BDUtil/
 # Uncomment if necessary however generally it will be regenerated when needed
 #!**/[Pp]ackages/repositories.config
 # NuGet v3's project.json files produces more ignorable files
