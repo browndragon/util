@@ -12,7 +12,7 @@ namespace BDUtil
         /// The default controller object (similar to Cameras.main).
         public static GameObject Default => Find(false);
 
-        /// Gets the game controller tagged with `Tag`.
+        /// Gets the game controller tagged with `Tag`, "the" game controller.
         public static GameObject Find(bool orAllocate = false)
         {
             GameObject controller = GameObject.FindGameObjectWithTag(Tag);
@@ -30,9 +30,11 @@ namespace BDUtil
         /// Gets the named component from the Tagged controller (or children, or null).
         public static T Find<T>() where T : Component => Find(false)?.GetComponentInChildren<T>();
 
-        public static Component GetOrPut(Type type, string path = default)
+        public static Component GetOrPut(Type type, string path = default, bool orAllocate = true)
         {
-            Transform ptr = Find(true).transform;
+            GameObject controller = Find(orAllocate);
+            if (controller == null) return null;
+            Transform ptr = controller.transform;
             if (!path.IsEmpty()) foreach (string p in path.Split('/'))
                 {
                     if (p.IsEmpty()) continue;
@@ -40,6 +42,7 @@ namespace BDUtil
                     Transform child = ptr.Find(p);
                     if (child == null)
                     {
+                        if (!orAllocate) return null;
                         GameObject created = new(p);
                         // TODO: Any tags etc?
                         child = created.transform;
@@ -48,13 +51,13 @@ namespace BDUtil
                     ptr = child;
                 }
             Component component = ptr.GetComponent(type);
-            if (component == null) component = ptr.gameObject.AddComponent(type);
+            if (orAllocate && component == null) component = ptr.gameObject.AddComponent(type);
             return component;
         }
 
         /// Gets the named component, allocating it if absent (at/from the given path).
-        public static T GetOrPut<T>(string path = default) where T : Component
-        => (T)GetOrPut(typeof(T), path);
+        public static T GetOrPut<T>(string path = default, bool orAllocate = true) where T : Component
+        => (T)GetOrPut(typeof(T), path, orAllocate);
 
         // I'm not sure this makes any more sense than just overriding Awake...
         [Serializable]
