@@ -41,7 +41,8 @@ namespace BDUtil.Raw
         public int Count => Elems.Count;
         bool ICollection<T>.IsReadOnly => false;
 
-        public void Add(T item) => TryAddEntry(item).HasValue.OrThrow();
+        public bool TryAdd(T item) => TryAddEntry(item).HasValue;
+        public void Add(T item) => TryAdd(item).OrThrow();
         public bool Contains(T item) => Index.TryGetValue(GetKey(item), out var node) && Comparer.Equals(item, node.Value);
         public void CopyTo(T[] array, int arrayIndex) => Elems.CopyTo(array, arrayIndex);
         public IEnumerator<T> GetEnumerator() => Elems.GetEnumerator();
