@@ -1,6 +1,6 @@
 {
     "name": "org.dawnborn.bdutil",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "displayName": "Brown Dragon Utilities",
     "description": "Collection & object extensions (serializable!)",
     "keywords": [
