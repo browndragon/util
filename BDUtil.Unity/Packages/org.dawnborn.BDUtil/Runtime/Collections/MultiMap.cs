@@ -7,7 +7,7 @@ using UnityEngine;
 namespace BDUtil
 {
     [Serializable]
-    public sealed class MultiMap<K, V> : Raw.Map<K, V>, ISerializationCallbackReceiver
+    public sealed class MultiMap<K, V> : Raw.MultiMap<K, V>, ISerializationCallbackReceiver
     {
         [SerializeField]
         [SuppressMessage("IDE", "IDE0044")]
