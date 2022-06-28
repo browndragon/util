@@ -25,10 +25,7 @@ TODO: implement nuget.
     * `IReadOnlyMultiMap<,>` and `-BiMap<,>` are provided for your code's safety. I didn't provide mutable interfaces, because I didn't need them; you might.
     * `Collection<K, T>` implements the insertion order semantics of some arbitrary `T` which can derive an insertion key `K` (so for instance, in a set `K` _is_ `T`, in a map `T` is actually `KeyValuePair<K, V>`, etc). Your code shouldn't need to look at this.
     * `Collection<K, T>.Entry`: an internal insertion location reference in case I decide to move away from linkedlist.
-    * `ITryGetValue<,>` advertises the presence of that method (which is enough to implement things like `GetValueOrDefault` or `Contains`)
-      > Note: I _don't_ implement `GetValueOrDefault`, because it's very difficult to write it usefully in the C# type system.
-    * `IRemoveKey<,>` is similar, provides a per-key mutation method.
-      > Note: No ~~`AddKey<K, V>`~~ or bulk `Clear()`? Yeah: that's just `ICollection<T>.Add()` and `.Clear()` for `T` a `KeyValuePair<K, V>`.
+
   * `FKeySet` is a functional `KeySet` (its constructor takes a `delegate`).
   * `KeySet` is an abstract set of types `T` which can derive a `K`. Unlike a `Map`, iteration order assumes you know how to derive `K` yourself, and so rather than forcing you into `KeyValuePair`, it iterates as `T`.
   * `Map`: an `IDictionary` and `IReadOnlyDictionary` whose iteration order is insertion order.

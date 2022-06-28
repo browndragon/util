@@ -8,13 +8,13 @@ namespace BDUtil.Raw
 
     /// The primary iteration order is as a KeyValuePair<K, V> collection,
     /// but I'm experiencing crashes when using interface default implementations.
-    public interface IReadOnlyMultiMap<K, V> : IContainer<KeyValuePair<K, V>>, IReadOnlyDictionary<K, IContainer<V>>, ITryGetValue<K, IContainer<V>>
+    public interface IReadOnlyMultiMap<K, V> : IContainer<KeyValuePair<K, V>>, IReadOnlyDictionary<K, IContainer<V>>
     {
         new IContainer<V> this[K key] { get; }
     }
 
     /// A map which maintains a reverse-map.
-    public interface IReadOnlyBiMap<K, V> : IReadOnlyDictionary<K, V>, ITryGetValue<K, V>
+    public interface IReadOnlyBiMap<K, V> : IReadOnlyDictionary<K, V>
     {
         IReadOnlyDictionary<K, V> Forward { get; }
         IReadOnlyMultiMap<V, K> Reverse { get; }
@@ -94,18 +94,5 @@ namespace BDUtil.Raw
         }
         protected Entry GetEntry(K key) => new(key, Index.TryGetValue(key, out var value) ? value : default);
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    }
-    /// The core operation of a readonly dictionary: dereference.
-    public interface ITryGetValue<in K, V>
-    {
-        /// `true` if `value` corresponds to `key`.
-        bool TryGetValue(K key, out V value);
-    }
-    /// The core remove operation of a dictionary: remove indexed element(s).
-    /// The add operation is ICollection<KVP<K, V>>.Add(KVP<K, V>).
-    public interface IRemoveKey<in K, V>
-    {
-        /// `true` if `Remove(new KVP<,>(key, value))` (and `value` is populated).
-        bool RemoveKey(K key, out V value);
     }
 }

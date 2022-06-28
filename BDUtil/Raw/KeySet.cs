@@ -7,7 +7,7 @@ namespace BDUtil.Raw
     /// the hash code, an object reference, etc.
     /// This is the correct class to use with unity objects, whose GetInstanceIDs are not
     /// guaranteed stable between runs; depending on serialization, this might last longer?
-    public abstract class KeySet<K, T> : Collection<K, T>, IReadOnlyDictionary<K, T>, ITryGetValue<K, T>, IRemoveKey<K, T>
+    public abstract class KeySet<K, T> : Collection<K, T>, IReadOnlyDictionary<K, T>
     {
         public T this[K key] => TryGetValue(key, out T value) ? value : throw new KeyNotFoundException($"Missing {key}");
         public KVP.Keys<KeySet<K, T>, K, T> Keys => new(this);

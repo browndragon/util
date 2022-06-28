@@ -6,7 +6,7 @@ namespace BDUtil
 {
     /// Map from U<->T
     [Serializable]
-    public class EnumArray<U, T> : IDictionary<U, T>, IReadOnlyDictionary<U, T>, Raw.ITryGetValue<U, T>, Raw.IRemoveKey<U, T>
+    public class EnumArray<U, T> : IDictionary<U, T>, IReadOnlyDictionary<U, T>
     where U : Enum
     {
         // This would be readonly, etc -- but unity makes that frustrating from otherwise C#able code.

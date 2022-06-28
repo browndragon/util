@@ -63,7 +63,7 @@ namespace BDUtil
             return (Mathf.Clamp(magnitude, min, max) / magnitude) * thiz;
         }
 
-        public static float Epsilon = .000001f;
+        public static readonly float Epsilon = .000001f;
 
         public static bool Approximately(this Vector3 thiz, Vector3 other = default)
         {

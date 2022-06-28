@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace BDUtil.Raw
 {
     /// A 1:1 Dictionary<K,V>.
-    public class Map<K, V> : Collection<K, KeyValuePair<K, V>>, IDictionary<K, V>, IReadOnlyDictionary<K, V>, ITryGetValue<K, V>, IRemoveKey<K, V>
+    public class Map<K, V> : Collection<K, KeyValuePair<K, V>>, IDictionary<K, V>, IReadOnlyDictionary<K, V>
     {
         protected override K GetKey(KeyValuePair<K, V> item) => item.Key;
 
