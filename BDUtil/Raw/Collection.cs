@@ -43,6 +43,7 @@ namespace BDUtil.Raw
 
         public bool TryAdd(T item) => TryAddEntry(item).HasValue;
         public void Add(T item) => TryAdd(item).OrThrow();
+        public void AddRange(IEnumerable<T> items) { foreach (T item in items) Add(item); }
         public bool Contains(T item) => Index.TryGetValue(GetKey(item), out var node) && Comparer.Equals(item, node.Value);
         public void CopyTo(T[] array, int arrayIndex) => Elems.CopyTo(array, arrayIndex);
         public IEnumerator<T> GetEnumerator() => Elems.GetEnumerator();
