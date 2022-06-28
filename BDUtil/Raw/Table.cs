@@ -15,16 +15,21 @@ namespace BDUtil.Raw
         {
             if (!ColsByRows.RemoveKey(r, out var other)) return 0;
             int deleted = 0;
-            foreach (C c in other) deleted += Remove((r, c)) ? 1 : 0;
+            foreach (C c in other) deleted += RemoveKey((r, c)) ? 1 : 0;
             return deleted;
         }
         public int DeleteCol(C c)
         {
             if (!RowsByCols.RemoveKey(c, out var other)) return 0;
             int deleted = 0;
-            foreach (R r in other) deleted += Remove((r, c)) ? 1 : 0;
+            foreach (R r in other) deleted += RemoveKey((r, c)) ? 1 : 0;
             return deleted;
         }
+
+        public bool TryAdd(R row, C col, V value) => TryAdd(new(new(row, col), value));
+        public void Add(R row, C col, V value) => Add(new(new(row, col), value));
+        public bool Remove(R row, C col, V value) => Remove(new(new(row, col), value));
+
 
         protected override void RemoveEntry(Entry entry)
         {

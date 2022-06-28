@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace BDUtil
 {
-    [AddComponentMenu("UTI/Registry")]
+    [AddComponentMenu("BDUtil/Registry")]
     [Tooltip("A registry is store of enabled game objects")]
     public class Registry : BasePool
     {

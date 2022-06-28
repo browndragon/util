@@ -57,7 +57,7 @@ namespace BDUtil.Raw
             Assert.Equal(0, map["b"].Count);
 
             Assert.True(map.Remove("a", 4));
-            Assert.True(!map.Remove("a", 17));
+            Assert.False(map.Remove("a", 17));
             Assert.True(map.ContainsKey("a"));
             Assert.Equal(new[] { 1, 5 }, map["a"]);
             map.Add("a", 8);

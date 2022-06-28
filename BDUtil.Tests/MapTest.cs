@@ -27,8 +27,8 @@ namespace BDUtil.Raw
             Assert.Throws<Exception>(() => order.Add("a", 1));
             Assert.Throws<Exception>(() => order.Add("b", 3));
             Assert.Equal(3, order.Count);
-            Assert.True(order.Remove("b"));
-            Assert.True(!order.Remove("b"));
+            Assert.True(order.RemoveKey("b"));
+            Assert.True(!order.RemoveKey("b"));
             order["a"] = 4;
             order.Add("b", 5);
             Assert.Equal(

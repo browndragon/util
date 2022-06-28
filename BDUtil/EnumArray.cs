@@ -34,7 +34,9 @@ namespace BDUtil
         public bool ContainsKey(U key) => EnumData<U>.HasValue(key);
         public void CopyTo(KeyValuePair<U, T>[] array, int arrayIndex) => Arrays.CopyTo(this, array, arrayIndex);
         public IEnumerator<KeyValuePair<U, T>> GetEnumerator() { foreach (U u in EnumData<U>.Entries) yield return new(u, this[u]); }
-        public bool Remove(U key) { Add(key, default); return true; }
+        public bool RemoveKey(U key) { Add(key, default); return true; }
+        bool IDictionary<U, T>.Remove(U key) => RemoveKey(key);
+
         public bool Remove(KeyValuePair<U, T> item)
         {
             int index = EnumData<U>.GetOffset(item.Key);

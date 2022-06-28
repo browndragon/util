@@ -1,24 +1,24 @@
 {
-    "name": "org.dawnborn.bdutil",
-    "version": "0.0.3",
-    "displayName": "Brown Dragon Utilities",
-    "description": "Collection & object extensions (serializable!)",
-    "keywords": [
-        "set",
-        "map",
-        "multimap",
-        "table",
-        "pool",
-        "data structures",
-        "datastructures",
-        "struct",
-        "structs"
-    ],
-    "unity": "2021.3",
-    "documentationUrl": "https://github.com/browndragon/util",
-    "author": {
-        "name": "Brown Dragon",
-        "email": "browndragon@googlegroups.com",
-        "url": "https://github.com/browndragon"
-    }
+  "name": "org.dawnborn.bdutil",
+  "version": "0.0.4",
+  "displayName": "Brown Dragon Utilities",
+  "description": "Collection & object extensions (serializable!)",
+  "keywords": [
+    "set",
+    "map",
+    "multimap",
+    "table",
+    "pool",
+    "data structures",
+    "datastructures",
+    "struct",
+    "structs"
+  ],
+  "unity": "2021.3",
+  "documentationUrl": "https://github.com/browndragon/util",
+  "author": {
+    "name": "Brown Dragon",
+    "email": "browndragon@googlegroups.com",
+    "url": "https://github.com/browndragon"
+  }
 }

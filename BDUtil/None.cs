@@ -92,8 +92,9 @@ namespace BDUtil
         public void CopyTo(KeyValuePair<K, V>[] array, int arrayIndex) { }
 
         public IEnumerator<KeyValuePair<K, V>> GetEnumerator() => this;
-        public bool Remove(K key) => false;
+        public bool RemoveKey(K _) => false;
         public bool Remove(KeyValuePair<K, V> item) => false;
+        public bool Remove(K key) => RemoveKey(key);
         public bool TryGetValue(K _, out V value) { value = default; return false; }
         public bool MoveNext() => false;
         public void Reset() { }

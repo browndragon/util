@@ -20,6 +20,7 @@ namespace BDUtil.Raw
         ICollection<V> IDictionary<K, V>.Values => Values;
         IEnumerable<V> IReadOnlyDictionary<K, V>.Values => Values;
 
+        public bool TryAdd(K key, V value) => TryAdd(new(key, value));
         public void Add(K key, V value) => Add(new(key, value));
         public bool Replace(K key, V value, out V old)
         {
@@ -47,7 +48,9 @@ namespace BDUtil.Raw
             RemoveEntry(entry);
             return true;
         }
-        public bool Remove(K key) => RemoveKey(key, out var _);
+        public bool RemoveKey(K key) => RemoveKey(key, out var _);
+        bool IDictionary<K, V>.Remove(K key) => RemoveKey(key);
+        public bool Remove(K key, V value) => Remove(new(key, value));
 
         public bool TryGetValue(K key, out V value)
         {

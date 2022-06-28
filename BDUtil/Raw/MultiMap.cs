@@ -65,6 +65,10 @@ namespace BDUtil.Raw
         }
         public bool RemoveKey(K key) => RemoveKey(key, out var _);
 
+        public bool TryAdd(K key, V value) => TryAdd(new(key, value));
+        public void Add(K key, V value) => Add(new(key, value));
+        public bool Remove(K key, V value) => Remove(new(key, value));
+
         public override void Clear() { base.Clear(); Index.Clear(); }
         protected override void RemoveEntry(Entry entry)
         {
@@ -72,7 +76,7 @@ namespace BDUtil.Raw
             if (Index.TryGetValue(entry.Value.Key, out Set<V> values))
             {
                 values.Remove(entry.Value.Value).OrThrow("Index corruption {0} missing", entry.Value);
-                if (values.Count <= 0) Index.Remove(entry.Value.Key).OrThrow("Index corruption {0} missing", entry.Value);
+                if (values.Count <= 0) Index.RemoveKey(entry.Value.Key).OrThrow("Index corruption {0} missing", entry.Value);
             }
         }
         protected override Entry TryAddEntry(KeyValuePair<K, V> item)

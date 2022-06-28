@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace BDUtil
 {
@@ -29,11 +31,17 @@ namespace BDUtil
         => thiz.TryGetNext(out TT value) ? value : @default;
 
 
+        // Summarize an enumerable
         public static string Summarize<T>(this IEnumerable<T> thiz, int limit = 5, string separator = ", ", string terminal = default)
         {
-            terminal ??= "...";
-            if (thiz == null) return "null";
-            if (limit == 0) return "...";
+            switch (thiz)
+            {
+                case null: return "null";
+                case IReadOnlyCollection<T> rot: terminal ??= $"...(+{rot.Count})"; break;
+                case ICollection<T> c: terminal ??= $"...(+{c.Count})"; break;
+                default: terminal ??= "..."; break;
+            }
+            if (limit == 0) return terminal;
 
             StringBuilder builder = new();
             if (limit < 0) limit = int.MaxValue;

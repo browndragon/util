@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace BDUtil
 {
-    [AddComponentMenu("UTI/Pool")]
+    [AddComponentMenu("BDUtil/Pool")]
     [Tooltip("A pool is store of disabled game objects")]
     public class Pool : BasePool
     {
