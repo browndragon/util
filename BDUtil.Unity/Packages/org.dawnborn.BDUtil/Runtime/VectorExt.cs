@@ -63,23 +63,25 @@ namespace BDUtil
             return (Mathf.Clamp(magnitude, min, max) / magnitude) * thiz;
         }
 
-        public static readonly float Epsilon = .000001f;
+        public static readonly float Epsilon = 1e-06f;
 
-        public static bool Approximately(this Vector3 thiz, Vector3 other = default)
+        public static bool Approximately(this Vector3 thiz, Vector3 other, float epsilon)
         {
             Vector3 delta = other - thiz;
-            if (Mathf.Abs(delta.x) > Epsilon) return false;
-            if (Mathf.Abs(delta.y) > Epsilon) return false;
-            if (Mathf.Abs(delta.z) > Epsilon) return false;
+            if (Mathf.Abs(delta.x) > epsilon) return false;
+            if (Mathf.Abs(delta.y) > epsilon) return false;
+            if (Mathf.Abs(delta.z) > epsilon) return false;
             return true;
         }
-        public static bool Approximately(this Vector2 thiz, Vector2 other = default)
+        public static bool Approximately(this Vector3 thiz, Vector3 other = default) => thiz.Approximately(other, Epsilon);
+        public static bool Approximately(this Vector2 thiz, Vector2 other, float epsilon)
         {
             Vector2 delta = other - thiz;
-            if (Mathf.Abs(delta.x) > Epsilon) return false;
-            if (Mathf.Abs(delta.y) > Epsilon) return false;
+            if (Mathf.Abs(delta.x) > epsilon) return false;
+            if (Mathf.Abs(delta.y) > epsilon) return false;
             return true;
         }
+        public static bool Approximately(this Vector2 thiz, Vector2 other = default) => thiz.Approximately(other, Epsilon);
         public static Vector3 Rounded(this Vector3 thiz, float resolution = 1f) => new(
             resolution * Mathf.Round(thiz.x / resolution),
             resolution * Mathf.Round(thiz.y / resolution),
@@ -89,5 +91,16 @@ namespace BDUtil
             resolution * Mathf.Round(thiz.x / resolution),
             resolution * Mathf.Round(thiz.y / resolution)
         );
+
+
+        /// Projects a ray as though it were a line and discovers where it intersects z (default =0).
+        /// This is great for projecting camera rays to hit world 0, where theoretically the plane of the camera might break the plane of the scene...
+        public static Vector3 AtZ(this Ray thiz, float z = 0f)
+        {
+            /// It will never ever ever intersect.
+            if (thiz.direction.z == 0f) return Vector2.positiveInfinity;
+            float scale = (thiz.origin.z - z) / thiz.direction.z;  // If negative, naturally converges.
+            return thiz.origin - scale * thiz.direction;
+        }
     }
 }
