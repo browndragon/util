@@ -13,7 +13,7 @@ namespace BDUtil.Raw
         new IContainer<V> this[K key] { get; }
     }
 
-    /// A map which maintains a reverse-map.
+    /// A map K->V which maintains a reverse-map from V->K
     public interface IReadOnlyBiMap<K, V> : IReadOnlyDictionary<K, V>
     {
         IReadOnlyDictionary<K, V> Forward { get; }
