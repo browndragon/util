@@ -3,10 +3,10 @@ using System.Collections.Generic;
 
 namespace BDUtil
 {
+    /// Utilities for getting keys & values out of enumerable `KeyValuePair` structures.
+    /// This helps comply with `System.Collections.Generic` contracts.
     public static class KVP
     {
-        public delegate K GetKey<K, T>(T t);
-
         public readonly struct Keys<KVColl, K, V> : ICollection<K>, IReadOnlyCollection<K>
         where KVColl : IReadOnlyDictionary<K, V>
         {

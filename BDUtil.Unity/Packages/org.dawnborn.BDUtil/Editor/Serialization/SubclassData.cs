@@ -28,6 +28,18 @@ namespace BDUtil.Editor
             {
                 // Filter out monobehaviours; we never want to offer an assign option to them; it crashes on attempt to create.
                 if (monoBehaviour.IsAssignableFrom(types[i])) continue;
+                // Filter out un-serializable types; we didn't want 'em anyway.
+                bool isSerializable = false;
+                foreach (SerializableAttribute serializable in types[i].GetCustomAttributes<SerializableAttribute>())
+                {
+                    isSerializable = true;
+                    break;
+                }
+                if (!isSerializable)
+                {
+                    Debug.Log($"Rejecting {types[i]} for {Base} because it isn't serializable");
+                    continue;
+                }
                 subs.Add(types[i]);
             }
             SubNames = new string[subs.Count];

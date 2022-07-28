@@ -1,4 +1,5 @@
 using System;
+using BDUtil.Math;
 
 namespace BDUtil
 {
@@ -41,6 +42,9 @@ namespace BDUtil
             }
             return Checkout;
         }
+
+        public static Action<float> GetLerpAction<T>(this IArith<T> thiz, T start, T end, Action<T> action)
+        => (f) => action(thiz.Lerp(start, end, f));
 
         /// Calls underlying `thiz` with `transform(input)` each time.
         public static Action<TNew> Curried<TOld, TNew>(this Action<TOld> thiz, Func<TNew, TOld> transform)
@@ -101,6 +105,5 @@ namespace BDUtil
             setter = MakeSetter(out Func<bool> getter);
             return getter;
         }
-
     }
 }

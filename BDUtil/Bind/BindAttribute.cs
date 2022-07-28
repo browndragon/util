@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace BDUtil.Bind
 {
@@ -11,9 +12,10 @@ namespace BDUtil.Bind
         , AllowMultiple = true)]
     public abstract class BindAttribute : Attribute
     {
+        public int Rank = 0;
         /// This would be some `TK` instead of `object` but generic attributes are a future feature.
         /// Still, it's on you: be consistent about your registry-to-keytypes; since this is abstract,
         /// you can appropriately subclass.
-        public abstract object GetKey(Type type);
+        public abstract IEnumerable<object> GetKeys(Type type);
     }
 }

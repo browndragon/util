@@ -1,4 +1,7 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace BDUtil.Bind
 {
@@ -10,15 +13,39 @@ namespace BDUtil.Bind
     public sealed class ImplAttribute : BindAttribute
     {
         /// Null means "for every type I match" (rather than specifying this multiple times).
-        public Type Interface;
-        /// Preference order when there are multiple ImplAttributes present for the same object.
-        /// Positive ranks occur before other options ("favored"); negative ranks occur after other options ("disfavored").
-        public int Rank = 0;
-        public ImplAttribute() => Interface = null;
-        public ImplAttribute(Type @interface) => Interface = @interface;
+        /// This is great esp for `struct Foo : IBar {}` patterns, where there only is one.
+        /// You *never* match anything in `System.*` or `Unity*`.
+        public Type Interface = null;
+
         /// For complex types, like those using compound type restrictions.
-        public static ImplAttribute Of<T>(int rank = 0) => new(typeof(T)) { Rank = rank };
-        public override object GetKey(Type type) => Interface ?? type;
-        public override string ToString() => Interface?.ToString();
+        /// I'm not actually sure this is legal :->
+        public static ImplAttribute Of<T>() => new(typeof(T));
+        public ImplAttribute(Type @interface = default) => Interface = @interface;
+
+        public override IEnumerable<object> GetKeys(Type type)
+        {
+            if (Interface != null)
+            {
+                yield return Interface;
+                yield break;
+            }
+            for (Type parent = type; AllowSuper(parent); parent = parent.BaseType)
+                yield return parent;
+            foreach (Type parent in type.GetInterfaces())
+                if (AllowSuper(parent)) yield return parent;
+        }
+        bool AllowSuper(Type type)
+        {
+            // Don't match into any subclass interfaces in System or Unity.
+            // this maybe isn't needed
+            switch (type?.Namespace)
+            {
+                case null:  // Fallthrough
+                case var s when s.StartsWith("System."):  // Fallthrough
+                case var u when u.StartsWith("Unity"):  // Fallthrough
+                    return false;
+            }
+            return true;
+        }
     }
 }

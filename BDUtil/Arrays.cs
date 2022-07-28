@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace BDUtil
 {
+    /// Also other arraylike structures like strings and enumerables.
     public static class Arrays
     {
         public static bool IsEmpty(this string thiz) => thiz == null || thiz.Length <= 0;

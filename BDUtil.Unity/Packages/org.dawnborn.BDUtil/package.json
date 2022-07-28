@@ -1,6 +1,6 @@
 {
   "name": "org.dawnborn.bdutil",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "displayName": "Brown Dragon Utilities",
   "description": "Collection & object extensions (serializable!)",
   "keywords": [
@@ -12,7 +12,9 @@
     "data structures",
     "datastructures",
     "struct",
-    "structs"
+    "structs",
+    "ease",
+    "registry"
   ],
   "unity": "2021.3",
   "documentationUrl": "https://github.com/browndragon/util",

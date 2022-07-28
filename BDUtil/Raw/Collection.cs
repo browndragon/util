@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace BDUtil.Raw
 {
     /// IReadOnlyCollection doesn't declare Contains, and it's very reasonable to ask this of e.g. keysets.
-    public interface IContainer<T> : IReadOnlyCollection<T> { public bool Contains(T t); }
+    public interface IContainer<T> : IReadOnlyCollection<T> { bool Contains(T t); }
 
     /// The primary iteration order is as a KeyValuePair<K, V> collection,
     /// but I'm experiencing crashes when using interface default implementations.

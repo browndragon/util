@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace BDUtil
+namespace BDUtil.Attic
 {
     /// Useful for having static code which should only run once per type.
     /// The TContext param should be an `internal` type controlling in what context you mean "just once"

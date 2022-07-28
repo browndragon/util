@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace BDUtil
 {
+    /// Utility to calculate a rolling hash code, sort of like `StringBuffer`.
     public readonly struct HashCode : IEquatable<HashCode>
     {
         public const int kHashCodePrime = 92821;

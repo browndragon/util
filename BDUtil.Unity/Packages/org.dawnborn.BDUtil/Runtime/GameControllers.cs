@@ -1,6 +1,8 @@
 using System;
+using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace BDUtil
 {
@@ -59,17 +61,9 @@ namespace BDUtil
         public static T GetOrPut<T>(string path = default, bool orAllocate = true) where T : Component
         => (T)GetOrPut(typeof(T), path, orAllocate);
 
-        // I'm not sure this makes any more sense than just overriding Awake...
-        [Serializable]
-        public class Ref<T> where T : Component
-        {
-            [Tooltip("If set: path to look for OR CREATE the linked controller")]
-            [SerializeField, SuppressMessage("IDE", "IDE0044")]
-            string Path;
-            [NonSerialized]
-            T Ptr;
-
-            public T Get() => Ptr ??= GetOrPut<T>(Path);
-        }
+        // How horrible! But... it works...
+        public static Coroutine StartCoroutine(IEnumerator coroutine) => EventSystem.current.StartCoroutine(coroutine);
+        // How horrible! But... it works...
+        public static Coroutine StartCoroutine(IEnumerable coroutine) => EventSystem.current.StartCoroutine(coroutine.GetEnumerator());
     }
 }

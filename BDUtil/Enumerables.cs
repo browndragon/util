@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 namespace BDUtil
 {
+    /// Extensions for IEnumerators to make them a little more pleasant.
     public static class Enumerables
     {
         public static bool TryGetNext<TEnum, TT>(ref this TEnum thiz, out TT current)
