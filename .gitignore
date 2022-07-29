@@ -219,6 +219,8 @@ _pkginfo.txt
 ClientBin/
 ~$*
 *~
+# This is how we develop samples in our package...
+!Samples~/
 *.dbmdl
 *.dbproj.schemaview
 *.jfm
