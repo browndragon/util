@@ -25,7 +25,7 @@ namespace BDUtil.Editor
             cache.Add(@base, cached);
             return cached;
         }
-        public SubclassAttribute subclassAttribute => attribute as SubclassAttribute;
+        public SubclassAttribute SubclassAttribute => attribute as SubclassAttribute;
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             // Necessary per docs.
@@ -55,10 +55,10 @@ namespace BDUtil.Editor
                 if (prevIndex < 0 || prevIndex >= subs.Subs.Count)
                 {
                     Debug.LogWarning($"Can't find prev {hasType} anymore!");
-                    int preferredIndex = subs.Find(subclassAttribute.Default);
+                    int preferredIndex = subs.Find(SubclassAttribute.Default);
                     if (preferredIndex < 0 || preferredIndex >= subs.Subs.Count)
                     {
-                        Debug.LogWarning($"Can't find pref {subclassAttribute.Default} anymore!");
+                        Debug.LogWarning($"Can't find pref {SubclassAttribute.Default} anymore!");
                         preferredIndex = 0;
                     }
                     prevIndex = preferredIndex;
@@ -92,7 +92,7 @@ namespace BDUtil.Editor
         }
         Rect GetPopupPosition(Rect currentPosition)
         {
-            Rect popupPosition = new Rect(currentPosition);
+            Rect popupPosition = new(currentPosition);
             popupPosition.width -= EditorGUIUtility.labelWidth;
             popupPosition.x += EditorGUIUtility.labelWidth;
             popupPosition.height = EditorGUIUtility.singleLineHeight;
