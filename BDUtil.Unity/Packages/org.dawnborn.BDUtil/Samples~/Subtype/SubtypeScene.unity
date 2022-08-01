@@ -244,6 +244,7 @@ MonoBehaviour:
     rid: -2
   Target:
     serialized: 
+  Targets: []
   Loggers: []
   references:
     version: 2
@@ -360,6 +361,7 @@ MonoBehaviour:
     rid: -2
   Target:
     serialized: 
+  Targets: []
   Loggers: []
   references:
     version: 2
@@ -495,6 +497,11 @@ MonoBehaviour:
     rid: 4670118501096095749
   Target:
     serialized: BDUtil.SubtypeExample+MouseX, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+  Targets:
+  - serialized: BDUtil.SubtypeExample+MouseX, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+  - serialized: BDUtil.SubtypeExample+MouseY, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
   Loggers:
   - rid: 4670118501096095745
