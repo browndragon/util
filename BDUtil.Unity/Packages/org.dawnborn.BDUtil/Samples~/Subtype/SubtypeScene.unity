@@ -243,7 +243,7 @@ MonoBehaviour:
   Easer:
     rid: -2
   Target:
-    rid: -2
+    serialized: 
   Loggers: []
   references:
     version: 2
@@ -359,7 +359,7 @@ MonoBehaviour:
   Easer:
     rid: -2
   Target:
-    rid: -2
+    serialized: 
   Loggers: []
   references:
     version: 2
@@ -490,38 +490,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 478dbcb63d48e48799b754f50fee7d2d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Duration: 0
+  Duration: 0.25
   Easer:
-    rid: 1967083031159898124
+    rid: 4670118501096095749
   Target:
-    rid: 1967083031159898123
+    serialized: BDUtil.SubtypeExample+MouseX, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
   Loggers:
-  - rid: 1967083031159898121
-  - rid: 1967083031159898116
-  - rid: 1967083031159898117
-  - rid: 1967083031159898120
+  - rid: 4670118501096095745
+  - rid: 4670118501096095748
+  - rid: 4670118501096095746
   references:
     version: 2
     RefIds:
-    - rid: 1967083031159898116
-      type: {class: SubclassExample/LogConst, ns: BDUtil, asm: Assembly-CSharp}
+    - rid: 4670118501096095745
+      type: {class: SubtypeExample/LogConst, ns: BDUtil, asm: Assembly-CSharp}
       data:
-        Const: asdf
-    - rid: 1967083031159898117
-      type: {class: SubclassExample/LogConst, ns: BDUtil, asm: Assembly-CSharp}
+        Const: a
+    - rid: 4670118501096095746
+      type: {class: SubtypeExample/LogAffix, ns: BDUtil, asm: Assembly-CSharp}
       data:
-        Const: cd
-    - rid: 1967083031159898120
-      type: {class: SubclassExample/LogConst, ns: BDUtil, asm: Assembly-CSharp}
+        Pre: c
+        Post: d
+    - rid: 4670118501096095748
+      type: {class: SubtypeExample/LogAffix, ns: BDUtil, asm: Assembly-CSharp}
       data:
-        Const: efg
-    - rid: 1967083031159898121
-      type: {class: SubclassExample/LogConst, ns: BDUtil, asm: Assembly-CSharp}
-      data:
-        Const: 
-    - rid: 1967083031159898123
-      type: {class: SubclassExample/MouseX, ns: BDUtil, asm: Assembly-CSharp}
-    - rid: 1967083031159898124
+        Pre: b1
+        Post: b2
+    - rid: 4670118501096095749
       type: {class: Easings/EnumStruct, ns: BDUtil.Math, asm: BDUtil}
       data:
-        Enum: 0
+        Enum: 15

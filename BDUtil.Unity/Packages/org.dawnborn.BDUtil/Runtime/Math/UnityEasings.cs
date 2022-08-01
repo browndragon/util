@@ -16,7 +16,7 @@ namespace BDUtil.Math
     {
         public static readonly ScaleStruct Default = new() { Impl = new Easings.EnumStruct(), In = 1f, Out = 1f };
 
-        [SerializeReference, Subclass(Default = typeof(Easings.EnumStruct))]
+        [SerializeReference, Subtype(Default = typeof(Easings.EnumStruct))]
         public Easings.IEase Impl;
         public float In;
         public float Out;

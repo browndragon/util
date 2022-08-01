@@ -9,7 +9,21 @@ using UnityEngine;
 namespace BDUtil.Editor
 {
     public static class SerializedProperties
-    {    /// Gets real type of managed reference
+    {
+        static readonly Type ListType = typeof(List<>);
+        static readonly Type SubtypeType = typeof(Subtype<>);
+
+        /// Unwraps List<T>, T[], Subtype<T>, and ofc T => T.
+        public static Type GetUnderlyingType(this Type thiz)
+        {
+            Type type = thiz;
+            if (type.IsArray) type = type.GetElementType();
+            if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == ListType) type = type.GetGenericArguments()[0];
+            if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == SubtypeType) type = type.GetGenericArguments()[0];
+            return type;
+        }
+
+        /// Gets real type of managed reference
         public static Type GetManagedReferenceFieldType(this SerializedProperty property)
         {
             var realPropertyType = GetRealTypeFromTypename(property.managedReferenceFieldTypename);

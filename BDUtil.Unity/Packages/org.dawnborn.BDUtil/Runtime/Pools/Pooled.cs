@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace BDUtil
 {
-    [AddComponentMenu("BTUtil/Pooled")]
+    [AddComponentMenu("BDUtil/Pooled")]
     [Tooltip("A pooled game object visits all registered pools at relevant times.")]
     public class Pooled : MonoBehaviour
     {

@@ -7,7 +7,7 @@ using UnityEngine;
 namespace BDUtil
 {
     [RequireComponent(typeof(Collider2D))]
-    public class SubclassExample : MonoBehaviour, SubclassExample.ILog
+    public class SubtypeExample : MonoBehaviour, SubtypeExample.ILog
     {
         public interface ILog
         {
@@ -29,15 +29,15 @@ namespace BDUtil
             public void LogNow() => Debug.Log($"{Pre}{Post}");
         }
 
-        public float Duration;
-        [SerializeReference, Subclass]
-        public Easings.IEase Easer;
+        public float Duration = .5f;
+        [SerializeReference, Subtype]
+        public Easings.IEase Easer = new Easings.EnumStruct();
         public interface ITarget
         {
             Vector3 Get(Vector3 value);
         }
-        [SerializeReference, Subclass(Default = typeof(MouseX))]
-        public ITarget Target;
+        public Subtype<ITarget> Target = typeof(MouseX);
+        public Subtype<ITarget>[] Targets;
 
         [Serializable]
         public struct MouseX : ITarget
@@ -60,7 +60,7 @@ namespace BDUtil
             }
         }
 
-        [SerializeReference, Subclass]
+        [SerializeReference, Subtype]
         public List<ILog> Loggers;
 
         public void LogNow()
@@ -72,12 +72,13 @@ namespace BDUtil
         {
             if (!Input.GetMouseButtonUp(0)) return;
             LogNow();
-            if (Target != null) StartCoroutine(Tween().GetEnumerator());
+            ITarget instance = Target.CreateInstance();
+            if (instance != null) StartCoroutine(Tween(instance).GetEnumerator());
         }
-        IEnumerable Tween()
+        IEnumerable Tween(ITarget instance)
         {
             Vector3 startPos = transform.position;
-            Vector3 endPos = Target.Get(transform.position);
+            Vector3 endPos = instance.Get(transform.position);
             IArith<Vector3> arith = Arith<Vector3>.Default;
 
             for (float elapsed = 0f;
