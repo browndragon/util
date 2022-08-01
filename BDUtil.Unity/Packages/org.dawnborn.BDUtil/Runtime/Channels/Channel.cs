@@ -43,11 +43,6 @@ namespace BDUtil.Channels
             thiz.Action += subscriber;
             unsubscribe.Add(() => thiz.Action -= subscriber);
         }
-        public static void Subscribe(this Channel thiz, UnityAction subscriber, Disposes.All unsubscribe)
-        {
-            thiz.Action += subscriber.Invoke;
-            unsubscribe.Add(() => thiz.Action -= subscriber.Invoke);
-        }
         public static void Subscribe(this Channel thiz, UnityEvent subscriber, Disposes.All unsubscribe)
         {
             thiz.Action += subscriber.Invoke;
@@ -59,11 +54,6 @@ namespace BDUtil.Channels
             thiz.Action += subscriber;
             unsubscribe.Add(() => thiz.Action -= subscriber);
         }
-        public static void Subscribe<T>(this Channel<T> thiz, UnityAction<T> subscriber, Disposes.All unsubscribe)
-        {
-            thiz.Action += subscriber.Invoke;
-            unsubscribe.Add(() => thiz.Action -= subscriber.Invoke);
-        }
         public static void Subscribe<T>(this Channel<T> thiz, UnityEvent<T> subscriber, Disposes.All unsubscribe)
         {
             thiz.Action += subscriber.Invoke;
@@ -74,11 +64,6 @@ namespace BDUtil.Channels
         {
             thiz.Action += subscriber;
             unsubscribe.Add(() => thiz.Action -= subscriber);
-        }
-        public static void Subscribe<T1, T2>(this Channel<T1, T2> thiz, UnityAction<T1, T2> subscriber, Disposes.All unsubscribe)
-        {
-            thiz.Action += subscriber.Invoke;
-            unsubscribe.Add(() => thiz.Action -= subscriber.Invoke);
         }
         public static void Subscribe<T1, T2>(this Channel<T1, T2> thiz, UnityEvent<T1, T2> subscriber, Disposes.All unsubscribe)
         {
