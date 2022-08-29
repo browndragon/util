@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using BDUtil.Bind;
@@ -12,41 +13,75 @@ namespace BDUtil.Editor
     /// See SubtypeDrawer and ByRefDrawer for more.
     public abstract class AbstractTypeDrawer : ChoiceDrawer<Type>
     {
+        static readonly Type TypeUEO = typeof(UnityEngine.Object);
+
+        internal readonly struct TypeKey : IEquatable<TypeKey>
+        {
+            public readonly Type Type;
+            public readonly tern Serializable;
+            public readonly tern Instantiable;  // Not abstract or interface
+            public readonly tern UnityTypes;  // T:MonoBehaviour, T:ScriptableObject
+            public TypeKey(Type type, bool? serializable = true, bool? instantiable = true, bool? unityTypes = false)
+            {
+                Type = type;
+                Serializable = serializable;
+                Instantiable = instantiable;
+                UnityTypes = unityTypes;
+            }
+
+            public bool Equals(TypeKey other)
+            => (Type != null ? Type.Equals(other.Type) : other.Type == null)
+            && Serializable == other.Serializable
+            && Instantiable == other.Instantiable
+            && UnityTypes == other.UnityTypes;
+
+            public override bool Equals(object obj) => obj is TypeKey other && Equals(other);
+            public override int GetHashCode() => HashCode.Default.And(Type).And(Serializable).And(Instantiable).And(UnityTypes);
+            // public static implicit operator TypeKey(Type t) => new(t);
+            public override string ToString() => $"{Type}: Serial:{Serializable} Instant:{Instantiable} Unity:{UnityTypes}";
+        }
         // Typecache of base->[concrete]subclasses \ UnityEngine.Object.
         // TODO: clear?
-        static readonly Dictionary<Type, Choices> cache = new();
+        static readonly Dictionary<TypeKey, Choices> cache = new();
         // per-instance (?? Reuse safe? Seems to be...) subclass drawer.
         // TODO: clear? Less critical, destroying instance kills it.
         // readonly Dictionary<string, int> index = new();
-        internal static Choices GetCachedSubclassData(Type @base)
+        internal static Choices GetCachedSubclassData(TypeKey @base, bool printDebug = false)
         {
             if (cache.TryGetValue(@base, out Choices cached)) return cached;
-            cached = CalculateSubclassData(@base);
+            cached = CalculateSubclassData(@base, true /*printDebug*/);
             cache.Add(@base, cached);
             return cached;
         }
-        static Choices CalculateSubclassData(Type @base)
+        static Choices CalculateSubclassData(TypeKey @base, bool printDebug = false)
         {
-            List<Type> objects = new();
-            Type monoBehaviour = typeof(MonoBehaviour);
-            objects.Add(null);
-            TypeCache.TypeCollection types = TypeCache.GetTypesDerivedFrom(@base);
+            List<Type> objects = new() { null };
+            TypeCache.TypeCollection types = TypeCache.GetTypesDerivedFrom(@base.Type);
+            if (printDebug) Debug.Log($"Calculating subclass {@base} of {types.Count} derived");
             for (int i = 0; i < types.Count; ++i)
             {
                 // Filter out monobehaviours; we never want to offer an assign option to them; it crashes on attempt to create.
-                if (monoBehaviour.IsAssignableFrom(types[i])) continue;
-
-                // Filter out un-serializable types; we didn't want 'em anyway.
-                bool isSerializable = false;
-                foreach (SerializableAttribute serializable in types[i].GetCustomAttributes<SerializableAttribute>())
+                if (@base.UnityTypes ^ TypeUEO.IsAssignableFrom(types[i]))
                 {
-                    isSerializable = true;
-                    break;
-                }
-                if (!isSerializable)
-                {
-                    Debug.Log($"Rejecting {types[i]} for {@base} because it isn't serializable");
+                    if (printDebug) Debug.Log($"{@base.Type}: skipping {types[i]} {(@base.UnityTypes ? "!:" : ":")} {TypeUEO}");
                     continue;
+                }
+                // filter out non-new()-able types, if they insist on new()-able types.
+                if (!~@base.Instantiable)
+                {
+                    if (@base.Instantiable ^ types[i].GetConstructors().Any(c => c.GetParameters().Count() == 0))
+                    {
+                        if (printDebug) Debug.Log($"{@base.Type}: skipping {types[i]} {(@base.Instantiable ? "!:" : ":")} new()");
+                        continue;
+                    }
+                }
+                if (!~@base.Serializable)
+                {
+                    if (@base.Serializable ^ !types[i].GetCustomAttributes<SerializableAttribute>().IsEmpty())
+                    {
+                        if (printDebug) Debug.Log($"{@base.Type}: skipping {types[i]} {(@base.Serializable ? "!<" : "<")} Serializable");
+                        continue;
+                    }
                 }
                 objects.Add(types[i]);
             }

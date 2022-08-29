@@ -18,7 +18,12 @@ namespace BDUtil.Editor
             Type hasType = property.managedReferenceValue?.GetType();
 
             // TODO: support per-field preferences, renames, etc?
-            Choices choices = GetCachedSubclassData(/*attribute as SubclassAttribute,*/ baseType);
+            Choices choices = GetCachedSubclassData(new(
+                baseType,
+                SubtypeAttribute.Serializable,
+                SubtypeAttribute.Instantiable,
+                SubtypeAttribute.Unity
+            ), SubtypeAttribute.PrintDebug);
             List<Type> objects = (List<Type>)choices.Objects.OrThrow();
             // TODO: cache me?
             choices.Index = objects.IndexOf(hasType);

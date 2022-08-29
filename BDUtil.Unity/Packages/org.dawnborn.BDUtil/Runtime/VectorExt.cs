@@ -10,6 +10,8 @@ namespace BDUtil
         public static Vector2Int Sign(this Vector2Int thiz) => new((int)Mathf.Sign(thiz.x), (int)Mathf.Sign(thiz.y));
         public static float Max(this Vector2 thiz) => Mathf.Max(thiz.x, thiz.y);
         public static float Min(this Vector2 thiz) => Mathf.Min(thiz.x, thiz.y);
+        public static Vector3 WithZ(this Vector3 thiz, float z = 0f) => new(thiz.x, thiz.y, z);
+        public static Vector3Int WithZ(this Vector3Int thiz, int z = 0) => new(thiz.x, thiz.y, z);
         public static Vector3 WithZ(this Vector2 thiz, float z = 0f) => new(thiz.x, thiz.y, z);
         public static Vector3Int WithZ(this Vector2Int thiz, int z = 0) => new(thiz.x, thiz.y, z);
 

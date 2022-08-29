@@ -3,6 +3,7 @@
   <PropertyGroup>
     <LangVersion>9.0</LangVersion>
     <TargetFramework>net4.7.1</TargetFramework>
+    <!--DebugType>embedded</DebugType-->
   </PropertyGroup>
 
   <ItemGroup>

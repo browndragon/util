@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using BDUtil.Math;
 
 namespace BDUtil
@@ -6,15 +7,15 @@ namespace BDUtil
     /// Extensions & utilities for working with Func & Action.
     public static class Funcs
     {
-        /// Calls an action @ end of a Using block
-        public struct Scope : IDisposable
+        public static T GetTarget<T>(this Delegate thiz, T @default = default)
+        => thiz?.Target switch
         {
-            public event Action Action;
-            public Scope(Action action) => Action = action;
-            public void AddAction(Action action) => Action += action;
-            public void Dispose() { try { Action?.Invoke(); } finally { Action = null; } }
-        }
-        public static Scope Scoped(this Action thiz) => new(thiz);
+            null => @default,
+            T t => t,
+            _ => @default,
+        };
+        public static Dispose.One Scoped(this Action thiz) => new(thiz);
+
         /// Returns an action which calls Thiz only the first time it's invoked, none of the following.
         public static Action FirstCalling(this Action thiz)
         => () => { thiz?.Invoke(); thiz = null; };
@@ -22,7 +23,7 @@ namespace BDUtil
         /// Returns a factory; thiz is called when the last action returned from the factory is invoked.
         public static Func<T, Action> LastCalling<T>(this Action thiz)
         {
-            BDUtil.Raw.Map<T, int> count = new();
+            Dictionary<T, int> count = new();
             Action Checkout(T value)
             {
                 count[value] = (count.TryGetValue(value, out var i) ? i : 0) + 1;
@@ -31,7 +32,7 @@ namespace BDUtil
                     count.TryGetValue(value, out var o).OrThrow();
                     (--o < 0).AndThrow();
                     if (o > 0) { count[value] = 0; return; }
-                    count.RemoveKey(value);
+                    count.Remove(value);
                     if (count.Count <= 0)
                     {
                         thiz.OrThrow().Invoke();
@@ -64,7 +65,17 @@ namespace BDUtil
         /// Calls underlying `thiz` with `transform()` each time.
         public static Func<TOut> Curried<TIn, TOut>(this Func<TIn, TOut> thiz, Func<TIn> transform)
         => () => thiz(transform());
-
+        /// Calls underlying `thiz` with `value, transform()` each time.
+        public static Func<TNew, TOut> Curried<TConst, TOld, TNew, TOut>(
+            this Func<TConst, TOld, TOut> thiz,
+            TConst value,
+            Func<TNew, TOld> transform
+        ) => (tnew) => thiz(value, transform(tnew));
+        /// Calls underlying `thiz` with `value, transform()` each time.
+        public static Func<TIn, TOut> Curried<TConst, TIn, TOut>(
+            this Func<TConst, TIn, TOut> thiz,
+            TConst value
+        ) => (t) => thiz(value, t);
 
         /// Transform outputs on return (on each call).
         public static Func<TNew> Piped<TOld, TNew>(this Func<TOld> thiz, Func<TOld, TNew> transform)
@@ -105,5 +116,12 @@ namespace BDUtil
             setter = MakeSetter(out Func<bool> getter);
             return getter;
         }
+
+        public static void Invoke(this IEnumerable<Action> thiz)
+        { if (thiz != null) foreach (Action a in thiz) a.Invoke(); }
+        public static void Invoke<T1>(this IEnumerable<Action<T1>> thiz, T1 t1)
+        { if (thiz != null) foreach (Action<T1> a in thiz) a.Invoke(t1); }
+        public static void Invoke<T1, T2>(this IEnumerable<Action<T1, T2>> thiz, T1 t1, T2 t2)
+        { if (thiz != null) foreach (Action<T1, T2> a in thiz) a.Invoke(t1, t2); }
     }
 }

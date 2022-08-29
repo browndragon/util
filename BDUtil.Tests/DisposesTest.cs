@@ -9,16 +9,16 @@ namespace BDUtil.Raw
         public void DisposesOne()
         {
             var setter = Funcs.MakeSetter(out var getter);
-            using (Disposes.One one = new(setter)) { Assert.False(getter()); }
+            using (Dispose.One one = new(setter)) { Assert.False(getter()); }
             Assert.True(getter());
         }
         [Fact]
         public void DisposesAll()
         {
             bool a = false;
-            Disposes.One bDisp = Funcs.MakeSetter(out var b);
+            Dispose.One bDisp = Funcs.MakeSetter(out var b);
             Func<bool> c;
-            using (Disposes.All d = new() { () => a = true, bDisp })
+            using (Dispose.All d = new() { () => a = true, bDisp })
             {
                 d.Add(Funcs.MakeSetter(out c));
                 Assert.False(a);
@@ -32,7 +32,7 @@ namespace BDUtil.Raw
         [Fact]
         public void DisposesAllLoopsSafely()
         {
-            Disposes.All all = new();
+            Dispose.All all = new();
             int[] runs = new int[10];
             Assert.True(runs.Length >= 2);
 

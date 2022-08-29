@@ -14,7 +14,7 @@ namespace BDUtil.Attic
         {
             if (value) return false;
             value = true;
-            ResetOnce<TContext>.resetAction += ResetOnce<TContext, T>.Reset;
+            ResetOnce<TContext>.ResetAction += ResetOnce<TContext, T>.Reset;
             return true;
         }
     }
@@ -26,11 +26,11 @@ namespace BDUtil.Attic
     /// Testing etc; clears Once<TContext, T> for all T.
     public class ResetOnce<TContext>
     {
-        static internal event Action resetAction = default;
+        static internal event Action ResetAction = default;
         public static void ResetAll()
         {
-            resetAction?.Invoke();
-            resetAction = default;
+            ResetAction?.Invoke();
+            ResetAction = default;
         }
     }
     /// Testing etc; clears Once<TContext, T> for specific T.

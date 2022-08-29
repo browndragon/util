@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -21,7 +22,10 @@ namespace BDUtil.Editor
             Type hasType = GetTypeByString(hasTypeString);
 
             // TODO: support per-field preferences, renames, etc?
-            Choices choices = GetCachedSubclassData(/*attribute as SubclassAttribute,*/ baseType);
+            SubtypeAttribute attribute = fieldInfo.GetCustomAttribute<SubtypeAttribute>();
+            Choices choices = GetCachedSubclassData(new(
+                baseType, attribute.Serializable, attribute.Instantiable, attribute.Unity
+            ), attribute.PrintDebug);
 
             // TODO: cache me?
             choices.Index = ((IList<Type>)choices.Objects).IndexOf(hasType);

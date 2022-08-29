@@ -63,8 +63,7 @@ namespace BDUtil.Bind
         {
             Default = new();
 
-            AssemblyDeps deps = new();
-            deps.Add(typeof(T).Assembly);
+            AssemblyDeps deps = new() { typeof(T).Assembly };
             deps.AddDepsRecursive();
 
             foreach (Assembly assembly in deps)

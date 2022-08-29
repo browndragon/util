@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace BDUtil
 {
-    public static class Disposes
+    public static class Dispose
     {
         public struct One : IDisposable
         {
@@ -14,26 +14,19 @@ namespace BDUtil
             public static implicit operator One(Action a) => new(a);
         }
         /// Unify together a bunch of actions or disposables to run when this is disposed.
-        public sealed class All : IEnumerable, IDisposable
+        /// You'll want to pass this by ref (to maintain `Actions`)!
+        public struct All : IEnumerable, IDisposable
         {
-            readonly List<Action> Actions = new();
-            public All() { }
-            public All(IDisposable item) => Add(item);
-            public All(Action item) => Add(item);
-            public void Add(IDisposable item) => Actions.Add(item.Dispose);
-            public void Add(Action item) => Actions.Add(item);
-            // Necessary for nice collection initializer syntax to work.
-            IEnumerator IEnumerable.GetEnumerator() => Actions.GetEnumerator();
+            event Action Actions;
+            public All(IDisposable item) { Actions = null; Add(item); }
+            public All(Action item) { Actions = null; Add(item); }
+            // These let us
+            public void Add(IDisposable item) => Actions += item.Dispose;
+            public void Add(Action item) => Actions += item;
+            IEnumerator IEnumerable.GetEnumerator()
+            => Actions?.GetInvocationList()?.GetEnumerator() ?? None<Action>.Default;
 
-            public void Dispose()
-            {
-                foreach (Action action in Actions)
-                    try { action?.Invoke(); }
-                    // We can't re-throw; dispose documented "not to throw errors".
-                    // BOY WOULDN'T THAT BE NICE.
-                    catch (Exception e) { System.Diagnostics.Trace.TraceError("Finalizer caught: {0}", e); }
-                Actions.Clear();
-            }
+            public void Dispose() { Actions?.Invoke(); Actions = null; }
         }
     }
 }

@@ -19,7 +19,7 @@ namespace BDUtil
         public HashCode AndRaw(int t) => new(unchecked(kHashCodePrime * (V switch { 0 => 1, _ => V }) + t));
 
         public bool Equals(HashCode other) => V == other.V;
-        public override bool Equals(object obj) => this.AsEqual(obj);
+        public override bool Equals(object obj) => obj is HashCode other && Equals(other);
         public override int GetHashCode() => V;
         public override string ToString() => V.ToString();
 

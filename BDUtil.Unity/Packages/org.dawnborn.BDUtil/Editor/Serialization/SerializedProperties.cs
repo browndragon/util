@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
@@ -12,14 +10,20 @@ namespace BDUtil.Editor
     {
         static readonly Type ListType = typeof(List<>);
         static readonly Type SubtypeType = typeof(Subtype<>);
-
+        static readonly Type RefType = typeof(Ref<>);
         /// Unwraps List<T>, T[], Subtype<T>, and ofc T => T.
         public static Type GetUnderlyingType(this Type thiz)
         {
             Type type = thiz;
             if (type.IsArray) type = type.GetElementType();
-            if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == ListType) type = type.GetGenericArguments()[0];
-            if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == SubtypeType) type = type.GetGenericArguments()[0];
+            bool @continue = true;
+            while (@continue && type.IsConstructedGenericType) switch (type.GetGenericTypeDefinition())
+                {
+                    case var x when x == ListType: type = type.GetGenericArguments()[0]; break;
+                    case var x when x == SubtypeType: type = type.GetGenericArguments()[0]; break;
+                    case var x when x == RefType: type = type.GetGenericArguments()[0]; break;
+                    default: @continue = false; break;
+                }
             return type;
         }
 
@@ -37,8 +41,8 @@ namespace BDUtil.Editor
         /// Gets real type of managed reference's field typeName
         public static Type GetRealTypeFromTypename(string stringType)
         {
-            var names = GetSplitNamesFromTypename(stringType);
-            var realType = Type.GetType($"{names.ClassName}, {names.AssemblyName}");
+            var (AssemblyName, ClassName) = GetSplitNamesFromTypename(stringType);
+            var realType = Type.GetType($"{ClassName}, {AssemblyName}");
             return realType;
         }
 
