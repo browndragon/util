@@ -15,7 +15,7 @@ namespace BDUtil.Editor
     {
         static readonly Type TypeUEO = typeof(UnityEngine.Object);
 
-        internal readonly struct TypeKey : IEquatable<TypeKey>
+        protected readonly struct TypeKey : IEquatable<TypeKey>
         {
             public readonly Type Type;
             public readonly tern Serializable;
@@ -27,6 +27,16 @@ namespace BDUtil.Editor
                 Serializable = serializable;
                 Instantiable = instantiable;
                 UnityTypes = unityTypes;
+            }
+            public TypeKey(Type type, SubtypeAttribute attribute)
+            : this(type)
+            {
+                if (attribute != null)
+                {
+                    Serializable = attribute.Serializable;
+                    Instantiable = attribute.Instantiable;
+                    UnityTypes = attribute.Unity;
+                }
             }
 
             public bool Equals(TypeKey other)
@@ -46,10 +56,10 @@ namespace BDUtil.Editor
         // per-instance (?? Reuse safe? Seems to be...) subclass drawer.
         // TODO: clear? Less critical, destroying instance kills it.
         // readonly Dictionary<string, int> index = new();
-        internal static Choices GetCachedSubclassData(TypeKey @base, bool printDebug = false)
+        protected static Choices GetCachedSubclassData(TypeKey @base, bool printDebug = false)
         {
             if (cache.TryGetValue(@base, out Choices cached)) return cached;
-            cached = CalculateSubclassData(@base, true /*printDebug*/);
+            cached = CalculateSubclassData(@base, printDebug);
             cache.Add(@base, cached);
             return cached;
         }

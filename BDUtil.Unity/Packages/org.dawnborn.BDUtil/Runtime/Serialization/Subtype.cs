@@ -10,7 +10,7 @@ namespace BDUtil
     public sealed class SubtypeAttribute : PropertyAttribute
     {
         /// The preferred (& initial) value to select; null for (well) null
-        public Type Default;
+        public Type Default = null;
         public bool? Serializable = true;
         public bool? Instantiable = true;
         public bool? Unity = false;

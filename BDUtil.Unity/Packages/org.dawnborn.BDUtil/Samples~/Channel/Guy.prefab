@@ -146,21 +146,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Entries:
-  - rid: 4670119114717003797
-  - rid: 4670119114717003798
-  - rid: 4670119114717003799
-  SubscribeAll:
-    m_PersistentCalls:
-      m_Calls: []
+  - rid: 4670119114717003803
+  - rid: 4670119114717003804
   references:
     version: 2
     RefIds:
-    - rid: 4670119114717003797
-      type: {class: PingListener/VoidEntry, ns: BDUtil.Pubsub, asm: org.dawnborn.bdutil.Runtime}
+    - rid: 4670119114717003803
+      type: {class: PingSO/NoArgEntry, ns: BDUtil.Pubsub, asm: org.dawnborn.bdutil.Runtime}
       data:
         Ping:
-          Data:
-            Data: {fileID: 11400000, guid: 72a1d2315523441199d62493ddf31cc9, type: 2}
+          Data: {fileID: 11400000, guid: 72a1d2315523441199d62493ddf31cc9, type: 2}
         Event:
           m_PersistentCalls:
             m_Calls:
@@ -176,12 +171,11 @@ MonoBehaviour:
                 m_StringArgument: Red
                 m_BoolArgument: 0
               m_CallState: 2
-    - rid: 4670119114717003798
-      type: {class: PingListener/VoidEntry, ns: BDUtil.Pubsub, asm: org.dawnborn.bdutil.Runtime}
+    - rid: 4670119114717003804
+      type: {class: PingSO/NoArgEntry, ns: BDUtil.Pubsub, asm: org.dawnborn.bdutil.Runtime}
       data:
         Ping:
-          Data:
-            Data: {fileID: 11400000, guid: 9afcefd87d71b4387af7216aa8d2298b, type: 2}
+          Data: {fileID: 11400000, guid: 9afcefd87d71b4387af7216aa8d2298b, type: 2}
         Event:
           m_PersistentCalls:
             m_Calls:
@@ -197,12 +191,3 @@ MonoBehaviour:
                 m_StringArgument: Blue
                 m_BoolArgument: 0
               m_CallState: 2
-    - rid: 4670119114717003799
-      type: {class: PingListener/GameObjectEntry, ns: BDUtil.Pubsub, asm: org.dawnborn.bdutil.Runtime}
-      data:
-        Ping:
-          Data:
-            Data: {fileID: 0}
-        Event:
-          m_PersistentCalls:
-            m_Calls: []

@@ -19,17 +19,18 @@ namespace BDUtil.Editor
                 index = Index;
             }
         }
-        internal abstract Choices GetChoices(SerializedProperty property);
-        internal abstract void Update(SerializedProperty property, T update);
-        internal virtual float InnerHeight(SerializedProperty property)
+        protected abstract Choices GetChoices(SerializedProperty property);
+        protected abstract void Update(SerializedProperty property, T update);
+        protected virtual float InnerHeight(SerializedProperty property)
         => EditorGUIUtility.singleLineHeight;
         // Just label the field.
         // Alternatives (see ByRefDrawer) might instead recurse!
-        internal virtual void DrawInnerField(Rect position, SerializedProperty property, GUIContent label)
+        protected virtual void DrawInnerField(Rect position, SerializedProperty property, GUIContent label)
         => EditorGUI.PrefixLabel(position, label);
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            Debug.Log($"Drawing choice drawer {this}:{property}:{label}");
             // Necessary per docs.
             EditorGUI.BeginProperty(position, label, property);
             try

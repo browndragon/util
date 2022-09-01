@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
@@ -8,6 +9,8 @@ namespace BDUtil.Editor
 {
     public static class SerializedProperties
     {
+        private const BindingFlags FieldBindingAttr = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
+        private const BindingFlags PropertyBindingAttr = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase;
         static readonly Type ListType = typeof(List<>);
         static readonly Type SubtypeType = typeof(Subtype<>);
         static readonly Type RefType = typeof(Ref<>);
@@ -56,6 +59,50 @@ namespace BDUtil.Editor
             var typeClassName = typeSplitString[1];
             var typeAssemblyName = typeSplitString[0];
             return (typeAssemblyName, typeClassName);
+        }
+
+        public static object GetTargetObjectWithProperty(this SerializedProperty thiz)
+        {
+            string path = thiz.propertyPath.Replace(".Array.data[", "[");
+            object obj = thiz.serializedObject.targetObject;
+            string[] elements = path.Split('.');
+
+            for (int i = 0; i < elements.Length - 1; i++)
+            {
+                string element = elements[i];
+                int lbrace = element.IndexOf("[");
+                if (lbrace > 0)
+                {
+                    string elementName = element[..lbrace];
+                    int rbrace = element.IndexOf("]");
+                    int index = Convert.ToInt32(element[(lbrace + 1)..rbrace]);
+                    obj = GetListValue(obj, elementName, index);
+                }
+                else obj = GetValue(obj, element);
+            }
+
+            return obj;
+        }
+        private static object GetValue(object source, string name)
+        {
+            if (source == null) return null;
+            for (Type type = source.GetType(); type != null; type = type.BaseType)
+            {
+                FieldInfo field = type.GetField(name, FieldBindingAttr);
+                if (field != null) return field.GetValue(source);
+                PropertyInfo property = type.GetProperty(name, PropertyBindingAttr);
+                if (property != null) return property.GetValue(source, null);
+            }
+            return null;
+        }
+
+        private static object GetListValue(object source, string name, int index)
+        {
+            if (GetValue(source, name) is not IEnumerable enumerable) return null;
+            if (enumerable is IList list) return index < list.Count ? list[index] : null;
+            IEnumerator enumerator = enumerable.GetEnumerator();
+            for (int i = 0; i <= index; i++) if (!enumerator.MoveNext()) return null;
+            return enumerator.Current;
         }
     }
 }

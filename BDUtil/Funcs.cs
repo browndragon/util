@@ -14,7 +14,6 @@ namespace BDUtil
             T t => t,
             _ => @default,
         };
-        public static Dispose.One Scoped(this Action thiz) => new(thiz);
 
         /// Returns an action which calls Thiz only the first time it's invoked, none of the following.
         public static Action FirstCalling(this Action thiz)
@@ -116,12 +115,5 @@ namespace BDUtil
             setter = MakeSetter(out Func<bool> getter);
             return getter;
         }
-
-        public static void Invoke(this IEnumerable<Action> thiz)
-        { if (thiz != null) foreach (Action a in thiz) a.Invoke(); }
-        public static void Invoke<T1>(this IEnumerable<Action<T1>> thiz, T1 t1)
-        { if (thiz != null) foreach (Action<T1> a in thiz) a.Invoke(t1); }
-        public static void Invoke<T1, T2>(this IEnumerable<Action<T1, T2>> thiz, T1 t1, T2 t2)
-        { if (thiz != null) foreach (Action<T1, T2> a in thiz) a.Invoke(t1, t2); }
     }
 }

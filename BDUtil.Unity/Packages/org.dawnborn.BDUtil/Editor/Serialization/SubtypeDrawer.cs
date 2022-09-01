@@ -15,7 +15,7 @@ namespace BDUtil.Editor
         => @base.FindPropertyRelative("serialized").stringValue;
         static void SetSerializedType(SerializedProperty @base, string value)
         => @base.FindPropertyRelative("serialized").stringValue = value;
-        internal override Choices GetChoices(SerializedProperty property)
+        protected override Choices GetChoices(SerializedProperty property)
         {
             Type baseType = fieldInfo.FieldType.GetUnderlyingType();
             string hasTypeString = GetSerializedType(property);
@@ -23,9 +23,10 @@ namespace BDUtil.Editor
 
             // TODO: support per-field preferences, renames, etc?
             SubtypeAttribute attribute = fieldInfo.GetCustomAttribute<SubtypeAttribute>();
-            Choices choices = GetCachedSubclassData(new(
-                baseType, attribute.Serializable, attribute.Instantiable, attribute.Unity
-            ), attribute.PrintDebug);
+            Choices choices = GetCachedSubclassData(
+                new(baseType, attribute),
+                attribute?.PrintDebug ?? false
+            );
 
             // TODO: cache me?
             choices.Index = ((IList<Type>)choices.Objects).IndexOf(hasType);
@@ -36,7 +37,7 @@ namespace BDUtil.Editor
             }
             return choices;
         }
-        internal override void Update(SerializedProperty property, Type selectedType)
+        protected override void Update(SerializedProperty property, Type selectedType)
         {
             string hasTypeString = GetSerializedType(property);
             string wantsTypeString = selectedType?.AssemblyQualifiedName;

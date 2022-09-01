@@ -10,8 +10,8 @@ namespace BDUtil.Editor
     [CustomPropertyDrawer(typeof(SubtypeAttribute))]
     public class ByRefDrawer : AbstractTypeDrawer
     {
-        internal SubtypeAttribute SubtypeAttribute => attribute as SubtypeAttribute;
-        internal override Choices GetChoices(SerializedProperty property)
+        protected SubtypeAttribute SubtypeAttribute => attribute as SubtypeAttribute;
+        protected override Choices GetChoices(SerializedProperty property)
         {
             if (property.propertyType != SerializedPropertyType.ManagedReference) return default;
             Type baseType = property.GetManagedReferenceFieldType();
@@ -20,9 +20,7 @@ namespace BDUtil.Editor
             // TODO: support per-field preferences, renames, etc?
             Choices choices = GetCachedSubclassData(new(
                 baseType,
-                SubtypeAttribute.Serializable,
-                SubtypeAttribute.Instantiable,
-                SubtypeAttribute.Unity
+                SubtypeAttribute
             ), SubtypeAttribute.PrintDebug);
             List<Type> objects = (List<Type>)choices.Objects.OrThrow();
             // TODO: cache me?
@@ -40,7 +38,7 @@ namespace BDUtil.Editor
             }
             return choices;
         }
-        internal override void Update(SerializedProperty property, Type selectedType)
+        protected override void Update(SerializedProperty property, Type selectedType)
         {
             Type hasType = property.managedReferenceValue?.GetType();
             if (hasType != selectedType)
@@ -51,10 +49,10 @@ namespace BDUtil.Editor
                 property.serializedObject.ApplyModifiedProperties();
             }
         }
-        internal override float InnerHeight(SerializedProperty property)
+        protected override float InnerHeight(SerializedProperty property)
         => EditorGUI.GetPropertyHeight(property, true);
 
-        internal override void DrawInnerField(Rect position, SerializedProperty property, GUIContent label)
+        protected override void DrawInnerField(Rect position, SerializedProperty property, GUIContent label)
         {
             // Then recurse & draw whatever type it has, too...
             EditorGUI.PropertyField(position, property, label, true);

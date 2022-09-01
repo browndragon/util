@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace BDUtil
@@ -6,33 +7,44 @@ namespace BDUtil
     /// Object/reference utilties.
     public static class Objects
     {
-        public static bool OrThrow(this bool thiz, string tmpl = default, params object[] args)
-        {
-            if (!thiz) throw new ArgumentException(string.Format(tmpl ?? "Unexpected False", args));
-            return thiz;
-        }
-        public static T OrThrow<T>(this T thiz, string tmpl = default, params object[] args)
-        where T : class
-        {
-            if (thiz == null) throw new ArgumentException(string.Format(tmpl ?? $"Unexpected Null", args));
-            return thiz;
-        }
-        public static string OrThrow(this string thiz, string tmpl = default, params object[] args)
-        {
-            if (thiz.IsEmpty()) throw new ArgumentException(string.Format(tmpl ?? "Unexpected empty string", args));
-            return thiz;
-        }
-        public static IEnumerable<T> OrThrow<T>(this IEnumerable<T> thiz, string tmpl = default, params object[] args)
-        where T : class
-        {
-            if (thiz.IsEmpty()) throw new ArgumentException(string.Format(tmpl ?? $"Unexpected Null", args));
-            return thiz;
-        }
+        public static readonly string NullFalseyLabel = "`null`";
+        static string GetFalseyLabel(this bool thiz) => thiz ? null : "`false`";
+        static string GetFalseyLabel(this float thiz) => float.IsNaN(thiz) ? "`NaN`f" : null;
+        static string GetFalseyLabel(this double thiz) => double.IsNaN(thiz) ? "`NaN`d" : null;
+        static string GetFalseyLabel(this string thiz) => thiz.IsEmpty() ? "''" : null;
+        static string GetFalseyLabel(this Array thiz) => thiz.IsEmpty() ? "[]" : null;
+        static string GetFalseyLabel(this IEnumerable thiz) => thiz.IsEmpty() ? "{}" : null;
 
-        public static bool AndThrow(this bool thiz, string tmpl = default, params object[] args)
+        /// Returns "" or else the falsey label for the case we hit.
+        static string GetFalseyLabel<T>(this T thiz)
+        => thiz switch
         {
-            if (thiz) throw new ArgumentException(string.Format(tmpl ?? "Unexpected True", args));
+            null => NullFalseyLabel,
+            bool x => x.GetFalseyLabel(),
+            float x => x.GetFalseyLabel(),
+            double x => x.GetFalseyLabel(),
+            string x => x.GetFalseyLabel(),
+            Array x => x.GetFalseyLabel(),
+            IEnumerable x => x.GetFalseyLabel(),
+            _ => Converter<T, bool>.Default?.Convert(thiz) ?? true ? null : ("Falsey=" + thiz.GetType()),
+        };
+
+        public static T OrThrow<T>(this T thiz, string tmpl = default, params object[] args)
+        {
+            string label = thiz.GetFalseyLabel();
+            if (label != null) throw new ArgumentException($"Unexpected {label}:{string.Format(tmpl ?? "", args)}");
             return thiz;
+        }
+        public static T OrThrowInternal<T>(this T thiz, string tmpl = default, params object[] args)
+        {
+            string label = thiz.GetFalseyLabel();
+            if (label != null) throw new InvalidOperationException($"Unexpected {label}:{string.Format(tmpl ?? "", args)}");
+            return thiz;
+        }
+        public static void AndThrow<T>(this T thiz, string tmpl = default, params object[] args)
+        {
+            string label = thiz.GetFalseyLabel();
+            if (label == null) throw new InvalidOperationException($"Unexpectedly truthy {thiz}:{string.Format(tmpl ?? "", args)}");
         }
 
         /// discards the arguments returning thiz (allowing side effects during an assignment)
