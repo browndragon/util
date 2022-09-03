@@ -15,7 +15,7 @@ namespace BDUtil.Raw
         public TWrite Write { get; }
         public TRead Read { get; }
     }
-    public class AbstractReadLocked<TWrite, TRead, TLocked> : IReadLocked<TWrite, TRead, TLocked>
+    public abstract class AbstractReadLocked<TWrite, TRead, TLocked> : IReadLocked<TWrite, TRead, TLocked>
     {
         protected virtual TWrite Data { get; set; }
         bool HasCopied = false;

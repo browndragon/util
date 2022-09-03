@@ -26,7 +26,8 @@ namespace BDUtil
             string x => x.GetFalseyLabel(),
             Array x => x.GetFalseyLabel(),
             IEnumerable x => x.GetFalseyLabel(),
-            _ => Converter<T, bool>.Default?.Convert(thiz) ?? true ? null : ("Falsey=" + thiz.GetType()),
+            _ => typeof(T) == typeof(object) ? null
+                : Converter<T, bool>.Default?.Convert(thiz) ?? true ? null : ("Falsey=" + thiz.GetType()),
         };
 
         public static T OrThrow<T>(this T thiz, string tmpl = default, params object[] args)

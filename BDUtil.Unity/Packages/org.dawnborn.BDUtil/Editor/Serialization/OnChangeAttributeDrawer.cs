@@ -19,34 +19,43 @@ namespace BDUtil.Editor
             bool asButton = true;
             foreach (OnChangeAttribute at in fieldInfo.GetCustomAttributes<OnChangeAttribute>()) asButton &= at.AsButton;
             bool needs = false;
-            if (asButton) needs = GUI.Button(position, label);
+            if (asButton)
+            {
+                needs = GUI.Button(position, label);
+            }
             else
             {
                 EditorGUI.BeginChangeCheck();
                 EditorGUI.PropertyField(position, property);
                 needs = EditorGUI.EndChangeCheck();
             }
-            if (needs)
+            if (!needs) return;
+            OnChangeAttribute.Suppress current = default;
+            if (EditorApplication.isPlaying) current |= OnChangeAttribute.Suppress.Play;
+            else current |= OnChangeAttribute.Suppress.Editor;
+
+            object dirOwner = property.GetTargetObjectWithProperty();
+            dirOwner.OrThrow();
+            Type dirType = dirOwner.GetType();
+            property.serializedObject.ApplyModifiedProperties();
+            foreach (OnChangeAttribute at in fieldInfo.GetCustomAttributes<OnChangeAttribute>())
             {
-                OnChangeAttribute.Suppress current = default;
-                if (EditorApplication.isPlaying) current |= OnChangeAttribute.Suppress.Play;
-                else current |= OnChangeAttribute.Suppress.Editor;
-
-                object dirOwner = property.GetTargetObjectWithProperty();
-                Type dirType = dirOwner.GetType();
-                property.serializedObject.ApplyModifiedProperties();
-
-                foreach (OnChangeAttribute at in fieldInfo.GetCustomAttributes<OnChangeAttribute>())
+                if ((at.Suppresses & current) != OnChangeAttribute.Suppress.Never)
                 {
-                    if ((at.Suppresses & current) != OnChangeAttribute.Suppress.Never) continue;
-                    foreach (MethodInfo method in dirType.GetType().GetMethods().Where(m => m.Name == at.MethodName))
-                    {
-                        if (method == null) continue;
-                        if (method.GetParameters().Length != 0) continue;
-                        method.Invoke(dirOwner, Array.Empty<object>());
-                    }
+                    continue;
+                }
+                foreach (MethodInfo method in dirType
+                    .GetMethods(BindingFlags.Default | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
+                    .Where(m => m.Name == at.MethodName)
+                )
+                {
+                    if (method == null) continue;
+                    if (method.GetParameters().Length != 0) continue;
+                    method.Invoke(dirOwner, Array.Empty<object>());
+                    break;
                 }
             }
+
         }
     }
 }

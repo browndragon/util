@@ -16,7 +16,17 @@ namespace BDUtil
     {
         public static readonly Converter<TIn, TOut> Default;
         readonly Func<TIn, TOut> Impl;
-        public TOut Convert(TIn @in) => Impl(@in);
+        public TOut Convert(TIn @in)
+        {
+            try
+            {
+                return Impl(@in);
+            }
+            catch
+            {
+                throw new NotSupportedException($"Can't convert {@in}:{typeof(TIn)} => :{typeof(TOut)} and didn't learn early.");
+            }
+        }
         Converter(Func<TIn, TOut> impl) => Impl = impl;
         static Converter()
         {

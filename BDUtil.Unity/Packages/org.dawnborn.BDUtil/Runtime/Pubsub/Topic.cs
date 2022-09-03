@@ -12,7 +12,11 @@ namespace BDUtil.Pubsub
         protected readonly Raw.ReadLocked<Action, HashSet<Action>, IReadOnlyCollection<Action>, IEnumerable<Action>> Actions = new();
         public int Count => Actions.Read.Count;
         public void Clear() => Actions.Write.Clear();
-        public void Notify() { foreach (Action action in Actions.Scope()) action(); }
+        public void Notify()
+        {
+            Debug.Log($"Notifying {Count} actions", this);
+            foreach (Action action in Actions.Scope()) action();
+        }
         public IDisposable Subscribe(Action member)
         {
             Actions.Write.Add(member);
@@ -31,7 +35,6 @@ namespace BDUtil.Pubsub
         public abstract T Value { get; set; }
         public IDisposable Subscribe(Action<T> member) => Subscribe(() => member(Value));
     }
-
     public abstract class ValueTopic<T> : Topic<T>
     {
         [SerializeField] protected T ResetValue;
