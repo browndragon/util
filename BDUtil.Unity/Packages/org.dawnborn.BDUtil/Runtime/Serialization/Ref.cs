@@ -7,7 +7,7 @@ namespace BDUtil
     /// Theoretically this could be extended to _also_ support C# interface instances.
     /// But when I saw it, I didn't like it; also, the actual fields you drag & drop into are ugly. But it does work!
     [Serializable]
-    public struct Ref<T> : Pubsub.IHas<T>
+    public struct Ref<T>
     {
         /// Keep in sync with .Editor.RefDrawer
         [SerializeField] UnityEngine.Object Data;
@@ -18,7 +18,6 @@ namespace BDUtil
             T t => t,
             _ => default,
         };
-        object Pubsub.IHas.Value => Value;
 
         public static implicit operator T(Ref<T> thiz) => thiz.Value;
         public static implicit operator Ref<T>(T thiz) => thiz switch

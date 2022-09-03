@@ -1,20 +1,21 @@
 using System;
 using System.Collections.Generic;
+using BDUtil.Pubsub;
 
 namespace BDUtil.Raw
 {
     /// By entering the scope, the object becomes readlocked.
-    public interface IReadLocked : Scope.IScopable
+    public interface IReadLocked : Scopes.IScopable
     {
         public bool IsReadLocked { get; }
     }
     /// An IReadLocked which exposes peekable Read and Write views of the data, as well as a scopable Locked view.
-    public interface IReadLocked<TWrite, TRead, TLocked> : Scope.IScopable<TLocked>
+    public interface IReadLocked<TWrite, TRead, TLocked> : Scopes.IScopable<TLocked>
     {
         public TWrite Write { get; }
         public TRead Read { get; }
     }
-    public abstract class AbstractReadLocked<TWrite, TRead, TLocked> : IReadLocked<TWrite, TRead, TLocked>
+    public class AbstractReadLocked<TWrite, TRead, TLocked> : IReadLocked<TWrite, TRead, TLocked>
     {
         protected virtual TWrite Data { get; set; }
         bool HasCopied = false;
@@ -37,9 +38,9 @@ namespace BDUtil.Raw
         }
         public TRead Read => (TRead)(object)Data;
 
-        void Scope.IScopable.Begin() => Locks++;
-        TLocked Scope.IScopable<TLocked>.OnceBegun => (TLocked)(object)Data;
-        void Scope.IScopable.End() => Locks--;
+        TLocked Scopes.IScopable<TLocked>.Begin() => (TLocked)((Scopes.IScopable)this).Begin();
+        object Scopes.IScopable.Begin() => Data.Let(Locks++);
+        void Scopes.IScopable.End() => Locks--;
     }
     [Serializable]
     public class ReadLocked<T, TWrite, TRead, TLocked> : AbstractReadLocked<TWrite, TRead, TLocked>

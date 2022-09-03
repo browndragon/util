@@ -46,43 +46,6 @@ namespace BDUtil
         public static Action<float> GetLerpAction<T>(this IArith<T> thiz, T start, T end, Action<T> action)
         => (f) => action(thiz.Lerp(start, end, f));
 
-        /// Calls underlying `thiz` with `transform(input)` each time.
-        public static Action<TNew> Curried<TOld, TNew>(this Action<TOld> thiz, Func<TNew, TOld> transform)
-        => (tnew) => thiz(transform(tnew));
-        /// Calls underlying `thiz` with `transform()` each time.
-        public static Action Curried<T>(this Action<T> thiz, Func<T> transform)
-        => () => thiz(transform());
-        /// Calls underlying `thiz` with `value` each time.
-        public static Action Curried<T>(this Action<T> thiz, T value)
-        => () => thiz(value);
-        /// Calls underlying `thiz` with `true` each time.
-        public static Action Curried(this Action<bool> thiz) => thiz.Curried(true);
-
-        /// Calls underlying `thiz` with `transform(input)` each time.
-        public static Func<TNew, TOut> Curried<TOld, TNew, TOut>(this Func<TOld, TOut> thiz, Func<TNew, TOld> transform)
-        => (tnew) => thiz(transform(tnew));
-        /// Calls underlying `thiz` with `transform()` each time.
-        public static Func<TOut> Curried<TIn, TOut>(this Func<TIn, TOut> thiz, Func<TIn> transform)
-        => () => thiz(transform());
-        /// Calls underlying `thiz` with `value, transform()` each time.
-        public static Func<TNew, TOut> Curried<TConst, TOld, TNew, TOut>(
-            this Func<TConst, TOld, TOut> thiz,
-            TConst value,
-            Func<TNew, TOld> transform
-        ) => (tnew) => thiz(value, transform(tnew));
-        /// Calls underlying `thiz` with `value, transform()` each time.
-        public static Func<TIn, TOut> Curried<TConst, TIn, TOut>(
-            this Func<TConst, TIn, TOut> thiz,
-            TConst value
-        ) => (t) => thiz(value, t);
-
-        /// Transform outputs on return (on each call).
-        public static Func<TNew> Piped<TOld, TNew>(this Func<TOld> thiz, Func<TOld, TNew> transform)
-        => () => transform(thiz());
-        /// Transform outputs on return (on each call).
-        public static Func<TNew> Piped<TNew>(this Func<bool> thiz, TNew onTrue, TNew onFalse = default)
-        => () => thiz() ? onTrue : onFalse;
-
         /// Transforms a function(input, prev)=> output into a pair (set(input),get()=>output=prev=func(input, prev)).
         /// Operation performed on Set (gets are nonmutating.)
         /// (this happens to return the setter & outparam the getter; see MakeGetter for the other of the pair).
@@ -108,8 +71,12 @@ namespace BDUtil
             setter = thiz.MakeSetter(out var getter, initial);
             return getter;
         }
-        public static readonly Func<bool, bool> BoolIdentity = b => b;
-        public static Action MakeSetter(out Func<bool> getter) => BoolIdentity.MakeSetter(out getter).Curried();
+        public static Action MakeSetter(out Func<bool> getter)
+        {
+            bool hasCalled = false;
+            getter = () => hasCalled;
+            return () => hasCalled = true;
+        }
         public static Func<bool> MakeGetter(out Action setter)
         {
             setter = MakeSetter(out Func<bool> getter);

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1736792110445641671}
   - component: {fileID: 4843299963415202841}
   - component: {fileID: 6710263558210919601}
-  - component: {fileID: 1736792110445641670}
+  - component: {fileID: 1140818617483291105}
   m_Layer: 0
   m_Name: Guy
   m_TagString: Untagged
@@ -133,7 +133,7 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
---- !u!114 &1736792110445641670
+--- !u!114 &1140818617483291105
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -142,20 +142,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 1736792110445641669}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 291ff755ec8664bd2bbb2739ae0b58f5, type: 3}
+  m_Script: {fileID: 11500000, guid: 9dc13fbab1c504b8291fb9394f2ec00f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Entries:
-  - rid: 4670119114717003803
-  - rid: 4670119114717003804
+  Subscribes:
+  - rid: 4670119114717003808
+  - rid: 4670119114717003809
   references:
     version: 2
     RefIds:
-    - rid: 4670119114717003803
-      type: {class: PingSO/NoArgEntry, ns: BDUtil.Pubsub, asm: org.dawnborn.bdutil.Runtime}
+    - rid: 4670119114717003808
+      type: {class: Subscribers/UEvent, ns: BDUtil.Pubsub, asm: org.dawnborn.bdutil.Runtime}
       data:
-        Ping:
-          Data: {fileID: 11400000, guid: 72a1d2315523441199d62493ddf31cc9, type: 2}
+        Topic: {fileID: 11400000, guid: d8583e3b4162a42eea755a333a065ce1, type: 2}
         Event:
           m_PersistentCalls:
             m_Calls:
@@ -171,11 +170,10 @@ MonoBehaviour:
                 m_StringArgument: Red
                 m_BoolArgument: 0
               m_CallState: 2
-    - rid: 4670119114717003804
-      type: {class: PingSO/NoArgEntry, ns: BDUtil.Pubsub, asm: org.dawnborn.bdutil.Runtime}
+    - rid: 4670119114717003809
+      type: {class: Subscribers/UEvent, ns: BDUtil.Pubsub, asm: org.dawnborn.bdutil.Runtime}
       data:
-        Ping:
-          Data: {fileID: 11400000, guid: 9afcefd87d71b4387af7216aa8d2298b, type: 2}
+        Topic: {fileID: 11400000, guid: 03e66c092aa604478b047d1ca7d6ac9c, type: 2}
         Event:
           m_PersistentCalls:
             m_Calls:

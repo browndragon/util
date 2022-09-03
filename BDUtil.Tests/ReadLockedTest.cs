@@ -31,7 +31,7 @@ namespace BDUtil.Raw
             ReadLocked<string, List<string>, IReadOnlyList<string>, IEnumerable<string>> data = new();
             object oldValue = data.Write;
             object newValue;
-            using (data.GetScoped(out IEnumerable<string> values))
+            using (data.Scope(out IEnumerable<string> values))
             {
                 Assert.True(data.IsReadLocked);
                 Assert.Same(oldValue, data.Read);
@@ -54,7 +54,7 @@ namespace BDUtil.Raw
             data.Write.AddRange(Iter.Of("hello", "world", "!"));
 
             int i = -1;
-            foreach (string s in data.EnumerateScope())
+            foreach (string s in data.Scope())
             {
                 i++;
                 if (s == "world") data.Write.RemoveAt(i);

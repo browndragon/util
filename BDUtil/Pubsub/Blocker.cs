@@ -8,7 +8,7 @@ namespace BDUtil.Pubsub
     /// Could be extended: Begin/End could take caller location and trace them!
     /// This complies with Unity's requirements for a yield instruction, too...
     [Serializable]
-    public class Blocker : IEnumerable, IEnumerator, Scope.IScopable
+    public class Blocker : IEnumerable, IEnumerator, Scopes.IScopable
     {
         public class Exception : System.Exception
         {
@@ -23,7 +23,11 @@ namespace BDUtil.Pubsub
         // until count <= 0.
         public object Yield = null;
         public bool IsBlocked => Locks;
-        public void Begin() => Locks++;
+        public object Begin()
+        {
+            Locks++;
+            return null;
+        }
         public void End()
         {
             bool wasBlocked = IsBlocked;

@@ -47,10 +47,10 @@ namespace BDUtil
         {
             IReadOnlyDictionary<K, V> irodict => irodict.ContainsKey(key),
             IDictionary<K, V> idict => idict.ContainsKey(key),
-            _ => thiz.Any(((Func<K, K, bool>)EqualityComparer<K>.Default.Equals).Curried(key, (KeyValuePair<K, V> kvp) => kvp.Key)),
+            _ => thiz.Select(kvp => kvp.Key).Contains(key),
         };
         public static bool ContainsValue<K, V>(this IEnumerable<KeyValuePair<K, V>> thiz, V value)
-        => thiz.Any(((Func<V, V, bool>)EqualityComparer<V>.Default.Equals).Curried(value, (KeyValuePair<K, V> kvp) => kvp.Value));
+        => thiz.Select(kvp => kvp.Value).Contains(value);
 
         public static int BinarySearch<T>(this IReadOnlyList<T> thiz, T value, IComparer<T> comparer = default)
         {

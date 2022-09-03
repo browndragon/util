@@ -6,55 +6,46 @@ using UnityEngine;
 
 namespace BDUtil.Pubsub
 {
-    public abstract class Topic : ScriptableObject, ITopic, IPublisher, IHas
+    [CreateAssetMenu(menuName = "BDUtil/Topic")]
+    public class Topic : ScriptableObject, Topics.IJoinable<Action>
     {
-        [SerializeField, Subtype(PrintDebug = true)] protected Subtype<ICollection<IBaseSubscriber>> Storage = typeof(List<IBaseSubscriber>);
-        protected ICollection<IBaseSubscriber> Subscribers;
-        bool IHas.HasValue => false;
-        object IHas.Value => null;
-
-        protected virtual void OnEnable() => Subscribers = Storage.CreateInstance();
-        protected virtual void OnDisable() => Subscribers = null;
-        protected virtual bool Tell(IBaseSubscriber subscriber)
+        protected readonly Raw.ReadLocked<Action, HashSet<Action>, IReadOnlyCollection<Action>, IEnumerable<Action>> Actions = new();
+        public int Count => Actions.Read.Count;
+        public void Clear() => Actions.Write.Clear();
+        public void Notify() { foreach (Action action in Actions.Scope()) action(); }
+        public IDisposable Subscribe(Action member)
         {
-            switch (subscriber)
-            {
-                case null: return true;
-                case ISubscriber sub: sub.Observe(this); return true;
-                default: return false;
-            }
+            Actions.Write.Add(member);
+            return Disposes.Of(() => Actions.Write.Remove(member));
         }
+        protected virtual void OnEnable() => Clear();
+        protected virtual void OnDisable() => Clear();
 
-        public void Publish()
-        { foreach (IBaseSubscriber subscriber in Subscribers) Tell(subscriber).OrThrow($"Unhandled subscriber {subscriber}"); }
-
-        protected Disposes.Remove<IBaseSubscriber> Subscribe(IBaseSubscriber observer)
-        {
-            Subscribers.Add(observer);
-            return new(Subscribers, observer);
-        }
-        public Disposes.Remove<IBaseSubscriber> Subscribe(ISubscriber observer) => Subscribe((IBaseSubscriber)observer);
-        IDisposable ITopic.Subscribe(ISubscriber observer) => Subscribe(observer);
-
-        [OnChange(nameof(Publish), AsButton = true)]
+        [OnChange(nameof(Notify), AsButton = true)]
         [SerializeField]
         [SuppressMessage("IDE", "IDE0044")]
         bool TriggerPublish;
     }
-    public abstract class Topic<T> : Topic, ITopic<T>, IHas<T>
+    public abstract class Topic<T> : Topic, Topics.IJoinable<Action<T>>
     {
-        object IHas.Value => ((IHas<T>)this).Value;
-        T IHas<T>.Value => throw new NotImplementedException();
-        public Disposes.Remove<IBaseSubscriber> Subscribe(ISubscriber<T> observer) => Subscribe((IBaseSubscriber)observer);
-        IDisposable ITopic<T>.Subscribe(ISubscriber<T> observer) => Subscribe(observer);
-        protected override bool Tell(IBaseSubscriber subscriber)
-        {
-            if (base.Tell(subscriber)) return true;
-            switch (subscriber)
-            {
-                case ISubscriber<T> sub: sub.Observe(this); return true;
-                default: return false;
-            }
-        }
+        public abstract T Value { get; set; }
+        public IDisposable Subscribe(Action<T> member) => Subscribe(() => member(Value));
+    }
+
+    public abstract class ValueTopic<T> : Topic<T>
+    {
+        [SerializeField] protected T ResetValue;
+        public override T Value { get; set; }
+        protected override void OnEnable() { Value = ResetValue; base.OnEnable(); }
+        protected override void OnDisable() { Value = ResetValue; base.OnEnable(); }
+    }
+    /// TODO: ensure we get transparent copies, like we do for ReadOnlyLocked?
+    public abstract class MutableTopic<TWrite, TRead> : ValueTopic<TRead>, Scopes.IScopable<TWrite>
+    where TRead : new()
+    {
+        public MutableTopic() => ResetValue = new();
+        TWrite Scopes.IScopable<TWrite>.Begin() => (TWrite)(object)Value;
+        object Scopes.IScopable.Begin() => ((Scopes.IScopable<TWrite>)this).Begin();
+        void Scopes.IScopable.End() => Notify();
     }
 }

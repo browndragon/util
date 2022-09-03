@@ -220,8 +220,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77df8c325cdb94d23bd591243c0f0017, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  OnCreate:
-    Data: {fileID: 11400000, guid: 72a1d2315523441199d62493ddf31cc9, type: 2}
-  OnDestroy:
-    Data: {fileID: 11400000, guid: 9afcefd87d71b4387af7216aa8d2298b, type: 2}
-  Proto: {fileID: 1736792110445641664, guid: 444acf0db4400446fb31aec1279863b9, type: 3}
+  OnCreate: {fileID: 11400000, guid: d8583e3b4162a42eea755a333a065ce1, type: 2}
+  OnDestroy: {fileID: 11400000, guid: 03e66c092aa604478b047d1ca7d6ac9c, type: 2}
+  Proto: {fileID: 1736792110445641669, guid: 444acf0db4400446fb31aec1279863b9, type: 3}

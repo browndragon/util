@@ -6,6 +6,7 @@ namespace BDUtil
 {
     public static class Disposes
     {
+        /// Adapts an action to look like a disposable.
         public readonly struct One : IDisposable
         {
             public readonly Action Action;
@@ -13,6 +14,7 @@ namespace BDUtil
             public void Dispose() => Action?.Invoke();
             public static implicit operator One(Action action) => new(action);
         }
+        public static One Of(Action action) => action;
         public readonly struct Remove<T> : IDisposable
         {
             public readonly ICollection<T> Collection;
@@ -21,7 +23,7 @@ namespace BDUtil
             public void Dispose() => Collection.Remove(Element);
         }
         /// Unify together a bunch of actions or disposables to run when this is disposed.
-        /// You'll want to pass this by ref (to maintain `Actions`)!
+        /// Conforms with c# enumerable initialization protocol, so you can `new All() { thing1, thing2, thing3 }`.
         public class All : IEnumerable, IDisposable
         {
             event Action Actions = null;
@@ -31,12 +33,12 @@ namespace BDUtil
                 {
                     case null: return;
                     case One o: Add(o.Action); return;
-                    case Scope s: Add(s.Locked.End); return;
+                    //  case Scope s: Add(s.Locked.End); return;  // It's a ref struct, not needed.
                     default: Actions += item.Dispose; return;
                 }
             }
             public void Add(One item) => Add(item.Action);
-            public void Add(Scope scope) => Add(scope.Locked.End);
+            public void Add(Scopes.Ender scope) => Add(scope.Scopable.End);
             public void Add(Action item)
             {
                 switch (item)
