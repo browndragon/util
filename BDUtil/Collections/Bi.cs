@@ -8,25 +8,25 @@ namespace BDUtil
     {
         public interface IReadOnlyMap<K, V> : IReadOnlyDictionary<K, V>
         {
-            Multi.IReadOnlyMap<V, K> Reverse { get; }
+            IReadOnlyDictionary<V, IReadOnlyCollection<K>> Reverse { get; }
         }
         public interface IMap<K, V> : IDictionary<K, V>
         {
-            Multi.IReadOnlyMap<V, K> Reverse { get; }
+            IReadOnlyDictionary<V, IReadOnlyCollection<K>> Reverse { get; }
         }
     }
 
     namespace Raw.Bi
     {
-        public class Map<K, V> : BDUtil.Bi.IMap<K, V>, BDUtil.Bi.IReadOnlyMap<K, V>
+        public class Map<K, V, KColl> : BDUtil.Bi.IMap<K, V>, BDUtil.Bi.IReadOnlyMap<K, V>
+        where KColl : ICollection<K>, IReadOnlyCollection<K>, new()
         {
-            readonly IDictionary<K, V> _Forward;
-            readonly BDUtil.Multi.IMap<V, K> _Reverse;
-            public Map() { _Forward = MakeForward(); _Reverse = MakeReverse(); }
-            protected virtual IDictionary<K, V> MakeForward() => new Dictionary<K, V>();
-            protected virtual BDUtil.Multi.IMap<V, K> MakeReverse() => new Multi.Map<V, K>();
-
-            public BDUtil.Multi.IReadOnlyMap<V, K> Reverse => (BDUtil.Multi.IReadOnlyMap<V, K>)_Reverse;
+            readonly Dictionary<K, V> _Forward = new();
+            readonly Dictionary<V, KColl> _Reverse = new();
+            public KVP.Upcast<V, KColl, IReadOnlyCollection<K>> Reverse;
+            public Map() => Reverse = new(_Reverse);
+            IReadOnlyDictionary<V, IReadOnlyCollection<K>> BDUtil.Bi.IReadOnlyMap<K, V>.Reverse => Reverse;
+            IReadOnlyDictionary<V, IReadOnlyCollection<K>> BDUtil.Bi.IMap<K, V>.Reverse => Reverse;
             public V this[K key]
             {
                 get => _Forward[key];
@@ -34,7 +34,7 @@ namespace BDUtil
                 {
                     if (_Forward.TryGetValue(key, out V old)) _Reverse.Remove(old, key).OrThrow("{0}={1} missing <-state while set {2}", key, old, value);
                     _Forward[key] = value;
-                    _Reverse.TryAdd(value, key).OrThrow();
+                    _Reverse.Add(value, key);
                 }
             }
 
@@ -45,15 +45,12 @@ namespace BDUtil
 
             public int Count => _Forward.Count;
 
-            public bool TryAdd(K key, V value)
+            public void Add(K key, V value)
             {
-                if (!_Reverse.TryAdd(value, key)) return false;
-                _Forward.Add(key, value);
-                return true;
+                _Forward.Add(key, value);  // Throws if already had a value...
+                _Reverse.Add(value, key);
             }
-            public bool TryAdd(KeyValuePair<K, V> kvp) => TryAdd(kvp.Key, kvp.Value);
-            public void Add(K key, V value) => TryAdd(key, value).OrThrow("{0}={1} collision", key, value);
-            public void Add(KeyValuePair<K, V> item) => TryAdd(item).OrThrow("{0} collision", item);
+            public void Add(KeyValuePair<K, V> item) => Add(item.Key, item.Value);
 
             public void Clear()
             {
@@ -63,9 +60,6 @@ namespace BDUtil
 
             public bool ContainsKey(K key) => _Forward.ContainsKey(key);
             public bool Contains(KeyValuePair<K, V> item) => _Forward.Contains(item);
-
-            public void CopyTo(KeyValuePair<K, V>[] array, int arrayIndex)
-            { _Forward.CopyTo(array, arrayIndex); }
 
             public bool Remove(K key)
             {
@@ -83,7 +77,9 @@ namespace BDUtil
 
             public IEnumerator<KeyValuePair<K, V>> GetEnumerator() => _Forward.GetEnumerator();
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-            bool ICollection<KeyValuePair<K, V>>.IsReadOnly => _Forward.IsReadOnly;
+            bool ICollection<KeyValuePair<K, V>>.IsReadOnly => ((ICollection<KeyValuePair<K, V>>)_Forward).IsReadOnly;
+            void ICollection<KeyValuePair<K, V>>.CopyTo(KeyValuePair<K, V>[] array, int arrayIndex) => _Forward.WriteTo(array, arrayIndex);
         }
+        public class Map<K, V> : Map<K, V, HashSet<K>> { }
     }
 }

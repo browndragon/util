@@ -14,7 +14,9 @@ namespace BDUtil
         public static T[] Of<T>(params T[] args) => args;
         public static bool IsEmpty(this string thiz) => thiz == null || thiz.Length <= 0;
         public static bool IsEmpty(this Array thiz) => thiz == null || thiz.Length <= 0;
+        public static bool IsEmpty<T>(this T[] thiz) => thiz == null || thiz.Length <= 0;
         public static bool IsEmpty(this ICollection thiz) => thiz == null || thiz.Count <= 0;
+        public static bool IsEmpty<T>(this ICollection<T> thiz) => thiz == null || thiz.Count <= 0;
         public static bool IsEmpty(this IEnumerable thiz)
         {
             switch (thiz)

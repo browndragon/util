@@ -174,13 +174,17 @@ namespace BDUtil.Raw
         }
     }
 
-    public class OrderedList<T> : Ordered<List<T>, T>
+    public interface IReadOnlyOrderedList<T> : IReadOnlyList<T>, IReadOnlyOrdered<T> { }
+    public interface IOrderedList<T> : IList<T>, IOrdered<T> { }
+    public class OrderedList<T> : Ordered<List<T>, T>, IReadOnlyOrderedList<T>, IOrderedList<T>
     {
         protected override int BinarySearch(T item) => Data.BinarySearch(item);
         protected override void BinarySort() => Data.Sort(Comparer);
     }
 
-    public class OrderedDeque<T> : Ordered<Deque<T>, T>, IReadOnlyDeque<T>, IDeque<T>
+    public interface IReadOnlyOrderedDeque<T> : IReadOnlyDeque<T>, IReadOnlyOrdered<T> { }
+    public interface IOrderedDeque<T> : IDeque<T>, IOrdered<T> { }
+    public class OrderedDeque<T> : Ordered<Deque<T>, T>, IReadOnlyOrderedDeque<T>, IOrderedDeque<T>
     {
         protected override int BinarySearch(T item) => Data.BinarySearch(item);
         protected override void BinarySort() => Data.BinarySort(Comparer);

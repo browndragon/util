@@ -38,7 +38,8 @@ namespace BDUtil
                 }
             }
             public void Add(One item) => Add(item.Action);
-            public void Add(Scopes.Ender scope) => Add(scope.Scopable.End);
+            public void Add(Scopes.ScopeEnder scope) => Add(scope.Scopable.Release);
+            /// The others require a closure anyway, so just use generic IDisposable delegation.
             public void Add(Action item)
             {
                 switch (item)

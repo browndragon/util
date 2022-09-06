@@ -16,10 +16,16 @@ namespace BDUtil.Pubsub
         }
 
         public static IDisposable Subscribe(this IJoinable<Action> thiz, Action<IJoinable> member)
-        => thiz.Subscribe(() => member(thiz));
+        => thiz.Subscribe(() => member?.Invoke(thiz));
+        public static IDisposable Subscribe(this IJoinable<Action> thiz, Funcs.IAction<IJoinable> member)
+        => thiz.Subscribe(() => member?.Invoke(thiz));
         public static IDisposable Subscribe<T>(this IJoinable<Action<T>> thiz, Action<IJoinable, T> member)
-        => thiz.Subscribe(t => member(thiz, t));
+        => thiz.Subscribe(t => member?.Invoke(thiz, t));
+        public static IDisposable Subscribe<T>(this IJoinable<Action<T>> thiz, Funcs.IAction<IJoinable, T> member)
+        => thiz.Subscribe(t => member?.Invoke(thiz, t));
         public static IDisposable Subscribe<T>(this IJoinable<Action<T>> thiz, Action member)
-        => thiz.Subscribe(t => member());
+        => thiz.Subscribe(t => member?.Invoke());
+        public static IDisposable Subscribe<T>(this IJoinable<Action<T>> thiz, Funcs.IAction member)
+        => thiz.Subscribe(t => member?.Invoke());
     }
 }

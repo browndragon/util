@@ -38,9 +38,8 @@ namespace BDUtil.Raw
         }
         public TRead Read => (TRead)(object)Data;
 
-        TLocked Scopes.IScopable<TLocked>.Begin() => (TLocked)((Scopes.IScopable)this).Begin();
-        object Scopes.IScopable.Begin() => Data.Let(Locks++);
-        void Scopes.IScopable.End() => Locks--;
+        TLocked Scopes.IScopable<TLocked>.Acquire() => (TLocked)(object)Data.Let(Locks++);
+        void Scopes.IScopable<TLocked>.Release(TLocked _) => Locks--;
     }
     [Serializable]
     public class ReadLocked<T, TWrite, TRead, TLocked> : AbstractReadLocked<TWrite, TRead, TLocked>

@@ -23,12 +23,8 @@ namespace BDUtil.Pubsub
         // until count <= 0.
         public object Yield = null;
         public bool IsBlocked => Locks;
-        public object Begin()
-        {
-            Locks++;
-            return null;
-        }
-        public void End()
+        public void Acquire() => Locks++;
+        public void Release()
         {
             bool wasBlocked = IsBlocked;
             Locks--;

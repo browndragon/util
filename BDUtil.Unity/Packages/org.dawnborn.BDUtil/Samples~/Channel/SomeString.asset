@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: SomeString
   m_EditorClassIdentifier: 
   TriggerPublish: 0
-  ResetValue: 
+  ResetValue: Value X

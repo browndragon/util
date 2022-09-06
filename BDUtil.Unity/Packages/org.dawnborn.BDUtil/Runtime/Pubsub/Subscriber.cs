@@ -19,6 +19,27 @@ namespace BDUtil.Pubsub
 
     public static class Subscribers
     {
+        public static IDisposable Subscribe(this UnityEvent thiz, UnityAction action)
+        {
+            thiz.AddListener(action);
+            return Disposes.Of(() => thiz.RemoveListener(action));
+        }
+        public static IDisposable Subscribe<T1>(this UnityEvent<T1> thiz, UnityAction<T1> action)
+        {
+            thiz.AddListener(action);
+            return Disposes.Of(() => thiz.RemoveListener(action));
+        }
+        public static IDisposable Subscribe<T1, T2>(this UnityEvent<T1, T2> thiz, UnityAction<T1, T2> action)
+        {
+            thiz.AddListener(action);
+            return Disposes.Of(() => thiz.RemoveListener(action));
+        }
+        public static IDisposable Subscribe<T1, T2, T3>(this UnityEvent<T1, T2, T3> thiz, UnityAction<T1, T2, T3> action)
+        {
+            thiz.AddListener(action);
+            return Disposes.Of(() => thiz.RemoveListener(action));
+        }
+
         [Serializable]
         internal class MessageEvent : Subscriber.ISubscribe
         {

@@ -34,27 +34,6 @@ namespace BDUtil
             public static implicit operator KeyValuePair<TKey, TValue>(Entry<TKey, TValue> thiz) => new(thiz.Key, thiz.Value);
             public static implicit operator Entry<TKey, TValue>(KeyValuePair<TKey, TValue> thiz) => new(thiz.Key, thiz.Value);
         }
-
-        public readonly struct Grouping<TKey, TValue> : IGrouping<TKey, TValue>, IReadOnlyCollection<TValue>
-        {
-            public readonly TKey Key;
-            public readonly IReadOnlyCollection<TValue> Values;
-            public Grouping(TKey key, IReadOnlyCollection<TValue> values)
-            {
-                Key = key;
-                Values = values;
-            }
-            public void Deconstruct(out TKey key, out IReadOnlyCollection<TValue> values)
-            {
-                key = Key;
-                values = Values;
-            }
-            public int Count => Values?.Count ?? 0;
-            TKey IGrouping<TKey, TValue>.Key => Key;
-            public IEnumerator<TValue> GetEnumerator() => Values?.GetEnumerator() ?? None<TValue>.Default;
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-        }
-
         /// Guaranteed to use only `.Count`, `.ContainsKey` (if available), and the collection `.GetEnumerator`.
         /// Contains is as efficient as the underlying dictionary's Contains.
         public readonly struct Keys<K, V> : ICollection<K>, IReadOnlyCollection<K>
@@ -88,6 +67,104 @@ namespace BDUtil
 
             public IEnumerator<V> GetEnumerator() { foreach (var kvp in Thiz) yield return kvp.Value; }
             public bool Remove(V item) => throw new System.NotImplementedException();
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+        public static bool Contains<K, VColl, V>(this IDictionary<K, VColl> thiz, K key, V value)
+        where VColl : ICollection<V>
+        => thiz.TryGetValue(key, out VColl vs) && vs.Contains(value);
+
+        public static IReadOnlyCollection<V> GetValueOrDefault<K, VColl, V>(this IReadOnlyDictionary<K, VColl> thiz, K key, V _)
+        where VColl : ICollection<V>
+        => thiz.TryGetValue(key, out VColl vs) ? (IReadOnlyCollection<V>)(object)vs : None<V>.Default;
+
+        public static void Add<K, VColl, V>(this IDictionary<K, VColl> thiz, K key, V value)
+        where VColl : ICollection<V>, new()
+        {
+            if (!thiz.TryGetValue(key, out VColl vs)) thiz.Add(key, vs = new());
+            vs.Add(value);
+        }
+        public static void Add<K, VColl, V>(this IDictionary<K, VColl> thiz, KeyValuePair<K, V> kvp)
+        where VColl : ICollection<V>, new()
+        => thiz.Add(kvp.Key, kvp.Value);
+
+        public static IReadOnlyCollection<V> RemoveKey<K, VColl, V>(this IDictionary<K, VColl> thiz, K key, V _)
+        where VColl : ICollection<V>
+        {
+            if (!thiz.TryGetValue(key, out VColl vs)) return None<V>.Default;
+            thiz.Remove(key).OrThrowInternal();
+            return (IReadOnlyCollection<V>)vs;
+        }
+        public static bool Remove<K, VColl, V>(this IDictionary<K, VColl> thiz, K key, V value)
+        where VColl : ICollection<V>
+        {
+            if (!thiz.TryGetValue(key, out VColl vs)) return false;
+            if (!vs.Remove(value)) return false;
+            if (vs.IsEmpty()) thiz.Remove(key).OrThrowInternal("Couldn't remove empty values for {0}", key);
+            return true;
+        }
+        public static bool Remove<K, VColl, V>(this IDictionary<K, VColl> thiz, KeyValuePair<K, V> kvp)
+        where VColl : ICollection<V>
+        => thiz.Remove(kvp);
+
+        public static IEnumerable<KeyValuePair<K, V>> Flatten<K, VColl, V>(this IEnumerable<KeyValuePair<K, VColl>> thiz, V _)
+        where VColl : IEnumerable<V>
+        {
+            foreach (KeyValuePair<K, VColl> kpvs in thiz) foreach (V v in kpvs.Value) yield return new(kpvs.Key, v);
+        }
+
+        /// Creates a facade which upcasts an internal type to its parent during enumeration (THANKS KVP...)
+        public class Upcast<K, V1, V2> : IReadOnlyDictionary<K, V2>
+        where V1 : V2
+        {
+            readonly IReadOnlyDictionary<K, V1> Thiz;
+            public Upcast(IReadOnlyDictionary<K, V1> thiz) => Thiz = thiz;
+
+            public V2 this[K key] => Thiz[key];
+            public IEnumerable<K> Keys => Thiz.Keys;
+            public IEnumerable<V2> Values => Thiz.Values.Cast<V2>();
+            public int Count => Thiz.Count;
+
+            public bool ContainsKey(K key) => Thiz.ContainsKey(key);
+            public IEnumerator<KeyValuePair<K, V2>> GetEnumerator()
+            { foreach (KeyValuePair<K, V1> kvp in Thiz) yield return new(kvp.Key, kvp.Value); }
+            public bool TryGetValue(K key, out V2 value)
+            => Thiz.TryGetValue(key, out V1 v1).Let(value = v1);
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+        /// Creates a facade which conforms to ILookup. The underlying map is mutable; it guarantees no caching.
+        public readonly struct Lookup<K, VColl, V> : ILookup<K, V>
+        where VColl : ICollection<V>
+        {
+            readonly IReadOnlyDictionary<K, VColl> Thiz;
+            public Lookup(IReadOnlyDictionary<K, VColl> thiz) => Thiz = thiz;
+            public IEnumerable<V> this[K key] => Thiz.TryGetValue(key, out VColl vs) ? vs : None<V>.Default;
+            /// UGH.
+            public int Count => Thiz.Count;
+            public bool Contains(K key) => Thiz.ContainsKey(key);
+            public IEnumerator<IGrouping<K, V>> GetEnumerator() => Thiz.Select(
+                kvp => new Grouping<K, V>(kvp.Key, (IReadOnlyCollection<V>)kvp.Value)
+            ).Cast<IGrouping<K, V>>().GetEnumerator();
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        public readonly struct Grouping<TKey, TValue> : IGrouping<TKey, TValue>, IReadOnlyCollection<TValue>
+        {
+            public readonly TKey Key;
+            public readonly IReadOnlyCollection<TValue> Values;
+            public Grouping(TKey key, IReadOnlyCollection<TValue> values)
+            {
+                Key = key;
+                Values = values;
+            }
+            public void Deconstruct(out TKey key, out IReadOnlyCollection<TValue> values)
+            {
+                key = Key;
+                values = Values;
+            }
+            public int Count => Values?.Count ?? 0;
+            TKey IGrouping<TKey, TValue>.Key => Key;
+            public IEnumerator<TValue> GetEnumerator() => Values?.GetEnumerator() ?? None<TValue>.Default;
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }

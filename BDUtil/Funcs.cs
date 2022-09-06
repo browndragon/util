@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using BDUtil.Math;
 
 namespace BDUtil
@@ -15,6 +14,16 @@ namespace BDUtil
             _ => @default,
         };
 
+        public interface IGet<T> { T Value { get; } }
+        public interface ISet<T> { T Value { set; } }
+        public interface IDelegate { }
+        public interface IAction : IDelegate { void Invoke(); }
+        public interface IAction<T1> : IDelegate { void Invoke(T1 t1); }
+        public interface IAction<T1, T2> : IDelegate { void Invoke(T1 t1, T2 t2); }
+        public interface IFunc<TOut> : IDelegate { TOut Invoke(); }
+        public interface IFunc<T1, TOut> : IDelegate { TOut Invoke(T1 t1); }
+        public interface IFunc<T1, T2, TOut> : IDelegate { TOut Invoke(T1 t1, T2 t2); }
+
         /// Returns an action which calls Thiz only the first time it's invoked, none of the following.
         public static Action FirstCalling(this Action thiz)
         => () => { thiz?.Invoke(); thiz = null; };
@@ -22,21 +31,16 @@ namespace BDUtil
         /// Returns a factory; thiz is called when the last action returned from the factory is invoked.
         public static Func<T, Action> LastCalling<T>(this Action thiz)
         {
-            Dictionary<T, int> count = new();
-            Action Checkout(T value)
+            Lock count = default;
+            Action Checkout(T t)
             {
-                count[value] = (count.TryGetValue(value, out var i) ? i : 0) + 1;
+                count++;
+                bool hasRedeemed = false;
                 void Redeem()
                 {
-                    count.TryGetValue(value, out var o).OrThrow();
-                    (--o < 0).AndThrow();
-                    if (o > 0) { count[value] = 0; return; }
-                    count.Remove(value);
-                    if (count.Count <= 0)
-                    {
-                        thiz.OrThrow().Invoke();
-                        thiz = null;
-                    }
+                    hasRedeemed.AndThrow($"Duplicate unlock: {t}");
+                    hasRedeemed = true;
+                    if (!--count) thiz.OrThrow().Let(thiz = null).Invoke();
                 }
                 return Redeem;
             }

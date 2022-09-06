@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using BDUtil.Pooling;
 using BDUtil.Pubsub;
 using UnityEngine;
 
@@ -10,7 +11,7 @@ namespace BDUtil
         public Topic OnCreate;
         public Topic OnDestroy;
         new Camera camera;
-        public GameObject Proto;
+        public Clone Proto;
         void Awake() => camera = Camera.main;
         void Update()
         {
@@ -19,12 +20,13 @@ namespace BDUtil
             Collider2D atPoint = Physics2D.OverlapPoint(point);
             if (atPoint != null)
             {
-                Destroy(atPoint.gameObject);
+                Pools.main.Release(Proto, atPoint.GetComponent<Clone>());
                 OnDestroy.Notify();
                 return;
             }
             OnCreate.Notify();
-            Instantiate(Proto, camera.ScreenToWorldPoint(Input.mousePosition).WithZ(0f), Quaternion.identity);
+            Clone cloned = Pools.main.Acquire(Proto);
+            cloned.transform.SetPositionAndRotation(camera.ScreenToWorldPoint(Input.mousePosition).WithZ(0f), Quaternion.identity);
         }
     }
 }

@@ -44,11 +44,10 @@ namespace BDUtil.Pubsub
     }
     /// TODO: ensure we get transparent copies, like we do for ReadOnlyLocked?
     public abstract class MutableTopic<TWrite, TRead> : ValueTopic<TRead>, Scopes.IScopable<TWrite>
-    where TRead : new()
+    where TWrite : new()
     {
-        public MutableTopic() => ResetValue = new();
-        TWrite Scopes.IScopable<TWrite>.Begin() => (TWrite)(object)Value;
-        object Scopes.IScopable.Begin() => ((Scopes.IScopable<TWrite>)this).Begin();
-        void Scopes.IScopable.End() => Notify();
+        public MutableTopic() => ResetValue = (TRead)(object)new TWrite();
+        TWrite Scopes.IScopable<TWrite>.Acquire() => (TWrite)(object)Value;
+        void Scopes.IScopable<TWrite>.Release(TWrite value) { Value = (TRead)(object)value; Notify(); }
     }
 }

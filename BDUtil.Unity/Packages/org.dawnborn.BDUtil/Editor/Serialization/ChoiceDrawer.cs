@@ -30,7 +30,6 @@ namespace BDUtil.Editor
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            Debug.Log($"Drawing choice drawer {this}:{property}:{label}");
             // Necessary per docs.
             EditorGUI.BeginProperty(position, label, property);
             try

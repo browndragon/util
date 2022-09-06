@@ -222,4 +222,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   OnCreate: {fileID: 11400000, guid: d8583e3b4162a42eea755a333a065ce1, type: 2}
   OnDestroy: {fileID: 11400000, guid: 03e66c092aa604478b047d1ca7d6ac9c, type: 2}
-  Proto: {fileID: 1736792110445641669, guid: 444acf0db4400446fb31aec1279863b9, type: 3}
+  Proto: {fileID: -5840192996426756880, guid: 444acf0db4400446fb31aec1279863b9, type: 3}

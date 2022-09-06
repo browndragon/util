@@ -7,7 +7,7 @@ namespace BDUtil
     [Serializable]
     public sealed class BiMap<K, V> : StoreMap<Raw.Bi.Map<K, V>, K, V>, Bi.IReadOnlyMap<K, V>, Bi.IMap<K, V>
     {
-        public Multi.IReadOnlyMap<V, K> Reverse => AsCollection.Reverse;
+        public IReadOnlyDictionary<V, IReadOnlyCollection<K>> Reverse => AsCollection.Reverse;
         public V this[K key] { get => AsCollection[key]; set => AsCollection[key] = value; }
         public ICollection<K> Keys => AsCollection.Keys;
         IEnumerable<K> IReadOnlyDictionary<K, V>.Keys => ((IReadOnlyDictionary<K, V>)AsCollection).Keys;
