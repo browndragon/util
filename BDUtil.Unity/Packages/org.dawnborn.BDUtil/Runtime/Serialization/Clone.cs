@@ -7,15 +7,13 @@ namespace BDUtil.Serialization
 {
     /// A prefab with a Clone component exposes its ancestor prefab asset.
     /// There's an automatic tool which ensures that a prefab has its own Ref set to itself; see CloneLinker.
+    /// This automatically gets you pooling behaviour as well.
     [DisallowMultipleComponent]
     public class Clone : MonoBehaviour
     {
         public Ref<Clone> PrefabRef;  // The ancestor-pointer for the prefab root from which this clone derived.
-        public Ref<T> GetRootRef<T>() where T : Component => (Ref<T>)PrefabRef.Load().GetComponent<T>();
         public Clone Root => IsClone ? PrefabRef.Load() : this;
         public bool IsClone => gameObject.scene.IsValid();
-
-        public static implicit operator Ref<Clone>(Clone thiz) => thiz.PrefabRef;
 
         public static T New<T>(T proto)
         where T : UnityEngine.Object
@@ -35,22 +33,34 @@ namespace BDUtil.Serialization
             return ret;
         }
 
-        public static Clone Acquire(Ref<Clone> @ref, int limit = int.MaxValue)
+        public static Clone Acquire(Ref<Clone> @ref)
         => (Pools.TryGetValue(@ref, out Pool pool)
         ? pool
         : (Pools[@ref] = new(@ref.Load())))
-        .Acquire(limit);
-        public static T Acquire<T>(Ref<T> @ref, int limit = int.MaxValue)
+        .Acquire();
+        public static T Acquire<T>(Ref<T> @ref)
         where T : Component
-        => Acquire(@ref.Load().GetComponent<Clone>(), limit).GetComponent<T>();
+        => Acquire((Ref<Clone>)@ref.Load().GetComponent<Clone>()).GetComponent<T>();
 
-        public static void Release(Clone clone) => Pools[clone.PrefabRef].Release(clone);
+        // If there were already members in the scene...
+        public static void Release(Clone clone) => (Pools.TryGetValue(clone.PrefabRef, out Pool pool)
+        ? pool
+        : (Pools[clone.PrefabRef] = new(clone.Root)))
+        .Release(clone);
         public static void Release<T>(T clone)
         where T : Component
         => Release(clone.GetComponent<Clone>());
 
         public static void Clear(Ref<Clone> @ref)
         { if (Pools.TryGetValue(@ref, out Pool pool)) pool.Clear(); }
+
+        public static void SetLimit(Ref<Clone> @ref, int limit = int.MaxValue)
+        {
+            if (!Pools.TryGetValue(@ref, out Pool pool)) pool = Pools[@ref] = new(@ref.Load());
+            pool.Limit = limit;
+            while (pool.Cache.Count + pool.Outstanding > limit
+            && pool.Cache.PopBack(out Clone clone)) Destroy(clone.gameObject);
+        }
 
         public static void ClearAll()
         {
@@ -62,8 +72,9 @@ namespace BDUtil.Serialization
         internal class Pool : Scopes.IScopable<Clone>
         {
             public int Outstanding { get; private set; }
+            public int Limit = int.MaxValue;
             readonly Clone Proto;
-            readonly Deque<Clone> Cache = new();
+            readonly internal Deque<Clone> Cache = new();
             public Pool(Clone proto) => Proto = proto.Root;
             public void Clear()
             {
@@ -71,12 +82,11 @@ namespace BDUtil.Serialization
                 Cache.Clear();
                 Outstanding = 0;
             }
-            public Clone Acquire() => Acquire(int.MaxValue);
-            public Clone Acquire(int limit)
+            public Clone Acquire()
             {
                 if (!Cache.PopFront(out Clone pooled))
                 {
-                    if (Outstanding >= limit) return null;
+                    if (Outstanding >= Limit) return null;
                     pooled = New(Proto);
                 }
                 pooled.gameObject.SetActive(true);
@@ -86,9 +96,16 @@ namespace BDUtil.Serialization
             public void Release(Clone released)
             {
                 if (released == null) return;
-                released.gameObject.SetActive(false);
                 Outstanding--;
-                Cache.PushBack(released);
+                if (Cache.Count > Limit)
+                {
+                    Destroy(released.gameObject);
+                }
+                else
+                {
+                    released.gameObject.SetActive(false);
+                    Cache.PushBack(released);
+                }
             }
         }
     }

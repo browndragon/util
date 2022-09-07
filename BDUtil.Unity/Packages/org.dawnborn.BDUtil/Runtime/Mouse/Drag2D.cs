@@ -3,9 +3,10 @@ using UnityEngine;
 
 namespace BDUtil.Mouse
 {
+    [AddComponentMenu("BDUtil/Drag2D")]
     /// If you don't use a rigidbody, you do not get trigger collisions (etc).
     [RequireComponent(typeof(Rigidbody2D))]
-    public class MouseDrag2D : MonoBehaviour
+    public class Drag2D : MonoBehaviour
     {
         new Camera camera;
         new Rigidbody2D rigidbody;

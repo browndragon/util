@@ -31,5 +31,6 @@ namespace BDUtil.Serialization
         public bool Equals(Ref<T> other) => assetPath == other.assetPath;
         public override bool Equals(object other) => other is Ref<T> @ref && Equals(@ref);
         public override int GetHashCode() => assetPath?.GetHashCode() ?? 0;
+        public override string ToString() => $"&[{typeof(T)}]({assetPath})";
     }
 }
