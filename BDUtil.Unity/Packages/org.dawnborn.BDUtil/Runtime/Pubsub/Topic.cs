@@ -2,21 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using BDUtil.Raw;
+using BDUtil.Serialization;
 using UnityEngine;
 
 namespace BDUtil.Pubsub
 {
-    [CreateAssetMenu(menuName = "BDUtil/Topic")]
+    [CreateAssetMenu(menuName = "BDUtil/Topic", order = 0)]
     public class Topic : ScriptableObject, Topics.IJoinable<Action>
     {
         protected readonly Raw.ReadLocked<Action, HashSet<Action>, IReadOnlyCollection<Action>, IEnumerable<Action>> Actions = new();
         public int Count => Actions.Read.Count;
         public void Clear() => Actions.Write.Clear();
         public void Notify()
-        {
-            Debug.Log($"Notifying {Count} actions", this);
-            foreach (Action action in Actions.Scope()) action();
-        }
+        { foreach (Action action in Actions.Scope()) action(); }
         public IDisposable Subscribe(Action member)
         {
             Actions.Write.Add(member);

@@ -1,9 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace BDUtil.Pooling
+namespace BDUtil.Serialization
 {
     /// Any monobehaviour that implements IPickle can
     public interface IPickle
@@ -14,6 +13,13 @@ namespace BDUtil.Pooling
         public object Pickle(object accum);
         /// The accum is the result of all previous pickle calls; the index the callth of your type.
         public void Unpickle(object accum, int index);
+    }
+    public interface IValuePickle<T> : IPickle
+    where T : unmanaged
+    {
+        public T Value { get; set; }
+        object IPickle.Pickle(object accum) => Value;
+        void IPickle.Unpickle(object accum, int index) => Value = (T)accum;
     }
     public static class Pickles
     {

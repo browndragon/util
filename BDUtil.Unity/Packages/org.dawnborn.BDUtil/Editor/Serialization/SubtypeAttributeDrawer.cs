@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BDUtil.Serialization.Editor;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,7 +9,7 @@ namespace BDUtil.Editor
     /// Selects things tagged SubclassAttribute.
     /// More generally, finds-and-matches serialized subtypes.
     [CustomPropertyDrawer(typeof(SubtypeAttribute))]
-    public class ByRefDrawer : AbstractTypeDrawer
+    public class SubtypeAttributeDrawer : AbstractTypeDrawer
     {
         protected SubtypeAttribute SubtypeAttribute => attribute as SubtypeAttribute;
         protected override Choices GetChoices(SerializedProperty property)

@@ -5,7 +5,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-namespace BDUtil.Editor
+namespace BDUtil.Serialization.Editor
 {
     public static class SerializedProperties
     {

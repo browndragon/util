@@ -1,31 +1,36 @@
 using System;
 using UnityEngine;
 
-namespace BDUtil
+namespace BDUtil.Serialization
 {
-    /// Holds a fully generic reference to an interface-implementing UE.Object.
-    /// Theoretically this could be extended to _also_ support C# interface instances.
-    /// But when I saw it, I didn't like it; also, the actual fields you drag & drop into are ugly. But it does work!
+    /// Holds a string-based path to a serialized reference.
+    /// Obviously this will break with e.g. renames!
     [Serializable]
-    public struct Ref<T>
+    public struct Ref<T> : IEquatable<Ref<T>>
+    where T : UnityEngine.Object
     {
-        /// Keep in sync with .Editor.RefDrawer
-        [SerializeField] UnityEngine.Object Data;
-        public bool HasValue => Data != null;
-        public T Value => Data switch
-        {
-            null => default,
-            T t => t,
-            _ => default,
-        };
+        [SerializeField] string assetPath;
+        public string AssetPath => assetPath;
+        public string ResourcePath => EditorUtils.GetResourcesPath(assetPath);
+        public Ref(string assetPath) => this.assetPath = assetPath;
 
-        public static implicit operator T(Ref<T> thiz) => thiz.Value;
-        public static implicit operator Ref<T>(T thiz) => thiz switch
+        public static implicit operator Ref<UnityEngine.Object>(Ref<T> thiz) => new() { assetPath = thiz.assetPath };
+        public static implicit operator Ref<T>(Ref<UnityEngine.Object> thiz) => (Ref<T>)thiz.Load();
+        public static implicit operator string(Ref<T> thiz) => thiz.AssetPath;
+        public static implicit operator Ref<T>(string path) => new() { assetPath = path };
+        public static explicit operator T(Ref<T> thiz) => thiz.Load();
+        public static explicit operator Ref<T>(T other)
         {
-            null => new(),
-            // https://github.com/dotnet/roslyn/issues/54193
-            UnityEngine.Object data => new Ref<T>() { Data = data },
-            _ => new(),
-        };
+            Ref<T> thiz = new();
+            thiz.SetInstance(other);
+            return thiz;
+        }
+
+        public T Load() => EditorUtils.Load<T>(assetPath);
+        public void SetInstance(T other) => assetPath = EditorUtils.GetAssetPath(other);
+
+        public bool Equals(Ref<T> other) => assetPath == other.assetPath;
+        public override bool Equals(object other) => other is Ref<T> @ref && Equals(@ref);
+        public override int GetHashCode() => assetPath?.GetHashCode() ?? 0;
     }
 }

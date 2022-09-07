@@ -136,6 +136,7 @@ GameObject:
   - component: {fileID: 1104922018}
   - component: {fileID: 1104922021}
   - component: {fileID: 1104922022}
+  - component: {fileID: 1104922023}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -230,21 +231,29 @@ MonoBehaviour:
   ForwardNicks:
     Data:
     - Key: a
-      Value: b
-    Error: []
+      Value:
+        Data:
+        - b
+        - c
+        - d
+        Error: []
+    - Key: 2
+      Value:
+        Data:
+        - hoo
+        Error: []
+    Error:
+    - Key: a
+      Value:
+        Data:
+        - b
+        - c
+        - d
+        Error: []
   TargetNicks:
     Data:
     - Key: a
       Value: b
-    Error: []
-  AllNicks:
-    Data:
-    - Key: a
-      Value: b
-    - Key: a
-      Value: c
-    - Key: b
-      Value: c
     Error: []
 --- !u!114 &1104922022
 MonoBehaviour:
@@ -287,3 +296,80 @@ MonoBehaviour:
     - Color: {r: 0, g: 0, b: 0, a: 0}
       Sprite: {fileID: 0}
       NestedTags: []
+--- !u!114 &1104922023
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1104922017}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6d0189a43d914c4985e1d81dd291df6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GameObjectRef:
+    assetPath: Assets/Samples/SerializedData/SomeObjectModified Variant.prefab
+  ScriptableObjectRef:
+    assetPath: Assets/Samples/SerializedData/SomeStringTopic.asset
+  TransformRef:
+    assetPath: Assets/Samples/SerializedData/SomeObjectModified Variant.prefab
+  IntTopicRef:
+    assetPath: Assets/Samples/SerializedData/SomeRenamed.asset
+--- !u!1001 &1373204505
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2522608080568487087, guid: 22f405ec665f247169d45d3056767fe2, type: 3}
+      propertyPath: m_Name
+      value: SomeDifferent
+      objectReference: {fileID: 0}
+    - target: {fileID: 5163976316961344201, guid: 22f405ec665f247169d45d3056767fe2, type: 3}
+      propertyPath: m_RootOrder
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5163976316961344201, guid: 22f405ec665f247169d45d3056767fe2, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.029864782
+      objectReference: {fileID: 0}
+    - target: {fileID: 5163976316961344201, guid: 22f405ec665f247169d45d3056767fe2, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.01762022
+      objectReference: {fileID: 0}
+    - target: {fileID: 5163976316961344201, guid: 22f405ec665f247169d45d3056767fe2, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -9.999364
+      objectReference: {fileID: 0}
+    - target: {fileID: 5163976316961344201, guid: 22f405ec665f247169d45d3056767fe2, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5163976316961344201, guid: 22f405ec665f247169d45d3056767fe2, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5163976316961344201, guid: 22f405ec665f247169d45d3056767fe2, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5163976316961344201, guid: 22f405ec665f247169d45d3056767fe2, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5163976316961344201, guid: 22f405ec665f247169d45d3056767fe2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5163976316961344201, guid: 22f405ec665f247169d45d3056767fe2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5163976316961344201, guid: 22f405ec665f247169d45d3056767fe2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 22f405ec665f247169d45d3056767fe2, type: 3}

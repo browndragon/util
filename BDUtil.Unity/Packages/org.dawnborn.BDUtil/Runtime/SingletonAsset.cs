@@ -1,26 +1,15 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 
 namespace BDUtil
 {
-    public static class SingletonAsset
-    {
-        public static string Infix = "BDUtil";
-        public static string GetAssetPathForType(Type t, string Infix = default)
-        => $"Assets/{Infix ?? SingletonAsset.Infix}/{t.Name}.asset";
-        public static UnityEngine.Object AcquireAsset(Type t, string assetPath = default)
-        => EditorUtils.AcquireAsset(t, assetPath ?? GetAssetPathForType(t));
-
-    }
-    /// Good idea to call me with `[UnityEngine.RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]` & `[UnityEditor.InitializeOnLoad]`
-    /// But you might need to extend topic or something...
     public static class SingletonAsset<T> where T : ScriptableObject
     {
-        static readonly string assetPath = SingletonAsset.GetAssetPathForType(typeof(T));
+        static readonly string AssetPath = $"Assets/BDUtil/{typeof(T).Name}.asset";
         static T instance;
-        public static T Instance => instance ??= (T)SingletonAsset.AcquireAsset(typeof(T), assetPath);
+        public static T Instance => instance ??= (T)EditorUtils.AcquireAsset(typeof(T), AssetPath);
+        /// Good idea to call me with `[UnityEngine.RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]` & `[UnityEditor.InitializeOnLoad]`
+        /// But you might need to extend topic or something...
         /// Provides a utility for the actual scriptableobject's enable method.
         public static T SetIfUnset(T thiz)
         {

@@ -3,7 +3,7 @@
 using System;
 using UnityEngine;
 
-namespace BDUtil
+namespace BDUtil.Serialization
 {
     /// Marks a field as requiring a reflective method call when changed.
     [AttributeUsage(AttributeTargets.Field)]

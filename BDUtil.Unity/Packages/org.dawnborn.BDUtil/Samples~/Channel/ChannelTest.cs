@@ -1,17 +1,14 @@
-using System.Collections;
-using System.Collections.Generic;
-using BDUtil.Pooling;
 using BDUtil.Pubsub;
 using UnityEngine;
 
-namespace BDUtil
+namespace BDUtil.Serialization
 {
     public class ChannelTest : MonoBehaviour
     {
         public Topic OnCreate;
         public Topic OnDestroy;
         new Camera camera;
-        public Clone Proto;
+        public Ref<Clone> Proto;
         void Awake() => camera = Camera.main;
         void Update()
         {
@@ -20,12 +17,12 @@ namespace BDUtil
             Collider2D atPoint = Physics2D.OverlapPoint(point);
             if (atPoint != null)
             {
-                Pools.main.Release(Proto, atPoint.GetComponent<Clone>());
+                Clone.Release(atPoint);
                 OnDestroy.Notify();
                 return;
             }
             OnCreate.Notify();
-            Clone cloned = Pools.main.Acquire(Proto);
+            Clone cloned = Clone.Acquire(Proto);
             cloned.transform.SetPositionAndRotation(camera.ScreenToWorldPoint(Input.mousePosition).WithZ(0f), Quaternion.identity);
         }
     }

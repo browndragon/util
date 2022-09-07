@@ -3,7 +3,7 @@
 using System;
 using UnityEngine;
 
-namespace BDUtil
+namespace BDUtil  // Not in serialization; too useful.
 {
     /// Marks an *also `SerializeRef`* field as wanting subtype selection.
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]

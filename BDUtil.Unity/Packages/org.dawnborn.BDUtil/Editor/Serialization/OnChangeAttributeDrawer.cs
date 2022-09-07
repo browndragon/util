@@ -3,7 +3,8 @@ using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
-namespace BDUtil.Editor
+
+namespace BDUtil.Serialization.Editor
 {
     [CustomPropertyDrawer(typeof(OnChangeAttribute))]
     public class OnChangedCallAttributeDrawer : PropertyDrawer

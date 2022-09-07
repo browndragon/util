@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -10,10 +11,15 @@ namespace BDUtil.Pubsub
     {
         public interface ISubscribe { IDisposable Subscribe(Subscriber thiz); }
 
-        [SerializeReference, Subtype] List<ISubscribe> Subscribes = new();
+        [SuppressMessage("IDE", "IDE0044")]
+        [SerializeReference, Subtype]
+        List<ISubscribe> Subscribes = new();
+        [SuppressMessage("IDE", "IDE0044")]
         Disposes.All unsubscribe = new();
 
+        [SuppressMessage("IDE", "IDE0051")]
         void OnEnable() { foreach (ISubscribe subscribe in Subscribes) unsubscribe.Add(subscribe.Subscribe(this)); }
+        [SuppressMessage("IDE", "IDE0051")]
         void OnDisable() => unsubscribe.Dispose();
     }
 
