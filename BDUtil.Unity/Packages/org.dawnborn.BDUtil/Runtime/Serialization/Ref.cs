@@ -18,7 +18,6 @@ namespace BDUtil.Serialization
         public static implicit operator Ref<T>(Ref<UnityEngine.Object> thiz) => (Ref<T>)thiz.Load();
         public static implicit operator string(Ref<T> thiz) => thiz.AssetPath;
         public static implicit operator Ref<T>(string path) => new() { assetPath = path };
-        public static explicit operator T(Ref<T> thiz) => thiz.Load();
         public static explicit operator Ref<T>(T other)
         {
             Ref<T> thiz = new();

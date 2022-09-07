@@ -15,6 +15,8 @@ namespace BDUtil.Serialization
         public Clone Root => IsClone ? PrefabRef.Load() : this;
         public bool IsClone => gameObject.scene.IsValid();
 
+        public static implicit operator Ref<Clone>(Clone thiz) => thiz.PrefabRef;
+
         public static T New<T>(T proto)
         where T : UnityEngine.Object
         => proto switch
@@ -40,7 +42,7 @@ namespace BDUtil.Serialization
         .Acquire(limit);
         public static T Acquire<T>(Ref<T> @ref, int limit = int.MaxValue)
         where T : Component
-        => Acquire((Ref<Clone>)@ref.Load().GetComponent<Clone>()).GetComponent<T>();
+        => Acquire(@ref.Load().GetComponent<Clone>(), limit).GetComponent<T>();
 
         public static void Release(Clone clone) => Pools[clone.PrefabRef].Release(clone);
         public static void Release<T>(T clone)
