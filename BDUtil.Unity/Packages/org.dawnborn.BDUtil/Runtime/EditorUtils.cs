@@ -119,9 +119,9 @@ namespace BDUtil
         public static string GetAssetPath(UnityEngine.Object @object) => @object switch
         {
             null => null,
-            Clone c => (string)c.PrefabRef,
-            GameObject g => (string)(g.GetComponent<Clone>()?.PrefabRef ?? GetAssetPathOrNull(g)),
-            Component c => (string)(c.GetComponent<Clone>()?.PrefabRef ?? GetAssetPathOrNull(c.gameObject)),
+            Clone c => c.PrefabRef,
+            GameObject g => g.GetComponent<Clone>()?.PrefabRef ?? GetAssetPathOrNull(g),
+            Component c => c.GetComponent<Clone>()?.PrefabRef ?? GetAssetPathOrNull(c.gameObject),
             ScriptableObject s => GetAssetPathOrNull(s),
             _ => null,
         };
