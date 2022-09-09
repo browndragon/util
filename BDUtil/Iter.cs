@@ -54,67 +54,6 @@ namespace BDUtil
         public static bool ContainsValue<K, V>(this IEnumerable<KeyValuePair<K, V>> thiz, V value)
         => thiz.Select(kvp => kvp.Value).Contains(value);
 
-        public static int BinarySearch<T>(this IReadOnlyList<T> thiz, T value, IComparer<T> comparer = default)
-        {
-            if (thiz.IsEmpty()) return -1;
-            comparer ??= Comparer<T>.Default.OrThrow();
-            int lower = 0, upper = thiz.Count - 1;
-            while (lower <= upper)
-            {
-                int middle = lower + (upper - lower) / 2;
-                switch ((bool?)(tern)comparer.Compare(value, thiz[middle]))
-                {
-                    case true: lower = middle + 1; break;
-                    case null: return middle;
-                    case false: upper = middle - 1; break;
-                }
-            }
-            return ~lower;
-        }
-        public static int BinarySearchIndexOf<T>(this IReadOnlyList<T> thiz, Func<T, int> comparer = default)
-        {
-            comparer.OrThrow();
-            if (thiz.IsEmpty()) return -1;
-            int lower = 0, upper = thiz.Count - 1;
-            while (lower <= upper)
-            {
-                int middle = lower + (upper - lower) / 2;
-                switch ((bool?)(tern)comparer.Invoke(thiz[middle]))
-                {
-                    case true: lower = middle + 1; break;
-                    case null: return middle;
-                    case false: upper = middle - 1; break;
-                }
-            }
-            return ~lower;
-        }
-        public static void BinarySort<T>(this IList<T> thiz, IComparer<T> comparer = default)
-        => thiz.BinarySort(
-            0,
-            thiz.Count - 1,
-            comparer ?? Comparer<T>.Default ?? throw new ArgumentException($"No default Comparer<{typeof(T)}>")
-        );
-        /// Actually: quick sort
-        public static void BinarySort<T>(this IList<T> thiz, int leftIndex, int rightIndex, IComparer<T> comparer)
-        {
-            var i = leftIndex;
-            var j = rightIndex;
-            var pivot = thiz[leftIndex];
-            while (i <= j)
-            {
-                while (comparer.Compare(thiz[i], pivot) < 0) i++;
-                while (comparer.Compare(thiz[j], pivot) > 0) j--;
-                if (i <= j)
-                {
-                    (thiz[j], thiz[i]) = (thiz[i], thiz[j]);
-                    i++;
-                    j--;
-                }
-            }
-            if (leftIndex < j) thiz.BinarySort(leftIndex, j, comparer);
-            if (i < rightIndex) thiz.BinarySort(i, rightIndex, comparer);
-        }
-
         // Summarize an enumerable into something ...-able.
         public static string Summarize(this string thiz, int pre = 5, int post = 5)
         {

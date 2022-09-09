@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace BDUtil.Pubsub
+namespace BDUtil
 {
     /// Easy synchronization point: yields while count > 0.
     /// Could be extended: Begin/End could take caller location and trace them!

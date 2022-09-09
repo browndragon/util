@@ -18,10 +18,10 @@ namespace BDUtil.Serialization
             if (atPoint != null)
             {
                 Clone.Release(atPoint);
-                OnDestroy.Notify();
+                OnDestroy.Publish();
                 return;
             }
-            OnCreate.Notify();
+            OnCreate.Publish();
             Clone cloned = Clone.Acquire(Proto);
             cloned.transform.SetPositionAndRotation(camera.ScreenToWorldPoint(Input.mousePosition).WithZ(0f), Quaternion.identity);
         }

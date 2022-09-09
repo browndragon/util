@@ -5,6 +5,7 @@ namespace BDUtil
     /// Counters: Number of locks outstanding, etc.
     /// This can be driven to allow negative values, but it doesn't _really_.
     /// It's true when it's locked, and false when it's unlocked; += 1 makes it more locked, -=2 unlocks it twice, =default makes it unlocked.
+    [Serializable]
     public readonly struct Lock
     {
         readonly int locks;

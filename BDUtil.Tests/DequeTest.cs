@@ -78,7 +78,7 @@ namespace BDUtil.Raw
             Assert.Equal(Iter.Of("b", "c'", "d"), order);
             Assert.ThrowsAny<Exception>(() => order.Add("e"));
             Assert.Equal(Iter.Of("b", "c'", "d"), order);
-            order.PopFront(out string _);
+            Assert.Equal("b", order.PopFront());
             order.Add("e");
             Assert.Equal(Iter.Of("c'", "d", "e"), order);
             // Assert.Equal(Iter.Of("b", "c", "d"), order);

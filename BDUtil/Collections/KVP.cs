@@ -106,6 +106,14 @@ namespace BDUtil
         where VColl : ICollection<V>
         => thiz.Remove(kvp);
 
+        public static bool PopKey<K, V>(this IDictionary<K, V> thiz, K key, out V value)
+        {
+            if (!thiz.TryGetValue(key, out value)) return false;
+            return thiz.Remove(key);
+        }
+        public static V PopKeyOrDefault<K, V>(this IDictionary<K, V> thiz, K key, V @default = default)
+        => thiz.PopKey(key, out V v) ? v : @default;
+
         public static IEnumerable<KeyValuePair<K, V>> Flatten<K, VColl, V>(this IEnumerable<KeyValuePair<K, VColl>> thiz, V _)
         where VColl : IEnumerable<V>
         {
@@ -167,5 +175,32 @@ namespace BDUtil
             public IEnumerator<TValue> GetEnumerator() => Values?.GetEnumerator() ?? None<TValue>.Default;
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
+
+        internal class DE<K, V> : IDictionaryEnumerator
+        {
+            public DE(IEnumerator<KeyValuePair<K, V>> enumerator) => Enumerator = enumerator;
+            readonly IEnumerator<KeyValuePair<K, V>> Enumerator;
+            public object Key => Entry.Key;
+            public object Value => Entry.Value;
+            public DictionaryEntry Entry { get; set; } = default;
+            public object Current => Entry;
+
+            public bool MoveNext()
+            {
+                Entry = default;
+                if (!Enumerator.MoveNext()) return false;
+                Entry = new DictionaryEntry(Enumerator.Current.Key, Enumerator.Current.Value);
+                return true;
+            }
+
+            public void Reset()
+            {
+                Entry = default;
+                Enumerator.Reset();
+            }
+        }
+        public static IDictionaryEnumerator GetDictionaryEnumerator<K, V>(IEnumerable<KeyValuePair<K, V>> thiz)
+        => new DE<K, V>(thiz.GetEnumerator());
+
     }
 }

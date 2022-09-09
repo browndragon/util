@@ -7,7 +7,7 @@ using UnityEngine;
 namespace BDUtil
 {
     [Serializable]
-    public abstract class Store<TCollection, T, TIn> : ISerializationCallbackReceiver, ICollection<T>, IReadOnlyCollection<T>
+    public class Store<TCollection, T, TIn> : ISerializationCallbackReceiver, ICollection<T>, IReadOnlyCollection<T>, ICollection
     where TCollection : ICollection<T>, new()
     {
         public readonly TCollection AsCollection = new();
@@ -52,6 +52,10 @@ namespace BDUtil
         public bool Remove(T item) => AsCollection.Remove(item);
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        void ICollection.CopyTo(Array array, int index) => AsCollection.WriteTo(array, index);
         bool ICollection<T>.IsReadOnly => false;
+        bool ICollection.IsSynchronized => false;
+        object ICollection.SyncRoot => null;
     }
 }

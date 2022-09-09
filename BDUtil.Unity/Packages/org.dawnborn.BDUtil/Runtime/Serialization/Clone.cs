@@ -59,7 +59,7 @@ namespace BDUtil.Serialization
             if (!Pools.TryGetValue(@ref, out Pool pool)) pool = Pools[@ref] = new(@ref.Load());
             pool.Limit = limit;
             while (pool.Cache.Count + pool.Outstanding > limit
-            && pool.Cache.PopBack(out Clone clone)) Destroy(clone.gameObject);
+            && pool.Cache.PopIndex(pool.Cache.Count - 1, out Clone clone)) Destroy(clone.gameObject);
         }
 
         public static void ClearAll()
@@ -84,7 +84,7 @@ namespace BDUtil.Serialization
             }
             public Clone Acquire()
             {
-                if (!Cache.PopFront(out Clone pooled))
+                if (!Cache.PopIndex(0, out Clone pooled))
                 {
                     if (Outstanding >= Limit) return null;
                     pooled = New(Proto);

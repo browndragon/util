@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using BDUtil.Math;
 
 namespace BDUtil
@@ -13,16 +14,6 @@ namespace BDUtil
             T t => t,
             _ => @default,
         };
-
-        public interface IGet<T> { T Value { get; } }
-        public interface ISet<T> { T Value { set; } }
-        public interface IDelegate { }
-        public interface IAction : IDelegate { void Invoke(); }
-        public interface IAction<T1> : IDelegate { void Invoke(T1 t1); }
-        public interface IAction<T1, T2> : IDelegate { void Invoke(T1 t1, T2 t2); }
-        public interface IFunc<TOut> : IDelegate { TOut Invoke(); }
-        public interface IFunc<T1, TOut> : IDelegate { TOut Invoke(T1 t1); }
-        public interface IFunc<T1, T2, TOut> : IDelegate { TOut Invoke(T1 t1, T2 t2); }
 
         /// Returns an action which calls Thiz only the first time it's invoked, none of the following.
         public static Action FirstCalling(this Action thiz)
