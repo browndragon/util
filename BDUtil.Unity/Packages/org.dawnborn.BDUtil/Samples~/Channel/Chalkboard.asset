@@ -9,13 +9,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec7c9acf74dbe45ac9ea98f8766acc1f, type: 3}
-  m_Name: New Deque Topic
+  m_Script: {fileID: 11500000, guid: 396c1f9e0f62c4edaabc422c16289f68, type: 3}
+  m_Name: Chalkboard
   m_EditorClassIdentifier: 
   Event:
     m_PersistentCalls:
       m_Calls: []
   <IsPublishing>k__BackingField: 0
   Coll:
-    Data: []
+    Data:
+    - Key: someKey
+    - Key: someKey2
     Error: []

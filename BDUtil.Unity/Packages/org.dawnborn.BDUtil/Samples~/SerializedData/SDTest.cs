@@ -1,13 +1,15 @@
 using System;
+using System.Collections.Generic;
+using BDUtil.Serialization;
 using UnityEngine;
 
 namespace BDUtil
 {
     public class SDTest : MonoBehaviour
     {
-        public Map<string, float> StringToFloat = new();
-        public Map<float, string> FloatToString = new();
-        public Map<string, Set<string>> ForwardNicks = new();
-        public BiMap<string, string> TargetNicks = new();
+        public StoreMap<string, float> StringToFloat = new();
+        public StoreMap<float, string> FloatToString = new();
+        public StoreMap<string, Store<HashSet<string>, string>> ForwardNicks = new();
+        public StoreMap<Raw.Bi.Map<string, string>, string, string> TargetNicks = new();
     }
 }

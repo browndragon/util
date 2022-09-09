@@ -223,37 +223,36 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   StringToFloat:
-    Data: []
+    Data:
+    - Key: someString
+      Value: 12.5
+    - Key: another
+      Value: 1
+    - Key: another2
+      Value: 12.2
     Error: []
   FloatToString:
     Data: []
     Error: []
   ForwardNicks:
     Data:
-    - Key: a
+    - Key: nesty
       Value:
         Data:
-        - b
-        - c
-        - d
+        - zesty
+        - tasty
+        - nasty
+        - awful
         Error: []
-    - Key: 2
-      Value:
-        Data:
-        - hoo
-        Error: []
-    Error:
-    - Key: a
-      Value:
-        Data:
-        - b
-        - c
-        - d
-        Error: []
+    Error: []
   TargetNicks:
     Data:
-    - Key: a
-      Value: b
+    - Key: fro
+      Value: to
+    - Key: frodo
+      Value: tomorrow
+    - Key: samwise
+      Value: gamgee
     Error: []
 --- !u!114 &1104922022
 MonoBehaviour:

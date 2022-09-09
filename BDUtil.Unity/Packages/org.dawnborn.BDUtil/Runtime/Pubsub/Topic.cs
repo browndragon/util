@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using BDUtil.Raw;
 using BDUtil.Serialization;
@@ -17,18 +19,24 @@ namespace BDUtil.Pubsub
         bool IsPublishing { get; }
         void Publish();
     }
-    public interface ITopic<out T> : ITopic
+    public interface IObjectTopic : ITopic
     {
-        T Value { get; }
+        object Object { get; }
     }
-    public interface IValueTopic : ITopic<object>
+    public interface ITopic<out T> : IObjectTopic
     {
-        new object Value { get; }
+        object IObjectTopic.Object => Value;
+        T Value { get; }
     }
     public interface IValueTopic<T> : ITopic<T>
     {
+        T ITopic<T>.Value => Value;
         new T Value { get; set; }
     }
+    public interface ICollectionTopic : IValueTopic<Observable.Update>, IHasCollection { }
+    public interface ICollectionTopic<out TColl> : ICollectionTopic, IHasCollection<TColl>
+    where TColl : IEnumerable
+    { IEnumerable IHasCollection.Collection => Collection; }
 
     [CreateAssetMenu(menuName = "BDUtil/Topic", order = 0)]
     public class Topic : ScriptableObject, ITopic, IPublisher
@@ -53,9 +61,14 @@ namespace BDUtil.Pubsub
         protected virtual void OnEnable() => Event.RemoveAllListeners();
         protected virtual void OnDisable() => Event.RemoveAllListeners();
     }
-    /// Abstract type for any topic which proxies to another value for its subscribers.
-    public abstract class Topic<T> : Topic, ITopic<T>
+    public abstract class ObjectTopic : Topic
     {
+        public abstract object Object { get; }
+    }
+    /// Abstract type for any topic which proxies to another value for its subscribers.
+    public abstract class Topic<T> : ObjectTopic, ITopic<T>
+    {
+        public override object Object => Value;
         public abstract T Value { get; set; }
     }
     /// A topic which holds a value which can be re-set. Best for immutables like int, string, etc.
@@ -68,33 +81,25 @@ namespace BDUtil.Pubsub
         protected override void OnEnable() { Value = ResetValue; base.OnEnable(); }
         protected override void OnDisable() { Value = ResetValue; base.OnDisable(); }
     }
-    public abstract class CollectionTopic<TColl, T, TIn> : Topic<TColl>, Raw.Observable.ICollectionObserver<T>
-    where TColl : Observable.IObservableCollection<T>, new()
+    public abstract class CollectionTopic : ValueTopic<Observable.Update>, ICollectionTopic
+    {
+        IEnumerable IHasCollection.Collection => throw new NotImplementedException();
+    }
+    public abstract class CollectionTopic<TColl> : CollectionTopic, ICollectionTopic<TColl>
+    where TColl : IEnumerable
+    {
+        public abstract TColl Collection { get; }
+    }
+    public abstract class CollectionTopic<TColl, T, TIn> : CollectionTopic, ICollectionTopic<TColl>
+    where TColl : Observable.Collection<T>, new()
     {
         [SerializeField] protected Store<TColl, T, TIn> Coll = new();
-        public override TColl Value
-        {
-            get => Coll.AsCollection;
-            set => throw new NotSupportedException();
-        }
-        [SerializeField] protected ValueTopic<T> Add;
-        [SerializeField] protected ValueTopic<T> Remove;
-        [SerializeField] protected Topic Clear;
-        protected override void OnEnable() { base.OnEnable(); Coll.Clear(); }
-        protected override void OnDisable() { base.OnDisable(); Coll.Clear(); }
-        void Observable.ICollectionObserver<T>.Add(T @new) { if (Add != null) Add.Value = @new; }
-        void Observable.ICollectionObserver<T>.Clear() { if (Clear != null) Clear.Publish(); }
-        void Observable.ICollectionObserver<T>.Remove(T old) { if (Remove != null) Remove.Value = @old; }
-    }
-    public abstract class IndexedCollectionTopic<TColl, K, V, T, TIn> : CollectionTopic<TColl, T, TIn>, Raw.Observable.IIndexObserver<K, V, T>
-    where TColl : Observable.IObservableIndexedCollection<K, V, T>, new()
-    {
-        [SerializeField] protected ValueTopic<KVP.Entry<K, V>> Insert;
-        void Observable.IIndexObserver<K, V, T>.Insert(K key, V @new) { if (Insert != null) Insert.Value = KVP.New(key, @new); }
-        [SerializeField] protected ValueTopic<KVP.Entry<K, V>> RemoveAt;
-        void Observable.IIndexObserver<K, V, T>.RemoveAt(K key, V old) { if (RemoveAt != null) RemoveAt.Value = KVP.New(key, old); }
-        /// It's assumed they can fetch the new value themselves...
-        [SerializeField] protected ValueTopic<KVP.Entry<K, V>> SetOld;
-        void Observable.IIndexObserver<K, V, T>.Set(K key, V @new, bool hadOld, V old) { if (SetOld != null) SetOld.Value = KVP.New(key, hadOld ? old : default); }
+        public TColl Collection => Coll.Collection;
+        public CollectionTopic() => Coll.Collection.OnUpdate += OnUpdate;
+        // Don't set or publish: the collection's OnUpdate will do that.
+        public override Observable.Update Value { set => value.ApplyTo(Collection); }
+        private void OnUpdate(Observable.Update update) { value = update; Publish(); }
+        protected override void OnEnable() { base.OnEnable(); Collection.Clear(); }
+        protected override void OnDisable() { base.OnDisable(); Collection.Clear(); }
     }
 }
