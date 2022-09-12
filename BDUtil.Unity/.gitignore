@@ -16,6 +16,8 @@
 
 # Recordings can get excessive in size
 /[Rr]ecordings/
+# This is how we develop samples in our package...
+!Samples~/
 
 # Uncomment this line if you wish to ignore the asset store tools plugin
 # /[Aa]ssets/AssetStoreTools*
