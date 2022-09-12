@@ -7,6 +7,7 @@ namespace BDUtil.Raw
     /// Represents a base (collection) type which one can watch.
     public static class Observable
     {
+        [Serializable]
         public readonly struct Update
         {
             public enum Operation { Unknown = default, Add, Clear, Remove, Insert, RemoveAt, Set }
@@ -39,42 +40,11 @@ namespace BDUtil.Raw
             public static Update Insert(object index, object @new) => new(Operation.Insert, index: index, @new: @new);
             public static Update RemoveAt(object index, object old) => new(Operation.RemoveAt, index: index, hasOld: true, old: old);
             public static Update Set(object index, object @new, bool hasOld, object old) => new(Operation.Set, index: index, @new: @new, hasOld: hasOld, old: old);
-
-            /// We need at least the T to get access to Clear (and conveniently Add & Remove).
-            /// There *is* an ISet for HashSet, but it's dumb (all the set theoretic operations...) so... faugh.
-            public void ApplyTo<T>(ICollection<T> target)
-            {
-                switch (Op)
-                {
-                    case Operation.Add: target.Add((T)New); break;
-                    case Operation.Clear: target.Clear(); break;
-                    case Operation.Insert:
-                        switch (target)
-                        {
-                            case IList<T> list: list.Insert((int)Index, (T)New); break;
-                            case IDictionary dict: dict.Add(Index, New); break;
-                            default: throw new NotSupportedException($"Not sure how to {this}.ApplyTo({target})");
-                        }
-                        break;
-                    case Operation.Remove: target.Remove((T)Old); break;
-                    case Operation.RemoveAt:
-                        switch (target)
-                        {
-                            case IList<T> list: list.RemoveAt((int)Index); break;
-                            case IDictionary dict: dict.Remove(Index); break;
-                            default: throw new NotSupportedException($"Not sure how to {this}.ApplyTo({target})");
-                        }
-                        break;
-                    case Operation.Set:
-                        switch (target)
-                        {
-                            case IList<T> list: list[(int)Index] = (T)New; break;
-                            case IDictionary dict: dict[Index] = New; break;
-                            default: throw new NotSupportedException($"Not sure how to {this}.ApplyTo({target})");
-                        }
-                        break;
-                }
-            }
+        }
+        public interface ICollection : System.Collections.ICollection
+        {
+            event Action<Update> OnUpdate;
+            void Apply(Update update);
         }
         public abstract class Collection<T> : ICollection<T>, IReadOnlyCollection<T>, ICollection
         {
@@ -88,10 +58,20 @@ namespace BDUtil.Raw
             public abstract bool Remove(T item);
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
             bool ICollection<T>.IsReadOnly => false;
-            object ICollection.SyncRoot => null;
-            bool ICollection.IsSynchronized => false;
+            object System.Collections.ICollection.SyncRoot => null;
+            bool System.Collections.ICollection.IsSynchronized => false;
             public void CopyTo(T[] array, int arrayIndex) => this.WriteTo(array, arrayIndex);
-            void ICollection.CopyTo(Array array, int index) => this.WriteTo(array, index);
+            void System.Collections.ICollection.CopyTo(Array array, int index) => this.WriteTo(array, index);
+            public virtual void Apply(Update update)
+            {
+                switch (update.Op)
+                {
+                    case Update.Operation.Add: Add((T)update.New); break;
+                    case Update.Operation.Clear: Clear(); break;
+                    case Update.Operation.Remove: Remove((T)update.Old); break;
+                    default: throw new NotSupportedException($"{this} can't {update}");
+                }
+            }
         }
         public abstract class Collection<TColl, T> : Collection<T>
         where TColl : ICollection<T>, new()
@@ -147,13 +127,28 @@ namespace BDUtil.Raw
                 Data.RemoveAt(index);
                 Invoke(Update.RemoveAt(index, item));
             }
+
+            public override void Apply(Update update)
+            {
+                switch (update.Op)
+                {
+                    case Update.Operation.Add: Add((T)update.New); break;
+                    case Update.Operation.Clear: Clear(); break;
+                    case Update.Operation.Insert: Insert((int)update.Index, (T)update.New); break;
+                    case Update.Operation.Remove: Remove((T)update.Old); break;
+                    case Update.Operation.RemoveAt: RemoveAt((int)update.Index); break;
+                    case Update.Operation.Set: this[(int)update.Index] = (T)update.New; break;
+                    default: throw new NotSupportedException($"{this} can't {update}");
+                }
+            }
+
+
             int IList.Add(object value)
             {
                 if (value is not T t) return -1;
                 Add(t);
                 return Data.Count - 1;
             }
-
             bool IList.Contains(object value) => value is T t && Contains(t);
             int IList.IndexOf(object value) => value is T t ? IndexOf(t) : -1;
             void IList.Insert(int index, object value) => Insert(index, (T)value);
@@ -192,13 +187,27 @@ namespace BDUtil.Raw
             }
             public bool TryGetValue(K key, out V value) => Data.TryGetValue(key, out value);
 
+            public override void Apply(Update update)
+            {
+                switch (update.Op)
+                {
+                    case Update.Operation.Add: Add((KeyValuePair<K, V>)update.New); break;
+                    case Update.Operation.Clear: Clear(); break;
+                    case Update.Operation.Insert: Add((K)update.Index, (V)update.New); break;
+                    case Update.Operation.Remove: Remove((KeyValuePair<K, V>)update.Old); break;
+                    case Update.Operation.RemoveAt: Remove((K)update.Index); break;
+                    case Update.Operation.Set: this[(K)update.Index] = (V)update.New; break;
+                    default: throw new NotSupportedException($"{this} can't {update}");
+                }
+            }
+
             bool IDictionary.Contains(object key) => key is K k && Data.ContainsKey(k);
 
             void IDictionary.Add(object key, object value) => Add((K)key, (V)value);
             IDictionaryEnumerator IDictionary.GetEnumerator() => KVP.GetDictionaryEnumerator(this);
             void IDictionary.Remove(object key) => Remove((K)key);
-            ICollection IDictionary.Keys => (ICollection)(object)Keys;
-            ICollection IDictionary.Values => (ICollection)(object)Values;
+            System.Collections.ICollection IDictionary.Keys => (ICollection)(object)Keys;
+            System.Collections.ICollection IDictionary.Values => (ICollection)(object)Values;
             bool IDictionary.IsReadOnly => false;
             bool IDictionary.IsFixedSize => false;
             object IDictionary.this[object key]

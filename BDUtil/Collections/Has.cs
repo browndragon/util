@@ -15,6 +15,14 @@ namespace BDUtil
     {
         new T Value { get; }
     }
+    public interface ISet
+    {
+        object Value { set; }
+    }
+    public interface ISet<T> : ISet
+    {
+        new T Value { set; }
+    }
     public interface ICanHas<out T> : ICanHas, IHas<T> { }
 
     public static class Has

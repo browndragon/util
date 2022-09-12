@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
+using BDUtil.Raw;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -60,10 +61,5 @@ namespace BDUtil
         /// Gets the named component, allocating it if absent (at/from the given path).
         public static T GetOrPut<T>(string path = default, bool orAllocate = true) where T : Component
         => (T)GetOrPut(typeof(T), path, orAllocate);
-
-        // How horrible! But... it works...
-        public static Coroutine StartCoroutine(IEnumerator coroutine) => EventSystem.current.StartCoroutine(coroutine);
-        // How horrible! But... it works...
-        public static Coroutine StartCoroutine(IEnumerable coroutine) => EventSystem.current.StartCoroutine(coroutine.GetEnumerator());
     }
 }

@@ -9,13 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 617a63518209c4ff9a773bf5004d8e52, type: 3}
+  m_Script: {fileID: 11500000, guid: d8a4ca0e358154ee1bac84cc465f346a, type: 3}
   m_Name: ActiveGuys
   m_EditorClassIdentifier: 
-  Event:
-    m_PersistentCalls:
-      m_Calls: []
-  <IsPublishing>k__BackingField: 0
-  Coll:
+  Store:
     Data: []
     Error: []

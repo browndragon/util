@@ -79,15 +79,21 @@ namespace BDUtil.Editor
                 // filter out non-new()-able types, if they insist on new()-able types.
                 if (!~@base.Instantiable)
                 {
-                    if (@base.Instantiable ^ types[i].GetConstructors().Any(c => c.GetParameters().Count() == 0))
+                    bool isAbstract = types[i].IsAbstract;
+                    bool isInterface = types[i].IsInterface;
+                    bool isInstantiable = !(isAbstract || isInterface);
+                    if (@base.Instantiable ^ isInstantiable)
                     {
+                        // Not quite true! This checks whether it's abstract; we don't actually check for a 0arg ctor.
+                        // This isn't nuts; structs *don't* have a 0arg ctor.
                         if (printDebug) Debug.Log($"{@base.Type}: skipping {types[i]} {(@base.Instantiable ? "!:" : ":")} new()");
                         continue;
                     }
                 }
                 if (!~@base.Serializable)
                 {
-                    if (@base.Serializable ^ !types[i].GetCustomAttributes<SerializableAttribute>().IsEmpty())
+                    bool isSerializable = !types[i].GetCustomAttributes<SerializableAttribute>().IsEmpty();
+                    if (@base.Serializable ^ isSerializable)
                     {
                         if (printDebug) Debug.Log($"{@base.Type}: skipping {types[i]} {(@base.Serializable ? "!<" : "<")} Serializable");
                         continue;

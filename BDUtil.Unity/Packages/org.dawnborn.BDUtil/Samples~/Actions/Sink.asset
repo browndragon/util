@@ -9,6 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7bd10e4c83ff9478cb94f2e435029d8c, type: 3}
-  m_Name: Created
+  m_Script: {fileID: 11500000, guid: 07c7aa568f95b4a75ad01b9f66b4f821, type: 3}
+  m_Name: Sink
   m_EditorClassIdentifier: 
+  UpdateHeads:
+  - {fileID: 11400000, guid: d9c108f6b3a81469da2ec5fa0e375f1c, type: 2}
+  Cancel: 0
+  Cancelled: 0

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace BDUtil.Raw
@@ -7,6 +8,8 @@ namespace BDUtil.Raw
     /// It's always safe to treat a List or Deque as a Stack; it's only efficient to treat a Deque as a Queue.
     public static class Deques
     {
+        public static T PeekIndex<T>(this IList<T> thiz, int index, T @default = default)
+        => index.IsInRange(0, thiz.Count) ? thiz[index] : @default;
         public static bool PopIndex<T>(this IList<T> thiz, int index, out T value)
         {
             if (!index.IsInRange(0, thiz.Count)) return false.Let(value = default);
@@ -16,33 +19,51 @@ namespace BDUtil.Raw
         }
         public static T PopIndexOrDefault<T>(this IList<T> thiz, int index, T @default = default)
         => thiz.PopIndex(index, out T value) ? value : @default;
+
+        public enum Ends
+        {
+            Back = default,  // AKA "stack"
+            Front,  // AKA "queue"
+        }
+
+        /// At the first or last element; [0, Count).
+        public static int GetReadIndex(this Ends thiz, int count)
+        => thiz switch { Ends.Front => 0, _ => count - 1 };
+        /// Before the first or after the last; [0, Count].
+        public static int GetInsertIndex(this Ends thiz, int count)
+        => thiz switch { Ends.Front => 0, _ => count };
+        public static Ends GetOtherEnd(this Ends thiz)
+        => thiz switch { Ends.Front => Ends.Back, _ => Ends.Front };
+
+        public static T PeekAt<T>(this IList<T> thiz, Ends end, T @default)
+        => thiz.PeekIndex(end.GetReadIndex(thiz.Count), @default);
+        public static bool PopFrom<T>(this IList<T> thiz, Ends end, out T value)
+        => thiz.PopIndex(end.GetReadIndex(thiz.Count), out value);
+        public static T PopFromOrDefault<T>(this IList<T> thiz, Ends popFrom, T @default = default)
+        => thiz.PopFrom(popFrom, out T t) ? t : @default;
+        public static T PushTo<T>(this IList<T> thiz, Ends end, T value)
+        {
+            thiz.Insert(end.GetInsertIndex(thiz.Count), value);
+            return value;
+        }
+
         public static T PopFront<T>(this IList<T> thiz, T @default = default)
-        => thiz.PopIndexOrDefault(0, @default);
+        => thiz.PopFromOrDefault(Ends.Front, @default);
         public static T PopBack<T>(this IList<T> thiz, T @default = default)
-        => thiz.PopIndexOrDefault(thiz.Count - 1, @default);
+        => thiz.PopFromOrDefault(Ends.Back, @default);
         public static T PushFront<T>(this IList<T> thiz, T item)
-        {
-            thiz.Insert(0, item);
-            return item;
-        }
+        => thiz.PushTo(Ends.Front, item);
         public static T PushBack<T>(this IList<T> thiz, T item)
-        {
-            thiz.Insert(thiz.Count, item);
-            return item;
-        }
+        => thiz.PushTo(Ends.Back, item);
         public static T PeekFront<T>(this IList<T> thiz, T @default = default)
-        => thiz.Count > 0 ? thiz[0] : @default;
+        => thiz.PeekAt(Ends.Front, @default);
         public static T PeekBack<T>(this IList<T> thiz, T @default = default)
-        => thiz.Count > 0 ? thiz[thiz.Count - 1] : @default;
+        => thiz.PeekAt(Ends.Back, @default);
+
         /// Destructive enumeration as stack. Safe for interleaving edits!
-        public static IEnumerable<T> PopStack<T>(this IList<T> thiz)
+        public static IEnumerable<T> PopDeque<T>(this IList<T> thiz, Ends end)
         {
-            while (thiz.PopIndex(thiz.Count - 1, out T t)) yield return t;
-        }
-        /// EXPENSIVE destructive enumeration as queue (unless deque). Safe for interleaving edits!
-        public static IEnumerable<T> PopQueue<T>(this IList<T> thiz)
-        {
-            while (thiz.PopIndex(0, out T t)) yield return t;
+            while (thiz.PopFrom(end, out T t)) yield return t;
         }
         public static int Capacity<T>(this IReadOnlyList<T> thiz) => thiz switch
         {
@@ -63,27 +84,15 @@ namespace BDUtil.Raw
                 default: throw new NotSupportedException($"Unrecognized {thiz.GetType()}");
             }
         }
-
-        public static bool PushFrontOrPop<T>(this IList<T> thiz, T value, out T oldValue)
+        public static bool PushOrPop<T>(this IList<T> thiz, Ends end, T value, out T oldValue)
         {
             if (thiz.Count < ((IReadOnlyList<T>)thiz).Capacity())
             {
-                thiz.PushFront(value);
+                thiz.PushTo(end, value);
                 return false.Let(oldValue = default);
             }
-            oldValue = thiz.PopBack();
-            thiz.PushFront(value);
-            return true;
-        }
-        public static bool PushBackOrPop<T>(this IList<T> thiz, T value, out T oldValue)
-        {
-            if (thiz.Count < ((IReadOnlyList<T>)thiz).Capacity())
-            {
-                thiz.PushBack(value);
-                return false.Let(oldValue = default);
-            }
-            oldValue = thiz.PopFront();
-            thiz.PushBack(value);
+            oldValue = thiz.PopFromOrDefault(end.GetOtherEnd());
+            thiz.PushTo(end, value);
             return true;
         }
     }
@@ -168,37 +177,26 @@ namespace BDUtil.Raw
             // Either way, we've made a gap for the new data to insert; stick it in!
             this[index] = item;
         }
-        (int fromHead, int fromZero) Limits
-        {
-            get
-            {
-                int tail = _Head + Count;
-                return Count <= 0
-                    ? (0, 0)
-                    : tail <= Capacity
-                        ? (tail, 0)
-                        : (Capacity, tail - Capacity);
-            }
-        }
 
         public override IEnumerator<T> GetEnumerator()
         {
-            (int max1, int max2) = Limits;
-            for (int i = _Head; i < max1; ++i) yield return _Data[i];
-            for (int i = 0; i < max2; ++i) yield return _Data[i];
+            for (int i = 0; i < Count; ++i)
+            {
+                int x = _Head + i;
+                if (x >= Capacity) x -= Capacity;
+                if (x >= Capacity) throw new IndexOutOfRangeException($"{i}<{Count} outside [0, {Capacity})");
+                yield return _Data[x];
+            }
         }
-
         public override void Clear()
         {
-            (int max1, int max2) = Limits;
-            for (int i = _Head; i < max1; ++i) _Data[i] = default;
-            for (int i = 0; i < max2; ++i) _Data[i] = default;
+            for (int i = 0; i < Capacity; ++i) _Data[i] = default;
             _Head = 0;
             Count = 0;
         }
         public void EnsureCapacity(int capacity = 0)
         {
-            if (capacity <= 0) capacity = System.Math.Min(16, 2 * Capacity);
+            if (capacity <= 0) capacity = System.Math.Max(16, 2 * Capacity);
             if (Limit > 0)
             {
                 if (Capacity >= Limit && capacity > Limit) throw new NotSupportedException($"{Count} already >= {Limit}; can't grow to {capacity}");
