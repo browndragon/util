@@ -8,6 +8,7 @@ namespace BDUtil
     public class Ticker : MonoBehaviour
     {
         static Ticker _main;
+        [SuppressMessage("IDE", "IDE1006")]
         public static Ticker main
         {
             get => _main ??= Create<Ticker>();
@@ -79,6 +80,8 @@ namespace BDUtil
         {
             DisableEvent.Publish();
             if (main == this) main = null;
+            /// We're hide & don't save, baybee.
+            DestroyImmediate(gameObject);
         }
         private void Start() => StartEvent.Publish();
         private void OnDestroy() => DestroyEvent.Publish();
@@ -119,7 +122,7 @@ namespace BDUtil
 
         #endregion
 
-        public static TTicker Create<TTicker>(string name = "Ticker", HideFlags hideFlags = HideFlags.None) where TTicker : Ticker
+        public static TTicker Create<TTicker>(string name = "Ticker", HideFlags hideFlags = HideFlags.DontSave) where TTicker : Ticker
         {
             var go = new GameObject(name) { hideFlags = hideFlags };
             DontDestroyOnLoad(go);

@@ -42,6 +42,7 @@ namespace BDUtil.Pubsub
 
         [SerializeField] protected string LastUpdate;
         [SerializeField] protected int Count;
+        [SuppressMessage("IDE", "IDE0044")]
         [SerializeField, OnChange(nameof(ClearData), AsButton = true)] bool clearData;
         public override Observable.Update Value
         {

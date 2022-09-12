@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 namespace BDUtil.Pubsub
@@ -8,13 +9,9 @@ namespace BDUtil.Pubsub
     public class TestScript : MonoBehaviour
     {
         public ActionsHead ActionQueue;
-        new Camera camera;
-        void OnEnable()
-        {
-            camera = GetComponent<Camera>();
-        }
-        float Delay = .2f;
+        public float Delay = .2f;
         float Next = 0f;
+        [SuppressMessage("IDE", "IDE0051")]
         void Update()
         {
             float timeNow = Time.time;

@@ -8,23 +8,9 @@ namespace BDUtil
         public Ticker.Event[] TickerEvents;
         public ActionsHead ActionHead;
         readonly Disposes.All unsubscribe = new();
-        bool needsReenable;
-        protected override void OnRuntimeInitialize(RuntimeInitializeLoadType type)
+        protected override void OnEnableSubsystem()
         {
-            if (type != RuntimeInitializeLoadType.AfterSceneLoad) return;
-            needsReenable = false;
-            Begin();
-        }
-        protected override void OnDisable()
-        { unsubscribe.Dispose(); base.OnDisable(); needsReenable = Application.isPlaying; }
-        protected override void OnEnable()
-        { base.OnEnable(); if (needsReenable) Begin(); }
-
-        // I don't think there's any way to suspend/resume a scriptableobject per se BUT:
-        // This is called from OnEnable (which can be called outside of app.isPlaying...)
-        // and from the runtime initialize path.
-        void Begin()
-        {
+            base.OnEnableSubsystem();
             unsubscribe.Add(ActionHead.Subscribe(a => a()));
             foreach (Ticker.Event @event in TickerEvents)
             {
@@ -32,5 +18,11 @@ namespace BDUtil
                 Ticker.main.Topics[@event].Subscribe(ActionHead.Pop);
             }
         }
+        protected override void OnDisableSubsystem()
+        {
+            unsubscribe.Dispose();
+            base.OnDisableSubsystem();
+        }
+
     }
 }

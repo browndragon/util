@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using BDUtil.Pubsub;
 using UnityEngine;
 
@@ -9,7 +10,9 @@ namespace BDUtil.Serialization
         public Topic OnDestroy;
         new Camera camera;
         public Ref<Clone> Proto;
+        [SuppressMessage("IDE", "IDE0051")]
         void Awake() => camera = Camera.main;
+        [SuppressMessage("IDE", "IDE0051")]
         void Update()
         {
             if (!Input.GetMouseButtonUp(0)) return;

@@ -35,7 +35,7 @@ namespace BDUtil.Pubsub
         void ISerializationCallbackReceiver.OnBeforeSerialize()
         {
             PoppedString = value?.ToString() ?? "none";
-            PeekString = Peek?.ToString() ?? "none";
+            PeekString = Deque == null ? "unset" : Peek?.ToString() ?? "none";
         }
         void ISerializationCallbackReceiver.OnAfterDeserialize() { }
 

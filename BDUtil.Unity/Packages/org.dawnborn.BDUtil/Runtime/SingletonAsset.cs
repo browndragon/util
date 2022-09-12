@@ -13,43 +13,41 @@ namespace BDUtil
         public static SingletonAsset GetSingletonAsset(Type type) => singletons.GetValueOrDefault(type);
         public static T GetSingletonAsset<T>() where T : SingletonAsset => (T)GetSingletonAsset(typeof(T));
 
-        protected virtual void OnEnable()
+        public bool IsEnabled { get; private set; }
+
+        protected void OnEnable()
         {
             if (EditorUtils.IsPlayingOrWillChangePlaymode) singletons[GetType()] = this;
             else EditorUtils.InsertPreloadedAsset(this);
+            TryEnableSubsystem();
         }
-        protected virtual void OnDisable()
+        protected void OnDisable()
         {
+            if (IsEnabled) OnDisableSubsystem();
             if (!EditorUtils.IsPlayingOrWillChangePlaymode) EditorUtils.RemoveEmptyPreloadedAssets();
         }
+        protected void TryEnableSubsystem()
+        {
+            if (!Application.isPlaying) return;
+            if (IsEnabled) return;
+            OnEnableSubsystem();
+        }
+        protected virtual void OnEnableSubsystem() => IsEnabled = true;
+        protected virtual void OnDisableSubsystem() => IsEnabled = false;
 
         // Workaround for:
         // https://issuetracker.unity3d.com/issues/application-dot-isplaying-is-false-when-onenable-is-called-from-a-scriptableobject-after-entering-the-play-mode
-        protected virtual void OnRuntimeInitialize(RuntimeInitializeLoadType type) { }
-
-        static void SendOnRuntimeInitialize(RuntimeInitializeLoadType type)
-        { foreach (SingletonAsset asset in singletons.Values) asset.OnRuntimeInitialize(type); }
-
-        [SuppressMessage("IDE", "IDE0051")]
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
-        static void AfterAssembliesLoaded() => SendOnRuntimeInitialize(RuntimeInitializeLoadType.AfterAssembliesLoaded);
-        [SuppressMessage("IDE", "IDE0051")]
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        static void AfterSceneLoad() => SendOnRuntimeInitialize(RuntimeInitializeLoadType.AfterSceneLoad);
-        [SuppressMessage("IDE", "IDE0051")]
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        static void BeforeSceneLoad() => SendOnRuntimeInitialize(RuntimeInitializeLoadType.BeforeSceneLoad);
-        [SuppressMessage("IDE", "IDE0051")]
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
-        static void BeforeSplashScreen() => SendOnRuntimeInitialize(RuntimeInitializeLoadType.BeforeSplashScreen);
         [SuppressMessage("IDE", "IDE0051")]
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void SubsystemRegistration() => SendOnRuntimeInitialize(RuntimeInitializeLoadType.SubsystemRegistration);
+        static void SubsystemRegistration()
+        { foreach (SingletonAsset asset in singletons.Values) asset.TryEnableSubsystem(); }
     }
     public class SingletonAsset<T> : SingletonAsset
     where T : SingletonAsset<T>
     {
         public static T _main;
+        [SuppressMessage("IDE", "IDE1006")]
+
         public static T main => _main ??= GetSingletonAsset<T>() ?? CreateInstance<T>() /* which registers in OnEnable... */;
     }
 }
