@@ -35,7 +35,7 @@ namespace BDUtil.Raw
         public static Ends GetOtherEnd(this Ends thiz)
         => thiz switch { Ends.Front => Ends.Back, _ => Ends.Front };
 
-        public static T PeekAt<T>(this IList<T> thiz, Ends end, T @default)
+        public static T PeekAt<T>(this IList<T> thiz, Ends end, T @default = default)
         => thiz.PeekIndex(end.GetReadIndex(thiz.Count), @default);
         public static bool PopFrom<T>(this IList<T> thiz, Ends end, out T value)
         => thiz.PopIndex(end.GetReadIndex(thiz.Count), out value);

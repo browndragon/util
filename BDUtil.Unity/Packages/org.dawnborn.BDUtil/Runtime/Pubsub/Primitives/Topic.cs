@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace BDUtil.Pubsub
 {
+    // MAYBE this belongs in Base, since it's actually the base class of the hierarchy. Or not!
     [CreateAssetMenu(menuName = "BDUtil/Prim/Topic", order = 0)]
     public class Topic : ScriptableObject, ITopic, IPublisher
     {

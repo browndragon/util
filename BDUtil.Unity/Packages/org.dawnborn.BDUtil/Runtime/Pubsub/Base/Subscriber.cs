@@ -40,6 +40,44 @@ namespace BDUtil.Pubsub
             }
         }
         [Serializable]
+        internal class MessageValueEvent : Subscriber.ISubscribe
+        {
+            public ObjectTopic Topic;
+            public bool SendUpwards;
+            public string MessageName;
+            public SendMessageOptions SendMessageOptions;
+            public Action Subscribe(Subscriber thiz)
+            {
+                void SendMessage() => thiz.SendMessage(MessageName, Topic.Object, SendMessageOptions);
+                void SendMessageUpwards() => thiz.SendMessageUpwards(MessageName, Topic.Object, SendMessageOptions);
+                return Topic?.Subscribe(SendUpwards ? SendMessageUpwards : SendMessage);
+            }
+        }
+        [Serializable]
+        internal class LogEvent : Subscriber.ISubscribe
+        {
+            public Topic Topic;
+            Subscriber Thiz;
+            void Log() => Debug.Log($"{Thiz}: received {Topic}", Thiz);
+            public Action Subscribe(Subscriber thiz)
+            {
+                Thiz = thiz;
+                return Topic?.Subscribe(Log);
+            }
+        }
+        [Serializable]
+        internal class InvokeEvent : Subscriber.ISubscribe
+        {
+            public Topic<Action> Topic;
+            public Action Subscribe(Subscriber thiz) => Topic?.Subscribe(a => a?.Invoke());
+        }
+        [Serializable]
+        internal class DestroyEvent : Subscriber.ISubscribe
+        {
+            public Topic<GameObject> Topic;
+            public Action Subscribe(Subscriber thiz) => Topic?.Subscribe(go => UnityEngine.Object.Destroy(go));
+        }
+        [Serializable]
         internal class UEvent : Subscriber.ISubscribe
         {
             public Topic Topic;

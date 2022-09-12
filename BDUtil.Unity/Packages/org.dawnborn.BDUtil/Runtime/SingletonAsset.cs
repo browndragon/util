@@ -1,23 +1,30 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace BDUtil
 {
-    public static class SingletonAsset<T> where T : ScriptableObject
+    [Serializable]
+    public class SingletonAsset : ScriptableObject
     {
-        static readonly string AssetPath = $"Assets/BDUtil/{typeof(T).Name}.asset";
-        static T instance;
-        public static T Instance => instance ??= (T)EditorUtils.AcquireAsset(typeof(T), AssetPath);
-        /// Good idea to call me with `[UnityEngine.RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]` & `[UnityEditor.InitializeOnLoad]`
-        /// But you might need to extend topic or something...
-        /// Provides a utility for the actual scriptableobject's enable method.
-        public static T SetIfUnset(T thiz)
+        static readonly Dictionary<Type, SingletonAsset> singletons = new();
+        public static SingletonAsset GetSingletonAsset(Type type) => singletons.GetValueOrDefault(type);
+        public static T GetSingletonAsset<T>() where T : SingletonAsset => (T)GetSingletonAsset(typeof(T));
+
+        protected virtual void OnEnable()
         {
-            if (instance == null) instance = thiz;
-            else if (instance != thiz) Debug.LogWarning(
-                $"Singleton {typeof(T)} has loaded two instances {instance.GetInstanceID()} != {thiz.GetInstanceID()}!"
-            );
-            return instance;
+            if (EditorUtils.IsPlayingOrWillChangePlaymode) singletons[GetType()] = this;
+            else EditorUtils.InsertPreloadedAsset(this);
         }
+        protected virtual void OnDisable()
+        {
+            if (!EditorUtils.IsPlayingOrWillChangePlaymode) EditorUtils.RemoveEmptyPreloadedAssets();
+        }
+    }
+    public class SingletonAsset<T> : SingletonAsset
+    where T : SingletonAsset<T>
+    {
+        public static T _main;
+        public static T main => _main ??= GetSingletonAsset<T>() ?? CreateInstance<T>() /* which registers in OnEnable... */;
     }
 }

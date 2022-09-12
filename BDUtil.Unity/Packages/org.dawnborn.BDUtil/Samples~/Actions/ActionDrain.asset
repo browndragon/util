@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5834b5087d578d24c926ce20cd31e6d6, type: 3}
-  m_Name: Default Local Group_ContentUpdateGroupSchema
+  m_Script: {fileID: 11500000, guid: 3e7741df8b3c74a7cb1951e43ccc3d6b, type: 3}
+  m_Name: ActionDrain
   m_EditorClassIdentifier: 
-  m_Group: {fileID: 11400000, guid: 46240414f6ea3475ca25a3af214f4614, type: 2}
-  m_StaticContent: 0
+  TickerEvents: 00000000
+  ActionHead: {fileID: 11400000, guid: d9c108f6b3a81469da2ec5fa0e375f1c, type: 2}

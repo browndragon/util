@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using BDUtil.Raw;
 using UnityEngine;
 
@@ -7,10 +9,9 @@ namespace BDUtil.Pubsub
     /// Adapts a queue into a single value-like topic.
     /// Value reads show the last popped value (which is not on the queue anymore).
     /// Value writes insert to the queue (sorted or not by config).
-    /// Notifies on pop nonempty (which returns the value after all notifications complete).
-    /// When pop empty, a following change to the queue to insert a value triggers the pop (again).
+    /// Notifies on pop nonempty.
     /// Somebody else has to repeatedly call Pop (potentially in response to watching a queue?)
-    public abstract class HeadTopic<T> : Topic<T>, IValueTopic<T>
+    public abstract class HeadTopic<T> : Topic<T>, IValueTopic<T>, ISerializationCallbackReceiver
     {
         [Tooltip("Data source to adapt")]
         public CollectionTopic<Observable.Deque<T>> Deque;
@@ -24,18 +25,24 @@ namespace BDUtil.Pubsub
         public Subtype<IComparer<T>> Comparer;
         IComparer<T> cached;
 
-        public bool Hungry;
-
         protected T value;
         object ISet.Value { set => Value = (T)value; }
         public override T Value { get => value; set => Push(value); }
 
+        [SerializeField, SuppressMessage("IDE", "IDE0052")] string PoppedString;
+        [SerializeField, SuppressMessage("IDE", "IDE0052")] string PeekString;
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize()
+        {
+            PoppedString = value?.ToString() ?? "none";
+            PeekString = Peek?.ToString() ?? "none";
+        }
+        void ISerializationCallbackReceiver.OnAfterDeserialize() { }
+
         readonly Disposes.All unsubscribe = new();
         protected override void OnEnable()
         {
-            Hungry = false;
             base.OnEnable();
-            unsubscribe.Add(Deque.Subscribe(OnDeque));
             cached = Comparer.CreateInstance();
         }
         protected override void OnDisable()
@@ -43,26 +50,25 @@ namespace BDUtil.Pubsub
             unsubscribe.Dispose();
             base.OnDisable();
         }
-        void OnDeque(Observable.Update update)
-        {
-            if (!Hungry) return;
-            Pop();
-        }
         public void Push(T @object)
         {
             if (cached != null) Deque.Collection.BinaryInsert(@object, cached);
             // always pushback; the popAs determines if we'll queue (from front) or stack (from back).
             else Deque.Collection.PushBack(@object);
         }
+        /// Pops one element: setting Value, notifying & returning true; or gets nothing, and returns false.
+        /// You can Peek-and-then-pop if you need to set a condition.
         public bool Pop()
         {
-            Hungry = false;
-            if (Hungry = !Deque.Collection.PopFrom(PopEnd, out value)) return false;
-            Publish();
-            return true;
+            if (Deque.Collection.PopFrom(PopEnd, out value))
+            {
+                Publish();
+                return true;
+            }
+            return false;
         }
         // Peek at what WOULD be popped.
-        public T Peek => Deque.Collection.PeekFront();
-        public void Clear() => Deque.Collection.Clear();
+        public T Peek => Deque.Collection.PeekAt(PopEnd);
+        public void Clear() { Deque.Collection.Clear(); value = default; }
     }
 }

@@ -12,7 +12,7 @@ namespace BDUtil
     {
         /// Mostly/entirely for unit testing
         public static T[] Of<T>(params T[] args) => args;
-        public static bool IsEmpty(this string thiz) => thiz == null || thiz.Length <= 0;
+        public static bool IsEmpty(this string thiz) => string.IsNullOrEmpty(thiz);
         public static bool IsEmpty(this Array thiz) => thiz == null || thiz.Length <= 0;
         public static bool IsEmpty<T>(this T[] thiz) => thiz == null || thiz.Length <= 0;
         public static bool IsEmpty(this ICollection thiz) => thiz == null || thiz.Count <= 0;
@@ -21,16 +21,12 @@ namespace BDUtil
             switch (thiz)
             {
                 case null: return true;
+                case string s: return s.IsEmpty();
                 case Array a: return a.IsEmpty();
                 case ICollection c: return c.IsEmpty();
                 default:
-                    IEnumerator @enum = null;
-                    try
-                    {
-                        @enum = thiz.GetEnumerator();
-                        return !@enum.MoveNext();
-                    }
-                    finally { if (@enum is IDisposable d) d.Dispose(); }
+                    IEnumerator @enum = thiz.GetEnumerator();
+                    using (@enum as IDisposable) return !@enum.MoveNext();
             }
         }
 
@@ -92,6 +88,32 @@ namespace BDUtil
                 builder.Append(separator).Append(@enum.Current);
             }
             return builder.ToString();
+        }
+        public static string Summarize(this IEnumerable thiz, int limit = 5, string separator = ", ", string terminal = default)
+        {
+            switch (thiz)
+            {
+                case null: return "null";
+                case ICollection c: terminal ??= $"...(+{c.Count})"; break;
+                default: terminal ??= "..."; break;
+            }
+            if (limit == 0) return terminal;
+
+            StringBuilder builder = new();
+            if (limit < 0) limit = int.MaxValue;
+            var @enum = thiz.GetEnumerator();
+            using (@enum as IDisposable)  // Just. In. Case.
+            {
+                if (!@enum.MoveNext()) return "none";
+                builder.Append(@enum.Current);
+                int i = 1;
+                while (@enum.MoveNext())
+                {
+                    if (i++ > limit) { builder.Append(separator).Append(terminal); break; }
+                    builder.Append(separator).Append(@enum.Current);
+                }
+                return builder.ToString();
+            }
         }
         public static void Exhaust(this IEnumerator thiz) { while (thiz.MoveNext()) { } }
         public static void Exhaust(this IEnumerable thiz) { foreach (object _ in thiz) { } }

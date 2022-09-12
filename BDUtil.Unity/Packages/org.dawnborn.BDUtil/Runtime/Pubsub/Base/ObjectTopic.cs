@@ -1,42 +1,19 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using BDUtil;
 using BDUtil.Raw;
 using BDUtil.Serialization;
 using UnityEngine;
 
 namespace BDUtil.Pubsub
 {
-    public interface ITopic
-    {
-        void AddListener(Action action);
-        void RemoveListener(Action action);
-    }
-    public interface IPublisher
-    {
-        Lock IsPublishing { get; }
-        void Publish();
-        void ClearAll();
-    }
-    public interface IObjectTopic : ITopic, IHas { }
-    public interface ITopic<out T> : IObjectTopic, IHas<T> { }
-    public interface IValueTopic<T> : ITopic<T>, IHas<T>, ISet<T> { }
-
-    /// Set or dictionary-type. Supports visibility/update by Value = Observable.Update; every change updates.
-    public interface ICollectionTopic : IValueTopic<Observable.Update>, IHasCollection
-    { }
-    /// Set or dictionary-type. Supports visibility/update by Value = Observable.Update; every change updates.
-    public interface ICollectionTopic<TColl> : IValueTopic<Observable.Update>, IHasCollection<TColl>
-    where TColl : Observable.ICollection
-    { }
-
     /// Topic with a payload (who knows what kind though!)
     public abstract class ObjectTopic : Topic, IObjectTopic
     {
         object IHas.Value => Object;
         public abstract object Object { get; }
+        public override string ToString() => $"{base.ToString()}+{Object}";
     }
 
     /// Abstract type for any topic which holds or represents a value.
@@ -92,6 +69,7 @@ namespace BDUtil.Pubsub
             Count = ObservableCollection.Count;
         }
         void ISerializationCallbackReceiver.OnAfterDeserialize() { }
+        public override string ToString() => $"{base.ToString()}+[{Object}\\{ObservableCollection.Summarize()}]";
     }
     /// A type which holds a collection of other data and notifies on modification.
     public abstract class CollectionTopic<TColl> : CollectionTopic, ICollectionTopic<TColl>

@@ -6,36 +6,13 @@ namespace BDUtil.Pubsub
     public static class Subscriptions
     {
         public static void Add(this Disposes.All thiz, UnityAction action) => thiz.Add(() => action?.Invoke());
-        public static Action UnsubscribeAll(this Action thiz)
-        {
-            if (thiz == null) return null;
-            foreach (Delegate d in thiz.GetInvocationList()) thiz -= (Action)d;
-            return null;
-        }
-        public static Action<T> UnsubscribeAll<T>(this Action<T> thiz)
-        {
-            if (thiz == null) return null;
-            foreach (Delegate d in thiz.GetInvocationList()) thiz -= (Action<T>)d;
-            return null;
-        }
 
-        public static Action Subscribe(this ITopic thiz, Action action)
-        {
-            thiz.AddListener(action);
-            return () => thiz.RemoveListener(action);
-        }
         public static Action Subscribe(this ITopic thiz, UnityEvent @event)
         => thiz.Subscribe(@event.Invoke);
-        public static Action Subscribe(this ITopic thiz, UnityAction<ITopic> action)
-        => thiz.Subscribe(() => action?.Invoke(thiz));
         public static Action Subscribe(this ITopic thiz, UnityEvent<ITopic> @event)
         => thiz.Subscribe(@event.Invoke);
-        public static Action Subscribe<T>(this ITopic<T> thiz, UnityAction<T> action)
-        => thiz.Subscribe(() => action?.Invoke(thiz.Value));
         public static Action Subscribe<T>(this ITopic<T> thiz, UnityEvent<T> @event)
         => thiz.Subscribe(@event.Invoke);
-        public static Action Subscribe<T>(this ITopic<T> thiz, UnityAction<ITopic<T>> action)
-        => thiz.Subscribe(() => action?.Invoke(thiz));
         public static Action Subscribe<T>(this ITopic<T> thiz, UnityEvent<ITopic<T>> @event)
         => thiz.Subscribe(@event.Invoke);
 
