@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using BDUtil.Bind;
+using BDUtil.Math;
 using UnityEditor;
 using UnityEngine;
 
@@ -46,7 +47,7 @@ namespace BDUtil.Editor
             && UnityTypes == other.UnityTypes;
 
             public override bool Equals(object obj) => obj is TypeKey other && Equals(other);
-            public override int GetHashCode() => HashCode.Default.And(Type).And(Serializable).And(Instantiable).And(UnityTypes);
+            public override int GetHashCode() => Chain.Hash ^ Type ^ Serializable ^ Instantiable ^ UnityTypes;
             // public static implicit operator TypeKey(Type t) => new(t);
             public override string ToString() => $"{Type}: Serial:{Serializable} Instant:{Instantiable} Unity:{UnityTypes}";
         }

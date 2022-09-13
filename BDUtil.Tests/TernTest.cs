@@ -1,6 +1,6 @@
 using Xunit;
 
-namespace BDUtil
+namespace BDUtil.Math
 {
     public class TernTest
     {

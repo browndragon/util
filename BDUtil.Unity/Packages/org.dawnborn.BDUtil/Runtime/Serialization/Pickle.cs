@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BDUtil.Math;
 using UnityEngine;
 
 namespace BDUtil.Serialization

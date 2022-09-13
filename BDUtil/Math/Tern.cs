@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace BDUtil
+namespace BDUtil.Math
 {
     // Despite https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/operators/true-false-operators
     // we *can't* use `bool?`, because their algebra is wrong for e.g. `null|true` where we want `tbd`.
@@ -13,35 +13,27 @@ namespace BDUtil
     /// Sometimes we'll use `yes` to mean true, `no` to mean false, and `tbd` to mean null.
     public readonly struct tern : IEquatable<tern>, IComparable<tern>
     {
-        /// Ternary Action
-        public delegate tern Action();
-        public delegate tern Action<in T1>(T1 t);
-        public delegate tern Action<in T1, in T2>(T1 t1, T2 t2);
-
-        // Public for unity serializability.
-        public enum Value : sbyte { @null = default, @true = +1, @false = -1 }
-        public static readonly tern @true = new(Value.@true);
-        public static readonly tern @null = new(Value.@null);
-        public static readonly tern @false = new(Value.@false);
+        public static readonly tern @true = new(true);// new(Value.@true);
+        public static readonly tern @null = default;
+        public static readonly tern @false = new(false);
 
         [SuppressMessage("IDE", "IDE0044")]
-        readonly Value Data;
-        tern(Value data) => Data = data;
+        readonly bool? value;
+        tern(bool? data) => value = data;
 
         /// Bools can also be explicitly converted with their `.tern()` extension method.
-        public static implicit operator tern(Value v) => new(v);
-        public static implicit operator tern(bool? that) => that switch
-        { true => @true, null => @null, false => @false };
-        public static implicit operator tern(int that) => that.tern();
-        public static explicit operator bool?(tern thiz) => thiz.@switch<bool?>(true, null, false);
-        public static implicit operator int(tern thiz) => thiz.@switch(+1, 0, -1);
+        public static implicit operator tern(bool? that) => new(that);
+        public static implicit operator tern(int that) => new(that.Valence());
+        public static implicit operator tern(float that) => new(that.Valence());
+        public static explicit operator bool?(tern thiz) => thiz.value;
+        public static explicit operator int(tern thiz) => thiz.@switch(+1, 0, -1);
 
-        public bool isTrue => Data == Value.@true;
-        public bool isNull => Data == Value.@null;
+        public bool isTrue => value.HasValue && value.Value;
+        public bool isNull => !value.HasValue;
         // True _or_ null. This isn't actually truthy in all contexts, but then neither is it falsey in all contexts...
         // there's no "isFalsey" because the semantics of that are a little brain bendy; using !isTrue is easier to read.
         public bool isTruthy => !isFalse;
-        public bool isFalse => Data == Value.@false;
+        public bool isFalse => value.HasValue && !value.Value;
 
         // Short circuit chain ops; the bread & butter...
         // https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/expressions#11133-user-defined-conditional-logical-operators
@@ -79,13 +71,8 @@ namespace BDUtil
         public static tern operator %(tern x, tern y) => Replace(x, y);
 
         /// Root non-short-circuiting operator; make it easier to examine a tern.
-        public T @switch<T>(T @true = default, T @null = default, T @false = default) => Data switch
-        {
-            Value.@true => @true,
-            Value.@null => @null,
-            Value.@false => @false,
-            _ => throw Data.BadValue(),
-        };
+        public T @switch<T>(T @true = default, T @null = default, T @false = default)
+        => value switch { true => @true, null => @null, false => @false, };
 
         /// Stark Difference: True iff x & y are both done and not equal to each other.
         // In particular, if either is tbd, this is false (or if they differ).
@@ -116,11 +103,11 @@ namespace BDUtil
         public static bool operator >(tern x, tern y) => x.CompareTo(y) > 0;
         public static bool operator <=(tern x, tern y) => x.CompareTo(y) <= 0;
         public static bool operator >=(tern x, tern y) => x.CompareTo(y) >= 0;
-        public static bool operator ==(tern x, tern y) => x.Data == y.Data;
-        public static bool operator !=(tern x, tern y) => x.Data != y.Data;
+        public static bool operator ==(tern x, tern y) => x.value == y.value;
+        public static bool operator !=(tern x, tern y) => x.value != y.value;
 
-        public bool Equals(tern other) => Data == other.Data;
-        public int CompareTo(tern other) => ((int)this).CompareTo(other);
+        public bool Equals(tern other) => value == other.value;
+        public int CompareTo(tern other) => value.AsPInt().CompareTo(other.value.AsPInt());
         public override bool Equals(object value) => value is tern other && Equals(other);
         public override int GetHashCode() => @switch(1, 0, -1);
         public override string ToString() => @switch("+", "~", "-");
@@ -130,8 +117,6 @@ namespace BDUtil
     [SuppressMessage("IDE", "IDE1006")]
     public static class ternsExt
     {
-        /// Maps a (serializable!) ternValue to a tern for further use. It's implicitly convertible too; this is just for legibility/precendence.
-        public static tern tern(this tern.Value thiz) => thiz;
         /// Remap a bool? into a tern using an arbitrary truth table, whose default is identity.
         public static tern tern(
             this bool? thiz, bool? @true = true, bool? @null = null, bool? @false = false
@@ -142,14 +127,5 @@ namespace BDUtil
         /// The _other_ common bool->tern mapping, success/tbd.
         public static tern orTBD(this bool thiz)
         => thiz.tern(@false: null);
-        public static tern tern(this int thiz) => thiz switch
-        {
-            +1 => true,
-            0 => null,
-            -1 => false,
-            var x when x is > 0 => true,
-            var x when x is < 0 => false,
-            _ => throw new NotSupportedException($"(int){thiz} not <, ==, or > 0!"),
-        };
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BDUtil.Math;
 
 namespace BDUtil.Raw
 {
@@ -17,7 +18,7 @@ namespace BDUtil.Raw
             while (lower <= upper)
             {
                 int middle = lower + (upper - lower) / 2;
-                switch ((bool?)(tern)comparer.Compare(value, thiz[middle]))
+                switch (comparer.Compare(value, thiz[middle]).Valence())
                 {
                     case true: lower = middle + 1; break;
                     case null: return middle;
