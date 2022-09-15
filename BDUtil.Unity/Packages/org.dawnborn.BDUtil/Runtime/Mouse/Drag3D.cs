@@ -15,20 +15,10 @@ namespace BDUtil.Mouse
         Vector3 Target;
         bool IsDragging;
         [Tooltip("The plane to drag along; by default the XY plane but easily could be XZ with normal y=+1")]
-        public Vector3 PlaneNormal = Vector3.back;
+        public Vector3 PlaneNormal = CameraExt.DefaultPlane.normal;
         [Tooltip("The offset along the normal from the origin of the dragplane (default @ origin)")]
-        public float PlaneOriginDistance = 0f;
-        public Vector3 ScreenPoint
-        {
-            get
-            {
-                Plane plane = new(PlaneNormal, PlaneOriginDistance);
-                Ray ray = camera.ScreenPointToRay(Input.mousePosition);
-                // Only in the case that they're truly parallel should we NaN, which should never actually happen.
-                if (!plane.Raycast(ray, out float distance) && distance == 0f) return float.NaN * Vector3.one;
-                return ray.GetPoint(distance);
-            }
-        }
+        public float PlaneOriginDistance = CameraExt.DefaultPlane.distance;
+        public Vector3 ScreenPoint => camera.ScreenPointToIntersection(Input.mousePosition, new(PlaneNormal, PlaneOriginDistance));
 
         [SuppressMessage("IDE", "IDE0051")]
         void Awake()
