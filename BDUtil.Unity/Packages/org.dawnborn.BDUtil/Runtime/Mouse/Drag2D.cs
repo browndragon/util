@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 namespace BDUtil.Mouse
@@ -6,48 +5,19 @@ namespace BDUtil.Mouse
     [AddComponentMenu("BDUtil/Drag2D")]
     /// If you don't use a rigidbody, you do not get trigger collisions (etc).
     [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
-    public class Drag2D : MonoBehaviour
+    public class Drag2D : DragND
     {
-        new Camera camera;
         new Rigidbody2D rigidbody;
-        public float Veloc = 24f;
-        Vector3 Offset;
-        Vector2 Target;
-        bool IsDragging;
-
-        [SuppressMessage("IDE", "IDE0051")]
-        void Awake()
+        protected override void Awake() { base.Awake(); rigidbody = GetComponent<Rigidbody2D>(); }
+        protected override Vector3 RBPos
         {
-            camera = Camera.main;
-            rigidbody = GetComponent<Rigidbody2D>();
+            get => rigidbody.position;
+            set => rigidbody.position = value;
         }
-        [SuppressMessage("IDE", "IDE0051")]
-        void OnMouseDown()
+        protected override Vector3 RBVeloc
         {
-            Offset = transform.position - camera.ScreenToWorldPoint(Input.mousePosition);
-            IsDragging = true;
-        }
-        [SuppressMessage("IDE", "IDE0051")]
-        void OnMouseDrag() => Target = camera.ScreenToWorldPoint(Input.mousePosition) + Offset;
-        [SuppressMessage("IDE", "IDE0051")]
-        void OnMouseUp()
-        {
-            IsDragging = false;
-        }
-        [SuppressMessage("IDE", "IDE0051")]
-        void FixedUpdate()
-        {
-            if (!IsDragging) return;
-            Vector2 offset = Target - rigidbody.position;
-            float expectStep = Time.fixedDeltaTime * Veloc;
-            expectStep *= expectStep;
-            if (offset.sqrMagnitude <= expectStep)
-            {
-                rigidbody.position = Target;
-                rigidbody.velocity = Vector2.zero;
-                return;
-            }
-            rigidbody.velocity = Veloc * offset.normalized;
+            get => rigidbody.velocity;
+            set => rigidbody.velocity = value;
         }
     }
 }

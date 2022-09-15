@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using BDUtil.Serialization;
 using UnityEngine;
 
@@ -10,6 +9,7 @@ namespace BDUtil
 #if UNITY_EDITOR
     using UnityEditor;
 #endif
+    /// These are safe to call from runtime code; they should degrade and handle the difference between the modes.
     public static class EditorUtils
     {
         public const string AssetsFolder = "Assets/";
@@ -23,6 +23,19 @@ namespace BDUtil
         Application.isPlaying
 #endif  // UNITY_EDITOR
         ;
+
+        // Call during EditorApplication.delay or, if already playing, end of frame.
+        public static void Delay(UnityEngine.Object guard, Action action)
+        {
+            void PlayIfNonNull() { if (guard != null) action(); }
+            if (Application.isPlaying) { Coroutines.Schedule(PlayIfNonNull, Coroutines.End); return; }
+#if UNITY_EDITOR
+            EditorApplication.delayCall += PlayIfNonNull;
+            return;
+#else  // UNITY_EDITOR
+            throw new NotSupportedException($"Can't delay {action} while not playing in runtime build");
+#endif  // UNITY_EDITOR
+        }
 
         public static T InstantiateWithLink<T>(T go) where T : UnityEngine.Object =>
 #if UNITY_EDITOR

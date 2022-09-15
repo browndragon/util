@@ -4,6 +4,7 @@ namespace BDUtil
 {
     public static class CameraExt
     {
+        /// Because vector2 NEEDS to be xy, this basically NEEDS to be -z. But if you do something fancy...
         public static Plane DefaultPlane = new(Vector3.back, 0f);
         public static Vector3 ScreenPointToIntersection(this Camera thiz, Vector3 screenPoint, Plane plane)
         {
