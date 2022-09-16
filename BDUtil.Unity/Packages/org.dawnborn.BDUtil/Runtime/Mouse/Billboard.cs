@@ -9,6 +9,8 @@ namespace BDUtil
     // TODO: strip from build? Right now, it's purely editor-time; it could even be implemented on all spriterenderers...
     public class Billboard : MonoBehaviour
     {
+        [Tooltip("Modify sprite orientation before billboarding (or else each tile's orientation)")]
+        public Vector3 PreAdjust;
         void OnStart() => FaceCamera(Camera.main);
         void OnValidate() => EditorUtils.Delay(this, () => FaceCamera(Camera.main));  // "SendMessage can't be called from OnValidate" grumble grumble.
         void OnReset() => EditorUtils.Delay(this, () => FaceCamera(Camera.main));  // "SendMessage can't be called from OnValidate" grumble grumble.
@@ -18,20 +20,22 @@ namespace BDUtil
         public void FaceCamera() => FaceCamera(Camera.main);
         public void FaceCamera(Camera camera)
         {
+            Quaternion rotate = camera.transform.rotation * Quaternion.Euler(PreAdjust.x, PreAdjust.y, PreAdjust.z);
             Grid grid = GetComponent<Grid>();
             if (grid == null)
             {
                 // Not a grid, the default case.
                 // Set our transform to any z rotation we already had + the camera's rotation.
-                transform.rotation = camera.transform.rotation * Quaternion.Euler(0f, 0f, transform.rotation.eulerAngles.z);
+                transform.rotation = rotate;
                 return;
             }
             foreach (Tilemap tilemap in GetComponentsInChildren<Tilemap>())
             {
                 tilemap.orientation = Tilemap.Orientation.Custom;
                 Matrix4x4 orientation = tilemap.orientationMatrix;
-                Quaternion rotation = Quaternion.Inverse(tilemap.transform.rotation) * camera.transform.rotation;
-                orientation.SetTRS(orientation.GetPosition(), rotation, orientation.lossyScale);
+                /// Note that the tilemap transform SHOULD be 0: the whole idea is that it will mirror "real" positions.
+                Quaternion tilemapRotation = Quaternion.Inverse(tilemap.transform.rotation) * rotate;
+                orientation.SetTRS(orientation.GetPosition(), tilemapRotation, orientation.lossyScale);
                 tilemap.orientationMatrix = orientation;
             }
             return;
