@@ -33,8 +33,8 @@ namespace BDUtil
             switch (Isometry)
             {
                 case Isometries.ByPosition: transform.LookAt(Target, WorldUp); break;
-                case Isometries.Dimetric2To1: transform.eulerAngles = new(DimetricAngle, -45, 0); break;
-                case Isometries.TrueIsometric: transform.eulerAngles = new(IsometricAngle, -45, 0); break;
+                case Isometries.Dimetric2To1: transform.eulerAngles = new(-DimetricAngle, 45, -60); break;
+                case Isometries.TrueIsometric: transform.eulerAngles = new(-IsometricAngle, 45, -60); break;
                 default: return;
             };
             if (Distance >= 0f) transform.position = Target - Distance * transform.TransformVector(Vector3.forward);

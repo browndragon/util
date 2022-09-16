@@ -378,8 +378,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 154385014}
-  m_LocalRotation: {x: -0.42470828, y: 0.17591995, z: -0.3398511, w: 0.8204732}
-  m_LocalPosition: {x: -5.773504, y: -5.7735033, z: -5.773501}
+  m_LocalRotation: {x: -0.42470822, y: 0.17591995, z: -0.33985117, w: 0.82047325}
+  m_LocalPosition: {x: -5.773504, y: -5.7735033, z: -5.773502}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -410,7 +410,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b90d86e16b0f431da5a9ee27d5a3322, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Isometry: 1
+  Isometry: 3
   Target: {x: 0, y: 0, z: 0}
   WorldUp: {x: 0, y: 0, z: -1}
   Distance: 10
@@ -2367,16 +2367,16 @@ Tilemap:
   m_TileAnchor: {x: 0.5, y: 0.5, z: -0.5}
   m_TileOrientation: 6
   m_TileOrientationMatrix:
-    e00: 0.7071068
-    e01: 0.40824854
-    e02: 0.5773506
+    e00: 0.70710665
+    e01: 0.40824866
+    e02: 0.57735074
     e03: 0
-    e10: -0.70710677
-    e11: 0.40824854
-    e12: 0.5773507
+    e10: -0.7071068
+    e11: 0.40824842
+    e12: 0.5773506
     e13: 0
-    e20: -0.000000029802322
-    e21: -0.81649727
+    e20: 0.00000005960464
+    e21: -0.8164972
     e22: 0.5773505
     e23: 0
     e30: 0
@@ -2425,7 +2425,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2123656738}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7727,16 +7727,16 @@ Tilemap:
   m_TileAnchor: {x: 0.5, y: 0.5, z: -0.5}
   m_TileOrientation: 6
   m_TileOrientationMatrix:
-    e00: 0.7071068
-    e01: 0.40824854
-    e02: 0.5773506
+    e00: 0.70710665
+    e01: 0.40824866
+    e02: 0.57735074
     e03: 0
-    e10: -0.70710677
-    e11: 0.40824854
-    e12: 0.5773507
+    e10: -0.7071068
+    e11: 0.40824842
+    e12: 0.5773506
     e13: 0
-    e20: -0.000000029802322
-    e21: -0.81649727
+    e20: 0.00000005960464
+    e21: -0.8164972
     e22: 0.5773505
     e23: 0
     e30: 0

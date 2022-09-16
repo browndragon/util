@@ -14,6 +14,8 @@ namespace BDUtil
         void OnReset() => EditorUtils.Delay(this, () => FaceCamera(Camera.main));  // "SendMessage can't be called from OnValidate" grumble grumble.
         public static void BillboardAll(Camera camera)
         { foreach (Billboard b in FindObjectsOfType<Billboard>()) b.FaceCamera(camera); }
+        [ContextMenu("BDUtil/Face Camera")]
+        public void FaceCamera() => FaceCamera(Camera.main);
         public void FaceCamera(Camera camera)
         {
             Grid grid = GetComponent<Grid>();
