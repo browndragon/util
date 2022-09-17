@@ -21,7 +21,6 @@ namespace BDUtil
         [Tooltip("For UpdateWithCurrentCamera; which way is up? It's recommended this be `back` or `up` (though either works)")]
         public Vector3 WorldUp = Vector3.back;
         public float Distance = 10f;
-
         void OnValidate()
         {
             UpdateCameraGeometry();
@@ -37,6 +36,7 @@ namespace BDUtil
                 case Isometries.TrueIsometric: transform.eulerAngles = new(-IsometricAngle, 45, -60); break;
                 default: return;
             };
+            Debug.Log($"Remember to modify graphics settings to CustomAxis/(1,1,sqrt(3)) & tilemaps to individual mode");
             if (Distance >= 0f) transform.position = Target - Distance * transform.TransformVector(Vector3.forward);
         }
 

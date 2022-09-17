@@ -25,10 +25,10 @@ namespace BDUtil
         ;
 
         // Call during EditorApplication.delay or, if already playing, end of frame.
-        public static void Delay(UnityEngine.Object guard, Action action)
+        public static void Delay(UnityEngine.Object guard, Action action, bool orSchedule = false)
         {
             void PlayIfNonNull() { if (guard != null) action(); }
-            if (Application.isPlaying) { Coroutines.Schedule(PlayIfNonNull, Coroutines.End); return; }
+            if (orSchedule && Application.isPlaying) { Coroutines.Schedule(PlayIfNonNull, Coroutines.End); return; }
 #if UNITY_EDITOR
             EditorApplication.delayCall += PlayIfNonNull;
             return;
