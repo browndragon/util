@@ -4,6 +4,7 @@ namespace BDUtil
 {
     /// A camera with precise angling support. Can adjust angle or position to match.
     [RequireComponent(typeof(Camera))]
+    [Tooltip("Remember to set custom sort order (1,1,10000)")]
     public class IsometricCamera : MonoBehaviour
     {
         public const float DimetricAngle = 30f;
@@ -36,7 +37,6 @@ namespace BDUtil
                 case Isometries.TrueIsometric: transform.eulerAngles = new(-IsometricAngle, 45, -60); break;
                 default: return;
             };
-            Debug.Log($"Remember to modify graphics settings to CustomAxis/(1,1,sqrt(3)) & tilemaps to individual mode");
             if (Distance >= 0f) transform.position = Target - Distance * transform.TransformVector(Vector3.forward);
         }
 
