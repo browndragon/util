@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace BDUtil
+namespace BDUtil.Screen
 {
     /// A camera with precise angling support. Can adjust angle or position to match.
     [RequireComponent(typeof(Camera))]

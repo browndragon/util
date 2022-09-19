@@ -66,42 +66,27 @@ namespace BDUtil.Math
             );
             return retval;
         }
-        public static Rect SetMinMax(this Rect thiz, Vector2 min, Vector2 max)
-        {
-            thiz.Set((min.x + max.x) / 2f, (min.y + max.y) / 2f, Mathf.Abs(max.x - min.x), Mathf.Abs(max.y - min.y));
-            return thiz;
-        }
-        public static Rect Containing(this Rect thiz, Rect other)
-        {
-            Rect retval = default;
+        public static void SetMinMax(ref this Rect thiz, Vector2 min, Vector2 max)
+        => thiz.Set(
+            (min.x + max.x) / 2f, (min.y + max.y) / 2f,
+            Mathf.Abs(max.x - min.x), Mathf.Abs(max.y - min.y));
+        public static void Encapsulate(ref this Rect thiz, Rect other)
+        => thiz.SetMinMax(
+            new Vector2(Mathf.Min(thiz.xMin, other.xMin), Mathf.Min(thiz.yMin, other.yMin)),
+            new Vector2(Mathf.Max(thiz.xMax, other.xMax), Mathf.Max(thiz.yMax, other.yMax))
+        );
+        public static Vector2 ClosestPoint(this Rect thiz, Vector2 other)
+        => new Bounds(thiz.center, thiz.size).ClosestPoint(other);
 
-            retval.SetMinMax(
-                new Vector2(Mathf.Min(thiz.xMin, other.xMin), Mathf.Min(thiz.yMin, other.yMin)),
-                new Vector2(Mathf.Max(thiz.xMax, other.xMax), Mathf.Max(thiz.yMax, other.yMax))
-            );
-            return retval;
-        }
-        public static BoundsInt Containing(this BoundsInt thiz, BoundsInt other)
-        {
-            BoundsInt retval = default;
-            retval.SetMinMax(
-                new Vector3Int(Mathf.Min(thiz.xMin, other.xMin), Mathf.Min(thiz.yMin, other.yMin), Mathf.Min(thiz.zMin, other.zMin)),
-                new Vector3Int(Mathf.Max(thiz.xMax, other.xMax), Mathf.Max(thiz.yMax, other.yMax), Mathf.Max(thiz.zMax, other.zMax))
-            );
-            return retval;
-        }
-        public static Bounds Containing(this Bounds thiz, Bounds other)
-        {
-            Bounds retval = default;
-            Vector3 thizMin = thiz.min;
-            Vector3 thizMax = thiz.max;
-            Vector3 otherMin = other.min;
-            Vector3 otherMax = other.max;
-            retval.SetMinMax(
-                new Vector3(Mathf.Min(thizMin.x, otherMin.x), Mathf.Min(thizMin.y, otherMin.y), Mathf.Min(thizMin.z, otherMin.z)),
-                new Vector3(Mathf.Max(thizMax.x, otherMax.x), Mathf.Max(thizMax.y, otherMax.y), Mathf.Max(thizMax.z, otherMax.z))
-            );
-            return retval;
-        }
+        public static void Encapsulate(ref this Rect thiz, Vector2 other)
+        => thiz.Encapsulate(new Rect(other, Vector2.zero));
+
+        public static void Encapsulate(ref this BoundsInt thiz, BoundsInt other)
+        => thiz.SetMinMax(
+            new Vector3Int(Mathf.Min(thiz.xMin, other.xMin), Mathf.Min(thiz.yMin, other.yMin), Mathf.Min(thiz.zMin, other.zMin)),
+            new Vector3Int(Mathf.Max(thiz.xMax, other.xMax), Mathf.Max(thiz.yMax, other.yMax), Mathf.Max(thiz.zMax, other.zMax))
+        );
+        public static void Encapsulate(ref this BoundsInt thiz, Vector3Int other)
+        => thiz.Encapsulate(new BoundsInt(other, Vector3Int.zero));
     }
 }

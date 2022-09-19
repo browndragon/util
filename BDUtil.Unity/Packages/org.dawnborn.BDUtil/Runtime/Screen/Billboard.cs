@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-namespace BDUtil
+namespace BDUtil.Screen
 {
     /// An entity which orients relative to the (assumed orthorgraphic) camera initially (editor via onValidate, runtime onStart).
     /// If the camera angle isn't fixed, after modifying its angle you should call Billboard.AllFaceCamera.

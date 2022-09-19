@@ -1,14 +1,14 @@
 using UnityEngine;
 
-namespace BDUtil.Mouse
+namespace BDUtil.Screen
 {
-    [AddComponentMenu("BDUtil/Drag3D")]
+    [AddComponentMenu("BDUtil/Drag2D")]
     /// If you don't use a rigidbody, you do not get trigger collisions (etc).
-    [RequireComponent(typeof(Rigidbody), typeof(Collider))]
-    public class Drag3D : DragND
+    [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
+    public class Drag2D : DragND
     {
-        new Rigidbody rigidbody;
-        protected override void Awake() { base.Awake(); rigidbody = GetComponent<Rigidbody>(); }
+        new Rigidbody2D rigidbody;
+        protected override void Awake() { base.Awake(); rigidbody = GetComponent<Rigidbody2D>(); }
         protected override Vector3 RBPos
         {
             get => rigidbody.position;

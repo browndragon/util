@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
-namespace BDUtil.Mouse
+namespace BDUtil.Screen
 {
     /// Drag a 2- or 3-d rigidbody through a scene.
     public abstract class DragND : MonoBehaviour

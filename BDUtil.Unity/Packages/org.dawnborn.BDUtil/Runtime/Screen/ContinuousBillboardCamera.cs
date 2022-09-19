@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace BDUtil
+namespace BDUtil.Screen
 {
     /// A camera which forces others to face me at all times.
     /// SUPER fucking inefficient to leave enabled! But during a period of camera motion...
