@@ -14,7 +14,7 @@ namespace BDUtil.Math
         Chain(int v) => Value = v;
         public static implicit operator int(Chain c) => c.Value;
         public static implicit operator Chain(int c) => new(c);
-        public static implicit operator Chain(float b) => new Cast32b(b).Int;
+        public static implicit operator Chain(float b) => Bitcast.Int(b);
         public static implicit operator Chain(bool? b) => b switch { true => +1, null => 0, false => -1 };
         /// Useful for a comparator: returns the first non-zero.
         /// This can short circuit: Chain.Cmp || FirstCmp(a.x, b.x) || SecondCmp(a.y, b.y) || ...;
@@ -33,9 +33,9 @@ namespace BDUtil.Math
         public static Chain operator ^(Chain a, Chain b)
         => a ^ b.Value;
         public static Chain operator ^(Chain a, float b)
-        => a ^ new Cast32b(b).Int;
+        => a ^ Bitcast.Int(b);
         public static Chain operator ^(Chain a, uint b)
-        => a ^ new Cast32b(b).Int;
+        => a ^ Bitcast.Int(b);
         public static Chain operator ^(Chain a, bool? b)
         => a ^ b switch { true => 1f, null => .5f, false => 0f };
         public static Chain operator ^(Chain a, object b)

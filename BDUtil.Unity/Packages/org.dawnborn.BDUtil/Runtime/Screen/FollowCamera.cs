@@ -8,6 +8,8 @@ using UnityEngine.EventSystems;
 namespace BDRPG.Screen
 {
     /// Creates a camera with a central dead zone, and then outside of that an acceleration curve that attempts to slide towards the mouse direction.
+    [AddComponentMenu("BDUtil/FollowCamera")]
+    [RequireComponent(typeof(Camera))]
     public class FollowCamera : MonoBehaviour
     {
         static readonly Vector2 centerViewport = .5f * Vector2.one;
@@ -18,13 +20,13 @@ namespace BDRPG.Screen
         [Tooltip("Screen-center ratio to extend the curve @ max motion; if dead+max > 1, dead wins.")]
         public Vector2 MaxZone = .875f * Vector2.one;
         [Tooltip("Mouse ratio between dead & max -> speed ratio between 0 & GroundSpeed")]
-        public AnimationCurve Curve;
+        public AnimationCurve Curve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
         [Tooltip("Speed to move along ground to bring mouse back into dead zone")]
         public float GroundSpeed = 25;
         [Tooltip("If true, clamp movement so that the center of the camera is kept inside bounds of physics scene.")]
         public bool KeepFocusInScene = true;
 
-        new UnityEngine.Camera camera;
+        new Camera camera;
         EventSystem eventSystem;
         bool suppressed;
         bool tempSuppressed;

@@ -7,6 +7,7 @@ namespace BDUtil.Screen
     /// If the camera angle isn't fixed, after modifying its angle you should call Billboard.AllFaceCamera.
     /// Special handling for tilemaps, since their internal structure needs (additional) geometry.
     // TODO: strip from build? Right now, it's purely editor-time; it could even be implemented on all spriterenderers...
+    [AddComponentMenu("BDUtil/Billboard")]
     public class Billboard : MonoBehaviour
     {
         [Tooltip("Modify sprite orientation before billboarding (or else each tile's orientation)")]

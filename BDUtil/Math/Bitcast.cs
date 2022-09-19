@@ -25,8 +25,8 @@ namespace BDUtil.Math
     public static class Bitcast
     {
         public static int Int(float f) => new Bitcast<float, int>(f).Out;
-        public static uint Uint(float f) => new Bitcast<float, uint>(f).Out;
-        public static long Long(double d) => new Bitcast<double, int>(d).Out;
-        public static ulong Ulong(double d) => new Bitcast<double, ulong>(d).Out;
+        public static int Int(uint f) => new Bitcast<uint, int>(f).Out;
+        public static long Long(double d) => new Bitcast<double, long>(d).Out;
+        public static long Long(ulong d) => new Bitcast<ulong, long>(d).Out;
     }
 }

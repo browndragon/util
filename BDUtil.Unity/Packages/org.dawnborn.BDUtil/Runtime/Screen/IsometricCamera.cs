@@ -3,6 +3,7 @@ using UnityEngine;
 namespace BDUtil.Screen
 {
     /// A camera with precise angling support. Can adjust angle or position to match.
+    [AddComponentMenu("BDUtil/IsometricCamera")]
     [RequireComponent(typeof(Camera))]
     [Tooltip("Remember to set custom sort order (1,1,10000)")]
     public class IsometricCamera : MonoBehaviour
