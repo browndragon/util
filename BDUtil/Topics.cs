@@ -15,7 +15,9 @@ namespace BDUtil
     }
     public interface IObjectTopic : ITopic, IHas { }
     public interface ITopic<out T> : IObjectTopic, IHas<T> { }
-    public interface IValueTopic<T> : ITopic<T>, IHas<T>, ISet<T> { }
+    /// EXPLICITLY exposes a SetValue method, so that we can use it in unityevents.
+    public interface IValueTopic<T> : ITopic<T>, IHas<T>, ISet<T>
+    { void SetValue(T value); }
 
     /// Set or dictionary-type. Supports visibility/update by Value = Observable.Update; every change updates.
     public interface ICollectionTopic : IValueTopic<Observable.Update>, IHasCollection

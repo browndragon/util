@@ -26,56 +26,42 @@ namespace BDUtil.Pubsub
     public static class Subscribers
     {
         [Serializable]
+        public struct SendMessageConfig
+        {
+            public static readonly SendMessageConfig Default = new() { SendUpwards = false, SendMessageOptions = SendMessageOptions.DontRequireReceiver };
+            public bool SendUpwards;
+            public SendMessageOptions SendMessageOptions;
+        }
+        [Serializable]
         internal class MessageEvent : Subscriber.ISubscribe
         {
+            [Tooltip("The topic on which to listen for updates")]
             public Topic Topic;
-            public bool SendUpwards;
+            [Tooltip("The `this.SendMessage(\"MessageName\", topic, config)`")]
             public string MessageName;
-            public SendMessageOptions SendMessageOptions;
+            public SendMessageConfig Config = SendMessageConfig.Default;
+
             public Action Subscribe(Subscriber thiz)
             {
-                void SendMessage() => thiz.SendMessage(MessageName, Topic, SendMessageOptions);
-                void SendMessageUpwards() => thiz.SendMessageUpwards(MessageName, Topic, SendMessageOptions);
-                return Topic?.Subscribe(SendUpwards ? SendMessageUpwards : SendMessage);
+                void SendMessage() => thiz.SendMessage(MessageName, Topic, Config.SendMessageOptions);
+                void SendMessageUpwards() => thiz.SendMessageUpwards(MessageName, Topic, Config.SendMessageOptions);
+                return Topic?.Subscribe(Config.SendUpwards ? SendMessageUpwards : SendMessage);
             }
         }
         [Serializable]
         internal class MessageValueEvent : Subscriber.ISubscribe
         {
+            [Tooltip("The topic on which to listen for updates")]
             public ObjectTopic Topic;
-            public bool SendUpwards;
+            [Tooltip("The `this.SendMessage(\"MessageName\", topic.Object, config)`")]
             public string MessageName;
-            public SendMessageOptions SendMessageOptions;
+            public SendMessageConfig Config = SendMessageConfig.Default;
             public Action Subscribe(Subscriber thiz)
             {
-                void SendMessage() => thiz.SendMessage(MessageName, Topic.Object, SendMessageOptions);
-                void SendMessageUpwards() => thiz.SendMessageUpwards(MessageName, Topic.Object, SendMessageOptions);
-                return Topic?.Subscribe(SendUpwards ? SendMessageUpwards : SendMessage);
+                void SendMessage() => thiz.SendMessage(MessageName, Topic.Object, Config.SendMessageOptions);
+                void SendMessageUpwards() => thiz.SendMessageUpwards(MessageName, Topic.Object, Config.SendMessageOptions);
+                return Topic?.Subscribe(Config.SendUpwards ? SendMessageUpwards : SendMessage);
             }
-        }
-        [Serializable]
-        internal class LogEvent : Subscriber.ISubscribe
-        {
-            public Topic Topic;
-            Subscriber Thiz;
-            void Log() => Debug.Log($"{Thiz}: received {Topic}", Thiz);
-            public Action Subscribe(Subscriber thiz)
-            {
-                Thiz = thiz;
-                return Topic?.Subscribe(Log);
-            }
-        }
-        [Serializable]
-        internal class InvokeEvent : Subscriber.ISubscribe
-        {
-            public Topic<Action> Topic;
-            public Action Subscribe(Subscriber thiz) => Topic?.Subscribe(a => a?.Invoke());
-        }
-        [Serializable]
-        internal class DestroyEvent : Subscriber.ISubscribe
-        {
-            public Topic<GameObject> Topic;
-            public Action Subscribe(Subscriber thiz) => Topic?.Subscribe(go => UnityEngine.Object.Destroy(go));
         }
         [Serializable]
         internal class UEvent : Subscriber.ISubscribe
@@ -84,27 +70,26 @@ namespace BDUtil.Pubsub
             public UnityEvent Event = new();
             public Action Subscribe(Subscriber thiz) => Topic?.Subscribe(Event.Invoke);
         }
-
         [Serializable]
-        internal class UEventSelf : Subscriber.ISubscribe
+        internal class UEventTopic : Subscriber.ISubscribe
         {
             public Topic Topic;
-            public UnityEvent<Topic> Event = new();
-            public Action Subscribe(Subscriber thiz) => Topic?.Subscribe(() => Event.Invoke(Topic));
+            public UnityEvent<ITopic> Event = new();
+            public Action Subscribe(Subscriber thiz) => Topic?.Subscribe(Event.Invoke);
         }
         [Serializable]
-        public abstract class UEvent<T> : Subscriber.ISubscribe
+        internal class UEventObject : Subscriber.ISubscribe
+        {
+            public ObjectTopic Topic;
+            public UnityEvent<object> Event = new();
+            public Action Subscribe(Subscriber thiz) => Topic?.Subscribe(InvokeEvent);
+            void InvokeEvent() => Event.Invoke(Topic.Object);
+        }
+        public abstract class UEventValue<T> : Subscriber.ISubscribe
         {
             public Topic<T> Topic;
             public UnityEvent<T> Event;
             public Action Subscribe(Subscriber thiz) => Topic?.Subscribe(Event.Invoke);
-        }
-        [Serializable]
-        public class UEventSelf<T> : Subscriber.ISubscribe
-        {
-            public Topic<T> Topic;
-            public UnityEvent<Topic, T> Event;
-            public Action Subscribe(Subscriber thiz) => Topic?.Subscribe(t => Event.Invoke(Topic, t));
         }
     }
 }

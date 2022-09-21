@@ -29,10 +29,11 @@ namespace BDUtil.Pubsub
     {
         [SerializeField] protected T ResetValue = default;
         protected T value;
-        public override T Value { get => value; set { this.value = value; Publish(); } }
+        public override T Value { get => value; set => this.SetValue(value); }
         object ISet.Value { set => Value = (T)value; }
         protected override void OnEnable() { Value = ResetValue; base.OnEnable(); }
         protected override void OnDisable() { Value = ResetValue; base.OnDisable(); }
+        public virtual void SetValue(T value) { this.value = value; Publish(); }
     }
 
     /// A type which holds a collection of other data; it can be directly affected by pushing/pulling Update objects.
@@ -47,8 +48,9 @@ namespace BDUtil.Pubsub
         public override Observable.Update Value
         {
             get => value;
-            set => ObservableCollection.Apply(value);
+            set => SetValue(value);
         }
+        public void SetValue(Observable.Update update) => ObservableCollection.Apply(update);
         object ISet.Value { set => Value = (Observable.Update)value; }
         IEnumerable IHasCollection.Collection => ObservableCollection;
         public abstract Observable.ICollection ObservableCollection { get; }

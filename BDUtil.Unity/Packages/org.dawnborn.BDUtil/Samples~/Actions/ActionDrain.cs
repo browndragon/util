@@ -7,6 +7,7 @@ namespace BDUtil
     {
         public Ticker.Event[] TickerEvents;
         public ActionsHead ActionHead;
+        public Topic[] Subscriptions;
         readonly Disposes.All unsubscribe = new();
         protected override void OnEnableSubsystem()
         {
@@ -15,7 +16,24 @@ namespace BDUtil
             foreach (Ticker.Event @event in TickerEvents)
             {
                 Debug.Log($"Subscribing {ActionHead}.Pop to {@event}");
-                Ticker.main.Topics[@event].Subscribe(ActionHead.Pop);
+                unsubscribe.Add(Ticker.main.Topics[@event].Subscribe(ActionHead.Pop));
+            }
+            foreach (Topic t in Subscriptions)
+            {
+                Debug.Log($"Subscribing to {t}");
+                unsubscribe.Add(t.Subscribe(OnTopic));
+            }
+        }
+        void OnTopic(ITopic t)
+        {
+            switch (t)
+            {
+                case ObjectTopic o:
+                    Debug.Log($"Got update {t}: {o.Object}");
+                    break;
+                default:
+                    Debug.Log($"Got update {t}");
+                    break;
             }
         }
         protected override void OnDisableSubsystem()

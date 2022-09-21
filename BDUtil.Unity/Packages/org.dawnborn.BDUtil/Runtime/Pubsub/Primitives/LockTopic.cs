@@ -8,6 +8,9 @@ namespace BDUtil.Pubsub
     [CreateAssetMenu(menuName = "BDUtil/Prim/LockTopic")]
     public class LockTopic : ValueTopic<Lock>, Scopes.IScopable<bool>, IEnumerable, IEnumerator
     {
+        [Serializable]
+        public class UEventLock : Subscribers.UEventValue<Lock> { }
+
         public override Lock Value
         {
             set

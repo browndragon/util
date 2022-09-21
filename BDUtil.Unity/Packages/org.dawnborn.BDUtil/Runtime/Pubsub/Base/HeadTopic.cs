@@ -27,7 +27,12 @@ namespace BDUtil.Pubsub
 
         protected T value;
         object ISet.Value { set => Value = (T)value; }
-        public override T Value { get => value; set => Push(value); }
+        public override T Value
+        {
+            get => value;
+            set => SetValue(value);
+        }
+        public void SetValue(T value) => Push(value);
 
         [SerializeField, SuppressMessage("IDE", "IDE0052")] string PoppedString;
         [SerializeField, SuppressMessage("IDE", "IDE0052")] string PeekString;

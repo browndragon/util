@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace BDUtil
 {
-    [Tooltip("Proxies unity monobehaviour events into listenable actions. See TickTopic to turn them into normal topics.")]
+    [Tooltip("Proxies unity monobehaviour events into listenable actions. See TickTopic to turn them into normal topics. See Coroutines to implicitly run on them.")]
     [SuppressMessage("IDE", "IDE0051")]
     public class Ticker : MonoBehaviour
     {

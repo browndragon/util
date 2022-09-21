@@ -92,12 +92,11 @@ namespace BDUtil.Editor
         }
         void UpdateMR(SerializedProperty property, Type selectedType)
         {
-            Type hasType = property.managedReferenceValue.OrThrow().GetType();
+            Type hasType = property.managedReferenceValue?.GetType();  // We mightn't have a type if it was null...
             if (hasType != selectedType)
             {
                 property.serializedObject.Update();
-                property.managedReferenceValue =
-                    ((selectedType == null) ? null : Activator.CreateInstance(selectedType));
+                property.managedReferenceValue = selectedType == null ? null : Activator.CreateInstance(selectedType);
                 property.serializedObject.ApplyModifiedProperties();
             }
         }
