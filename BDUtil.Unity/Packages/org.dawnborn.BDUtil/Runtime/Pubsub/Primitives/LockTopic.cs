@@ -6,6 +6,7 @@ namespace BDUtil.Pubsub
 {
     /// Notifies when it transitions from held to released.
     [CreateAssetMenu(menuName = "BDUtil/Prim/LockTopic")]
+    [Bind.Impl(typeof(ValueTopic<Lock>))]
     public class LockTopic : ValueTopic<Lock>, Scopes.IScopable<bool>, IEnumerable, IEnumerator
     {
         [Serializable]
@@ -20,10 +21,13 @@ namespace BDUtil.Pubsub
                 if (wasLocked && !value) Publish();
             }
         }
+        public bool Acquire() => Value.Let(Value++);
+        public void AcquireVoid() => Acquire();
+        public void Release() => Value--;
         /// Mistake? Returns true if you acquired the lock, false if you didn't.
         /// Then, if you didn't acquire, you _could_ subscribe a callback!
-        bool Scopes.IScopable<bool>.Acquire() => Value.Let(Value++);
-        void Scopes.IScopable<bool>.Release(bool _) => Value--;
+        bool Scopes.IScopable<bool>.Acquire() => Acquire();
+        void Scopes.IScopable<bool>.Release(bool _) => Release();
 
         /// Calls some code (potentially in the future) with the lock.
         public void WithLock(Action onAcquire)

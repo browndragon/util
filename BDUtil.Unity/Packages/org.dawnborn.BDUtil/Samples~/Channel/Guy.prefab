@@ -178,14 +178,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Subscribes:
   - rid: 6355733830887538689
-  - rid: 6355733830887538690
   references:
     version: 2
     RefIds:
     - rid: 6355733830887538689
       type: {class: Subscribers/UEvent, ns: BDUtil.Pubsub, asm: org.dawnborn.bdutil.Runtime}
       data:
-        Topic: {fileID: 11400000, guid: d8583e3b4162a42eea755a333a065ce1, type: 2}
+        Topic: {fileID: 11400000, guid: 204252bc76e434cf1ac2243b23d537ed, type: 2}
         Event:
           m_PersistentCalls:
             m_Calls:
@@ -199,24 +198,5 @@ MonoBehaviour:
                 m_IntArgument: 0
                 m_FloatArgument: 0
                 m_StringArgument: Red
-                m_BoolArgument: 0
-              m_CallState: 2
-    - rid: 6355733830887538690
-      type: {class: Subscribers/UEvent, ns: BDUtil.Pubsub, asm: org.dawnborn.bdutil.Runtime}
-      data:
-        Topic: {fileID: 11400000, guid: 03e66c092aa604478b047d1ca7d6ac9c, type: 2}
-        Event:
-          m_PersistentCalls:
-            m_Calls:
-            - m_Target: {fileID: 4843299963415202841}
-              m_TargetAssemblyTypeName: UnityEngine.Animator, UnityEngine
-              m_MethodName: SetTrigger
-              m_Mode: 5
-              m_Arguments:
-                m_ObjectArgument: {fileID: 0}
-                m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-                m_IntArgument: 0
-                m_FloatArgument: 0
-                m_StringArgument: Blue
                 m_BoolArgument: 0
               m_CallState: 2

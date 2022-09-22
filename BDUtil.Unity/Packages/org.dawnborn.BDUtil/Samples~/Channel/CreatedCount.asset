@@ -9,6 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7bd10e4c83ff9478cb94f2e435029d8c, type: 3}
-  m_Name: Destroyed
+  m_Script: {fileID: 11500000, guid: 3e4103cdf545140e591172cf745f931f, type: 3}
+  m_Name: CreatedCount
   m_EditorClassIdentifier: 
+  defaultValue: 0

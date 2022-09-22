@@ -16,5 +16,11 @@ namespace BDUtil.Pubsub
         void OnEnable() => OnEnable_?.Invoke();
         void OnDisable() => OnDisable_?.Invoke();
         void OnDestroy() => OnDestroy_?.Invoke();
+
+        /// Support for animator bools. Could use triggers, but this is fine.
+        Animator animator;
+        Animator Animator => animator ??= GetComponent<Animator>().OrThrow();
+        public void SetAnimatorParamTrue(string name) => Animator.SetBool(name, true);
+        public void SetAnimatorParamFalse(string name) => Animator.SetBool(name, false);
     }
 }

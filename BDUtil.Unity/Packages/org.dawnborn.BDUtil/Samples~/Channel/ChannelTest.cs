@@ -7,10 +7,12 @@ namespace BDUtil.Serialization
 {
     public class ChannelTest : MonoBehaviour
     {
-        public Topic OnCreate;
-        public Topic OnDestroy;
+        public Val<int> NumCreated = new();
+        public Val<int> NumDestroyed = new();
+
         new Camera camera;
         public Ref<Clone> Proto;
+
         [SuppressMessage("IDE", "IDE0051")]
         void Awake() => camera = Camera.main;
         [SuppressMessage("IDE", "IDE0051")]
@@ -21,11 +23,11 @@ namespace BDUtil.Serialization
             Collider2D atPoint = Physics2D.OverlapPoint(point);
             if (atPoint != null)
             {
+                NumDestroyed.Value++;
                 Clone.Release(atPoint);
-                OnDestroy.Publish();
                 return;
             }
-            OnCreate.Publish();
+            NumCreated.Value++;
             Clone cloned = Clone.Acquire(Proto);
             cloned.transform.SetPositionAndRotation(camera.ScreenToWorldPoint(Input.mousePosition).WithZ(0f), Quaternion.identity);
         }

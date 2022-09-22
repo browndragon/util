@@ -220,7 +220,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77df8c325cdb94d23bd591243c0f0017, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  OnCreate: {fileID: 11400000, guid: d8583e3b4162a42eea755a333a065ce1, type: 2}
-  OnDestroy: {fileID: 11400000, guid: 03e66c092aa604478b047d1ca7d6ac9c, type: 2}
+  NumCreated:
+    topic: {fileID: 11400000, guid: 204252bc76e434cf1ac2243b23d537ed, type: 2}
+    DefaultValue: 0
+  NumDestroyed:
+    topic: {fileID: 0}
+    DefaultValue: 0
   Proto:
     assetPath: Assets/Samples/Channel/Guy.prefab

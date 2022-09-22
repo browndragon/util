@@ -25,14 +25,26 @@ namespace BDUtil.Pubsub
 
     /// A topic which holds a value which can be get/set. Best for immutables like int, string, etc.
     /// You _could_ also use a mutable/by reference type, but it only automatically updates on `set`.
+    /// For unity instantiation purposes, you have to subclass it for each T, but this default type
+    /// can get used dynamically (for instance, see Val).
     public abstract class ValueTopic<T> : Topic<T>, IValueTopic<T>
     {
-        [SerializeField] protected T ResetValue = default;
-        protected T value;
-        public override T Value { get => value; set => this.SetValue(value); }
+        [SerializeField] protected T defaultValue = default;
+        [SerializeField] protected T value;
+        public T DefaultValue
+        {
+            get => defaultValue;
+            // does NOT broadcast.
+            set => defaultValue = this.value = value;
+        }
+        public override T Value
+        {
+            get => value;
+            set => SetValue(value);
+        }
         object ISet.Value { set => Value = (T)value; }
-        protected override void OnEnable() { Value = ResetValue; base.OnEnable(); }
-        protected override void OnDisable() { Value = ResetValue; base.OnDisable(); }
+        protected override void OnEnable() { Value = DefaultValue; base.OnEnable(); }
+        protected override void OnDisable() { Value = DefaultValue; base.OnDisable(); }
         public virtual void SetValue(T value) { this.value = value; Publish(); }
     }
 
