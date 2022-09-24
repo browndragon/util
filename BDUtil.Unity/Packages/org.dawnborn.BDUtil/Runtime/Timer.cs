@@ -20,7 +20,8 @@ namespace BDUtil
         public float End => Start + Length;
         public float Delta => Time.deltaTime;
         public float Elapsed => Time.time - Start;
-        public float Ratio => Elapsed / Length;
+        public float FullRatio => Elapsed / Length;
+        public float Ratio => Mathf.Min(1f, FullRatio);
         public bool IsRunning => Elapsed <= Length;
         public static implicit operator float(in Timer t) => t.Ratio;
         public static implicit operator Timer(float t) => new(t, false);
@@ -30,6 +31,15 @@ namespace BDUtil
             Length = length;
             if (reset) Start = Time.time;
             else Start = float.NegativeInfinity;
+        }
+        public IEnumerator @foreach(Action<Timer> action)
+        {
+            foreach (var t in this)
+            {
+                action(t);
+                yield return null;
+            }
+            action(this);
         }
         public Timer Restart()
         {
@@ -66,7 +76,8 @@ namespace BDUtil
         public float End => Start + Length;
         public float Delta => Time.fixedDeltaTime;
         public float Elapsed => Time.fixedTime - Start;
-        public float Ratio => Elapsed / Length;
+        public float FullRatio => Elapsed / Length;
+        public float Ratio => Mathf.Min(1f, FullRatio);
         public bool IsRunning => Elapsed <= Length;
         public static implicit operator float(in FixedTimer t) => t.Ratio;
         public static implicit operator FixedTimer(float t) => new(t, false);
@@ -76,6 +87,15 @@ namespace BDUtil
             Length = length;
             if (reset) Start = Time.fixedTime;
             else Start = float.NegativeInfinity;
+        }
+        public IEnumerator @foreach(Action<FixedTimer> action)
+        {
+            foreach (var t in this)
+            {
+                action(t);
+                yield return Coroutines.Fixed;
+            }
+            action(this);
         }
         public FixedTimer Restart()
         {
@@ -95,7 +115,7 @@ namespace BDUtil
 
         public void Dispose() { }
 
-        FixedTimer IEnumerator<FixedTimer>.Current => this;
+        public FixedTimer Current => this;
         object IEnumerator.Current => this;
         IEnumerator<FixedTimer> IEnumerable<FixedTimer>.GetEnumerator() => this;
         IEnumerator IEnumerable.GetEnumerator() => this;
