@@ -29,6 +29,7 @@ namespace BDUtil.Pubsub
     /// can get used dynamically (for instance, see Val).
     public abstract class ValueTopic<T> : Topic<T>, IValueTopic<T>
     {
+        static readonly IEqualityComparer<T> Eq = EqualityComparer<T>.Default;
         [SerializeField] protected T defaultValue = default;
         [SerializeField] protected T value;
         public T DefaultValue
@@ -45,16 +46,20 @@ namespace BDUtil.Pubsub
         object ISet.Value { set => Value = (T)value; }
         protected override void OnEnable() { Value = DefaultValue; base.OnEnable(); }
         protected override void OnDisable() { Value = DefaultValue; base.OnDisable(); }
-        public virtual void SetValue(T value) { this.value = value; Publish(); }
+        public virtual void SetValue(T value)
+        {
+            bool publish = !Eq.Equals(this.value, value);
+            this.value = value;
+            if (publish) Publish();
+        }
     }
 
     /// A type which holds a collection of other data; it can be directly affected by pushing/pulling Update objects.
-    public abstract class CollectionTopic : Topic<Observable.Update>, IValueTopic<Observable.Update>, ICollectionTopic, ISerializationCallbackReceiver
+    public abstract class CollectionTopic : Topic<Observable.Update>, IValueTopic<Observable.Update>, ICollectionTopic
     {
         protected Observable.Update value;
 
-        [SerializeField] protected string LastUpdate;
-        [SerializeField] protected int Count;
+        [field: SerializeField] public int Count { get; private set; }
         [SuppressMessage("IDE", "IDE0044")]
         [SerializeField, OnChange(nameof(ClearData), AsButton = true)] bool clearData;
         public override Observable.Update Value
@@ -78,12 +83,13 @@ namespace BDUtil.Pubsub
             ClearData();
         }
 
-        void ISerializationCallbackReceiver.OnBeforeSerialize()
+        protected virtual void OnUpdate(Observable.Update update)
         {
-            LastUpdate = value.ToString();
             Count = ObservableCollection.Count;
+            value = update;
+            Publish();
         }
-        void ISerializationCallbackReceiver.OnAfterDeserialize() { }
+        public void DebugLogContents() => Debug.Log(this, this);
         public override string ToString() => $"{base.ToString()}+[{Object}\\{ObservableCollection.Summarize()}]";
     }
     /// A type which holds a collection of other data and notifies on modification.
@@ -93,12 +99,6 @@ namespace BDUtil.Pubsub
         public abstract TColl Collection { get; }
         public override Observable.ICollection ObservableCollection => Collection;
         public CollectionTopic() => Collection.OnUpdate += OnUpdate;
-        void OnUpdate(Observable.Update update)
-        {
-            Count = Collection.Count;
-            value = update;
-            Publish();
-        }
     }
     /// A type which holds a collection of other data and notifies on modification.
     public abstract class CollectionTopic<TColl, T> : CollectionTopic<TColl>

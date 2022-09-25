@@ -19,6 +19,8 @@ namespace BDUtil.Library
             Short = default,
             FullPath,
             Tag,
+            [Tooltip("That is, all entries go to '' and all exits to '-'")]
+            EntryAndExit,
             None,
         }
         public HashSource HashSource_;
@@ -44,16 +46,23 @@ namespace BDUtil.Library
         => Hashes.TryGetValue(hash, out string tag) ? tag : null;
         public string GetTagStringFromHash(AnimatorStateInfo stateInfo, bool isExit)
         {
-            if (HashSource_ == HashSource.None) return null;
-            int hash = (isExit ? -1 : +1) * (HashSource_ switch
+            string tag;
+            int hash = isExit ? -1 : +1;
+            switch (HashSource_)
             {
-                HashSource.FullPath => stateInfo.fullPathHash,
-                HashSource.Short => stateInfo.shortNameHash,
-                HashSource.Tag => stateInfo.tagHash,
-                _ => throw new NotImplementedException($"Can't get {HashSource_} hash from {stateInfo}"),
-            });
-            string tag = GetTagStringFromHash(hash);
-            Debug.Log($"Got tag {hash}->{tag}");
+                case HashSource.None: return null;
+                case HashSource.EntryAndExit: return isExit ? "" : "-";
+                case HashSource.FullPath:
+                    tag = GetTagStringFromHash(hash *= stateInfo.fullPathHash);
+                    break;
+                case HashSource.Short:
+                    tag = GetTagStringFromHash(hash *= stateInfo.shortNameHash);
+                    break;
+                case HashSource.Tag:
+                    tag = GetTagStringFromHash(hash *= stateInfo.tagHash);
+                    break;
+                default: throw new NotImplementedException($"Can't handle {HashSource_}");
+            };
             return tag;
         }
     }

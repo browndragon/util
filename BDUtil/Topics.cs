@@ -21,7 +21,8 @@ namespace BDUtil
 
     /// Set or dictionary-type. Supports visibility/update by Value = Observable.Update; every change updates.
     public interface ICollectionTopic : IValueTopic<Observable.Update>, IHasCollection
-    { }
+    {
+    }
     /// Set or dictionary-type. Supports visibility/update by Value = Observable.Update; every change updates.
     public interface ICollectionTopic<TColl> : IValueTopic<Observable.Update>, IHasCollection<TColl>
     where TColl : Observable.ICollection

@@ -22,8 +22,10 @@ namespace BDUtil
         public float Elapsed => Time.time - Start;
         public float FullRatio => Elapsed / Length;
         public float Ratio => Mathf.Min(1f, FullRatio);
-        public bool IsRunning => Elapsed <= Length;
+        public bool IsStarted => float.IsFinite(Start) && Start != default;
+        public bool IsRunning => IsStarted && Elapsed <= Length;
         public static implicit operator float(in Timer t) => t.Ratio;
+        public static implicit operator bool(in Timer t) => t.IsRunning;
         public static implicit operator Timer(float t) => new(t, false);
 
         public Timer(float length, bool reset = true)
@@ -32,11 +34,11 @@ namespace BDUtil
             if (reset) Start = Time.time;
             else Start = float.NegativeInfinity;
         }
-        public IEnumerator @foreach(Action<Timer> action)
+        public IEnumerator Foreach(Action<Timer> action)
         {
             foreach (var t in this)
             {
-                action(t);
+                try { action(t); } catch { yield break; }
                 yield return null;
             }
             action(this);
@@ -78,8 +80,10 @@ namespace BDUtil
         public float Elapsed => Time.fixedTime - Start;
         public float FullRatio => Elapsed / Length;
         public float Ratio => Mathf.Min(1f, FullRatio);
-        public bool IsRunning => Elapsed <= Length;
+        public bool IsStarted => float.IsFinite(Start) && Start != default;
+        public bool IsRunning => IsStarted && Elapsed <= Length;
         public static implicit operator float(in FixedTimer t) => t.Ratio;
+        public static implicit operator bool(in FixedTimer t) => t.IsRunning;
         public static implicit operator FixedTimer(float t) => new(t, false);
 
         public FixedTimer(float length, bool reset = true)
@@ -88,11 +92,11 @@ namespace BDUtil
             if (reset) Start = Time.fixedTime;
             else Start = float.NegativeInfinity;
         }
-        public IEnumerator @foreach(Action<FixedTimer> action)
+        public IEnumerator Foreach(Action<FixedTimer> action)
         {
             foreach (var t in this)
             {
-                action(t);
+                try { action(t); } catch { yield break; }
                 yield return Coroutines.Fixed;
             }
             action(this);

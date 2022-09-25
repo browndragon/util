@@ -12,6 +12,8 @@ namespace BDUtil.Screen
     {
         [Tooltip("Modify sprite orientation before billboarding (or else each tile's orientation)")]
         public Vector3 PreAdjust;
+        [Tooltip("Modify sprite positioning *after* billboarding (you shouldn't use me for tiles!)")]
+        public Vector3 PostAdjust = new(0f, 0f, .5f);
         void OnStart() => FaceCamera(Camera.main);
         void OnValidate() => EditorUtils.Delay(this, () => FaceCamera(Camera.main));  // "SendMessage can't be called from OnValidate" grumble grumble.
         void OnReset() => EditorUtils.Delay(this, () => FaceCamera(Camera.main));  // "SendMessage can't be called from OnValidate" grumble grumble.
@@ -21,6 +23,7 @@ namespace BDUtil.Screen
         public void FaceCamera() => FaceCamera(Camera.main);
         public void FaceCamera(Camera camera)
         {
+            if (camera == null) return;
             Quaternion rotate = camera.transform.rotation * Quaternion.Euler(PreAdjust.x, PreAdjust.y, PreAdjust.z);
             Grid grid = GetComponent<Grid>();
             if (grid == null)
@@ -28,6 +31,7 @@ namespace BDUtil.Screen
                 // Not a grid, the default case.
                 // Set our transform to any z rotation we already had + the camera's rotation.
                 transform.rotation = rotate;
+                if (transform.parent != null) transform.localPosition = PostAdjust;
                 return;
             }
             foreach (Tilemap tilemap in GetComponentsInChildren<Tilemap>())

@@ -32,7 +32,7 @@ namespace BDUtil.Library
         // For round robin, lets you specify a start offset.
         public int index = -1;
         Timer Delay = 0f;
-        public void PlayByCategory(string tag, bool forceInterrupt)
+        public void PlayByCategoryForce(string tag, bool forceInterrupt)
         {
             if (tag == null) return;
             if (Delay.IsRunning && !CanInterrupt && !forceInterrupt) return;
@@ -48,7 +48,7 @@ namespace BDUtil.Library
             Delay = new Timer(((IPlayable)entry).PlayOn(this));
             if (Automation_ == Automation.Startup) Automation_ = Automation.Continue;
         }
-        public void PlayByCategory(string tag) => PlayByCategory(tag, false);
+        public void PlayByCategory(string tag) => PlayByCategoryForce(tag, false);
         public void PlayCurrentCategory() => PlayByCategory(Category);
         void Update()
         {

@@ -7,6 +7,7 @@ namespace BDUtil.Library
     [CreateAssetMenu(menuName = "BDUtil/Library/Audio")]
     public class AudioLibrary : Library<AudioLibrary.Clip>
     {
+        public float VolumeScale;
         [Serializable]
         public struct Clip : Player.IPlayable
         {
@@ -25,7 +26,8 @@ namespace BDUtil.Library
                 if (AudioClip != null)
                 {
                     source.clip = AudioClip;
-                    source.volume = UnityEngine.Random.Range(MinVolume, MaxVolume);
+                    float scale = DefaultSafe(((AudioLibrary)player.Library).VolumeScale);
+                    source.volume = scale * UnityEngine.Random.Range(MinVolume, MaxVolume);
                     delay += AudioClip.length;
                     source.Play();
                 }
