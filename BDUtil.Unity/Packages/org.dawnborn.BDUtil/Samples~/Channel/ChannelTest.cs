@@ -7,8 +7,8 @@ namespace BDUtil.Serialization
 {
     public class ChannelTest : MonoBehaviour
     {
-        public Val<int> NumCreated = new();
-        public Val<int> NumDestroyed = new();
+        public IntTopic NumCreated = new();
+        public IntTopic NumDestroyed = new();
 
         new Camera camera;
         public Ref<Clone> Proto;

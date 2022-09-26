@@ -1348,7 +1348,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 947de27ad62b54aefbcaee918403392c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ScaleBase: 1.25
+  ScrollSensitivity: -5
+  PinchSensitivity: -0.25
+  Limits: {x: 1, y: 100}
 --- !u!114 &1552775078
 MonoBehaviour:
   m_ObjectHideFlags: 0

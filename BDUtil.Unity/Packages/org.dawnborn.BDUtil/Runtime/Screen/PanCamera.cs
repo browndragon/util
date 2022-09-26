@@ -9,59 +9,64 @@ namespace BDRPG.Screen
     [RequireComponent(typeof(Camera))]
     public class PanCamera : MonoBehaviour
     {
-        public float ScaleBase = 1.5f;
+        public float ScrollSensitivity = -5f;
+        public float PinchSensitivity = -.25f;
+        public Vector2 Limits = new(1f, 100f);
         new Camera camera;
         void Awake() => camera = GetComponent<Camera>();
         float StartTime = float.NaN;
         Vector3 StartPos;
-        float StartDelta;
 
         void Update()
         {
-            bool updating = false;
-            Vector3 position = default;
-            float delta = default;
-            if (Input.GetMouseButton(1) || Input.mouseScrollDelta.y != default)
+            Vector3 position = camera.ScreenPointToRay(Input.mousePosition).AtZ();
+            float delta = Input.mouseScrollDelta.y * ScrollSensitivity;
+            if (Input.touchCount >= 2)
             {
-                position = camera.ScreenPointToRay(Input.mousePosition).AtZ();
-                delta = Input.mouseScrollDelta.y;
+                Touch touch0 = Input.GetTouch(0), touch1 = Input.GetTouch(1);
+                Vector2
+                    new0 = touch0.position,
+                    new1 = touch1.position;
+                position = camera.ScreenPointToRay((new0 + new1) / 2f).AtZ();
                 if (!float.IsFinite(StartTime))
                 {
                     StartTime = Time.time;
                     StartPos = position;
-                    StartDelta = 0f;
-                    if (delta == 0f) return;
-                }
-                updating = true;
-            }
-            else if (Input.touchCount >= 2)
-            {
-                Vector2 touch0, touch1;
-                touch0 = Input.GetTouch(0).position;
-                touch1 = Input.GetTouch(1).position;
-                delta = Vector2.Distance(touch0, touch1);
-                position = camera.ScreenPointToRay((touch0 + touch1) / 2f).AtZ();
-                if (!float.IsFinite(StartTime))
-                {
-                    StartTime = Time.time;
-                    StartPos = position;
-                    StartDelta = delta;
                     return;
                 }
-                updating = true;
+                Vector2
+                    old0 = new0 - touch0.deltaTime * touch0.deltaPosition,
+                    old1 = new1 - touch1.deltaTime * touch1.deltaPosition;
+                float oldDistance = Vector2.Distance(old0, old1);
+                float newDistance = Vector2.Distance(new0, new1);
+                delta = PinchSensitivity * (newDistance - oldDistance);
             }
-            if (updating)
+            else if (
+                Input.GetMouseButton(1)  // Right click or...
+                                         // v-- emulated right click or...
+                || (Input.GetMouseButton(0) && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+                // scroll wheel.
+                || delta != default)
             {
-                transform.position += StartPos - position;
-                camera.orthographicSize /= Mathf.Pow(ScaleBase, delta - StartDelta);
+                if (!float.IsFinite(StartTime))
+                {
+                    StartTime = Time.time;
+                    StartPos = position;
+                    if (delta == 0f) return;
+                }
+            }
+            else
+            {
+                if (float.IsFinite(StartTime))
+                {
+                    StartPos = default;
+                    StartTime = float.NaN;
+                }
                 return;
             }
-            // ending, and not updating anymore...
-            if (float.IsFinite(StartTime))
-            {
-                StartDelta = 0f;
-                StartTime = float.NaN;
-            }
+            transform.position += StartPos - position;
+            camera.orthographicSize += delta;
+            camera.orthographicSize = Mathf.Clamp(camera.orthographicSize, Limits.x, Limits.y);
         }
     }
 }

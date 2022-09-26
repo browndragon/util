@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -29,7 +30,6 @@ namespace BDUtil.Pubsub
     /// can get used dynamically (for instance, see Val).
     public abstract class ValueTopic<T> : Topic<T>, IValueTopic<T>
     {
-        static readonly IEqualityComparer<T> Eq = EqualityComparer<T>.Default;
         [SerializeField] protected T defaultValue = default;
         [SerializeField] protected T value;
         public T DefaultValue
@@ -48,7 +48,7 @@ namespace BDUtil.Pubsub
         protected override void OnDisable() { Value = DefaultValue; base.OnDisable(); }
         public virtual void SetValue(T value)
         {
-            bool publish = !Eq.Equals(this.value, value);
+            bool publish = !EqualityComparer<T>.Default.Equals(this.value, value);
             this.value = value;
             if (publish) Publish();
         }
