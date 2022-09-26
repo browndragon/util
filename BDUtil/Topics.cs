@@ -11,7 +11,7 @@ namespace BDUtil
     public interface IPublisher
     {
         void Publish();
-        void ClearAll();
+        void RemoveAllListeners();
     }
     public interface IObjectTopic : ITopic, IHas { }
     public interface ITopic<out T> : IObjectTopic, IHas<T> { }
@@ -35,7 +35,7 @@ namespace BDUtil
         public event Action Actions;
 
         public void AddListener(Action action) => Actions += action;
-        public void ClearAll() => Actions = Actions?.UnsubscribeAll();
+        public void RemoveAllListeners() => Actions = Actions?.UnsubscribeAll();
         public void Publish() => Actions?.Invoke();
         public void RemoveListener(Action action) => Actions -= action;
     }

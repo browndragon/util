@@ -1,10 +1,25 @@
 using System;
+using System.Diagnostics;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace BDUtil
 {
     public class ConvertTest
     {
+        class TL : TraceListener
+        {
+            readonly ITestOutputHelper output;
+            public TL(ITestOutputHelper helper) => output = helper;
+
+            public override void Write(string message)
+            => output.WriteLine(message);
+
+            public override void WriteLine(string message)
+            => output.WriteLine(message);
+        }
+        public ConvertTest(ITestOutputHelper testOutputHelper)
+        => System.Diagnostics.Trace.Listeners.Add(new TL(testOutputHelper));
         public struct Parsey
         {
             public string value;
@@ -59,6 +74,31 @@ namespace BDUtil
             string value = "hello";
             Parsey parsey = Converter<string, Parsey>.Default.Convert(value);
             Assert.Equal("hello", parsey.value);
+        }
+        delegate void delegateA();
+        delegate void delegateB();
+        [Fact]
+        public void ConvertWorksWithEquality()
+        {
+            string lastCalled = null;
+            delegateA a1 = () => lastCalled = "a1";
+            void a2() => lastCalled = "a2";
+            delegateA a3 = a2;
+            delegateA a4 = a2;
+            delegateB b = a1.Invoke;
+            Assert.Same(a1, a1);
+            Assert.Equal(a1, a1);
+            Assert.NotEqual(a1, a2);
+            Assert.NotEqual(a1, Converter<delegateB, delegateA>.Default.Convert(b));
+            Assert.Equal(a1, Converter<delegateB, delegateA>.Default.Convert(Converter<delegateA, delegateB>.Default.Convert(a1)));
+            a1();
+            Assert.Equal("a1", lastCalled);
+            lastCalled = null;
+            b();
+            Assert.Equal("a1", lastCalled);
+            Assert.NotSame(a3, a4);
+            Assert.Equal(a3, a4);
+            Assert.Equal(a4, Converter<delegateB, delegateA>.Default.Convert(Converter<delegateA, delegateB>.Default.Convert(a3)));
         }
     }
 }

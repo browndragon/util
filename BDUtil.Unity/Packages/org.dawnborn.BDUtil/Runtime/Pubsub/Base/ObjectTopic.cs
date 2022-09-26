@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using BDUtil;
 using BDUtil.Raw;
 using BDUtil.Serialization;
 using UnityEngine;
@@ -57,18 +56,26 @@ namespace BDUtil.Pubsub
     /// A type which holds a collection of other data; it can be directly affected by pushing/pulling Update objects.
     public abstract class CollectionTopic : Topic<Observable.Update>, IValueTopic<Observable.Update>, ICollectionTopic
     {
-        protected Observable.Update value;
-
-        [field: SerializeField] public int Count { get; private set; }
-        [SuppressMessage("IDE", "IDE0044")]
-        [SerializeField, OnChange(nameof(ClearData), AsButton = true)] bool clearData;
+        [Flags]
+        public enum PublishOns
+        {
+            None = 0,
+            BecomeEmpty = 1 << 0,
+            BecomeNonempty = 1 << 1,
+            Add = 1 << 2,
+            Remove = 1 << 3,
+            Update = 1 << 4,
+        }
+        public PublishOns PublishOn = Enums<PublishOns>.Everything;
+        int Count;  // Needed to change-detect Become{,Non}Empty.
+        [SerializeField] Observable.Update value;
         public override Observable.Update Value
         {
             get => value;
             set => SetValue(value);
         }
         public void SetValue(Observable.Update update) => ObservableCollection.Apply(update);
-        object ISet.Value { set => Value = (Observable.Update)value; }
+        object ISet.Value { set => SetValue((Observable.Update)value); }
         IEnumerable IHasCollection.Collection => ObservableCollection;
         public abstract Observable.ICollection ObservableCollection { get; }
         protected void ClearData() => ObservableCollection.Apply(Observable.Update.Clear());
@@ -85,10 +92,28 @@ namespace BDUtil.Pubsub
 
         protected virtual void OnUpdate(Observable.Update update)
         {
-            Count = ObservableCollection.Count;
             value = update;
+            int count = ObservableCollection.Count;
+            bool doPublish = (count == 0 ^ Count == 0) && count switch
+            {
+                0 => PublishOn.HasFlag(PublishOns.BecomeEmpty),
+                _ => PublishOn.HasFlag(PublishOns.BecomeNonempty)
+            };
+            Count = count;
+            if (!doPublish) doPublish = update.Op switch
+            {
+                Observable.Update.Operation.Add => PublishOn.HasFlag(PublishOns.Add),
+                Observable.Update.Operation.Clear => PublishOn.HasFlag(PublishOns.Remove),
+                Observable.Update.Operation.Insert => PublishOn.HasFlag(PublishOns.Add),
+                Observable.Update.Operation.Remove => PublishOn.HasFlag(PublishOns.Remove),
+                Observable.Update.Operation.RemoveAt => PublishOn.HasFlag(PublishOns.Remove),
+                Observable.Update.Operation.Set => PublishOn.HasFlag(PublishOns.Update),
+                _ => throw new NotImplementedException($"Don't know how to handle {update.Op}"),
+            };
+            if (!doPublish) return;
             Publish();
         }
+
         public void DebugLogContents() => Debug.Log(this, this);
         public override string ToString() => $"{base.ToString()}+[{Object}\\{ObservableCollection.Summarize()}]";
     }

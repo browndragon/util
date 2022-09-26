@@ -1,4 +1,5 @@
 using BDUtil.Math;
+using BDUtil.Screen;
 using UnityEngine;
 
 namespace BDRPG.Screen
@@ -9,6 +10,7 @@ namespace BDRPG.Screen
     [RequireComponent(typeof(Camera))]
     public class PanCamera : MonoBehaviour
     {
+        public bool IsBounded;
         public float ScrollSensitivity = -5f;
         public float PinchSensitivity = -.25f;
         public Vector2 Limits = new(1f, 100f);
@@ -64,7 +66,7 @@ namespace BDRPG.Screen
                 }
                 return;
             }
-            transform.position += StartPos - position;
+            if (SceneBounds.Bounds.Contains(position) || !IsBounded) transform.position += StartPos - position;
             camera.orthographicSize += delta;
             camera.orthographicSize = Mathf.Clamp(camera.orthographicSize, Limits.x, Limits.y);
         }

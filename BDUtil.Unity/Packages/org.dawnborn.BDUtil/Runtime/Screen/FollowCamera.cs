@@ -12,7 +12,6 @@ namespace BDRPG.Screen
     [RequireComponent(typeof(Camera))]
     public class FollowCamera : MonoBehaviour
     {
-        static readonly Vector2 centerViewport = .5f * Vector2.one;
         static readonly Rect unitRect = Rect.MinMaxRect(0f, 0f, 1f, 1f);
 
         [Tooltip("Screen-center ratio to ignore movement; (1,1) would disable all, (0,0) none.")]
@@ -23,8 +22,6 @@ namespace BDRPG.Screen
         public AnimationCurve Curve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
         [Tooltip("Speed to move along ground to bring mouse back into dead zone")]
         public float GroundSpeed = 25;
-        [Tooltip("If true, clamp movement so that the center of the camera is kept inside bounds of physics scene.")]
-        public bool KeepFocusInScene = true;
 
         new Camera camera;
         EventSystem eventSystem;
@@ -57,8 +54,8 @@ namespace BDRPG.Screen
             Vector2 mouseViewport = camera.ScreenToViewportPoint(Input.mousePosition);
             // Mouse is off of the screen; don't move.
             if (!unitRect.Contains(mouseViewport)) return;
+            Vector2 ratio = mouseViewport - .5f * Vector2.one;
             // We're now x&y in [-.5f,+.5f].
-            Vector2 ratio = mouseViewport - centerViewport;
             Vector2 halfDead = DeadZone / 2;
             if (ratio.x.IsInRange(-halfDead.x, +halfDead.x)) ratio.x = 0f;
             if (ratio.y.IsInRange(-halfDead.y, +halfDead.y)) ratio.y = 0f;
@@ -72,16 +69,8 @@ namespace BDRPG.Screen
             if (abs.y > halfMax.y) ratio.y = sign.y * 1f;
             else ratio.y = sign.y * Curve.Evaluate((abs.y - halfDead.y) / (halfMax.y - halfDead.y));
 
-            float speed = ratio.magnitude;
-            speed *= GroundSpeed;
-
-            Vector3 lookingAt = camera.ViewportPointToIntersection(centerViewport);
-            Vector3 pointingAt = camera.ViewportPointToIntersection(mouseViewport);
-            Vector3 displacement = pointingAt - lookingAt;
-            displacement = Time.deltaTime * speed * displacement.normalized;
-            pointingAt = lookingAt + displacement;
-            if (KeepFocusInScene && !SceneBounds.Bounds.Contains(pointingAt)) return;
-            transform.position = transform.position + displacement;
+            float speed = Time.deltaTime * GroundSpeed * ratio.magnitude;
+            camera.MoveAlongXY(Input.mousePosition, speed, true);
         }
     }
 }

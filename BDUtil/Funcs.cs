@@ -6,14 +6,6 @@ namespace BDUtil
     /// Extensions & utilities for working with Func & Action.
     public static class Funcs
     {
-        public static T GetTarget<T>(this Delegate thiz, T @default = default)
-        => thiz?.Target switch
-        {
-            null => @default,
-            T t => t,
-            _ => @default,
-        };
-
         /// Returns an action which calls Thiz only the first time it's invoked, none of the following.
         public static Action FirstCalling(this Action thiz)
         => () => { thiz?.Invoke(); thiz = null; };

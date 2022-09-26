@@ -1,5 +1,6 @@
 using System;
 using System.Linq.Expressions;
+using System.Reflection;
 using BDUtil.Traces;
 
 namespace BDUtil
@@ -12,6 +13,30 @@ namespace BDUtil
     }
     public static class Converter
     {
+        // Checks that two methods have the same shape.
+        internal static void CheckInvokeMethodInfos(Type tin, Type tout)
+        {
+            MethodInfo min = tin.GetMethod("Invoke"), mout = tout.GetMethod("Invoke");
+            if (min == null || mout == null) throw new ArgumentException($"{tin}.{min} or {tout}.{mout} no Invoke method!");
+            if (min.ReturnType == null && mout.ReturnType != null) throw new ArgumentException($"{tin}#ret.{min.ReturnType} !<- {tout}#ret.{mout.ReturnType}");
+            ParameterInfo[] pin = min.GetParameters();
+            ParameterInfo[] pout = mout.GetParameters();
+            if (pin.Length != pout.Length) throw new ArgumentException($"{tin}.Length != {tout}.Length");
+            for (int i = 0; i < pin.Length; ++i)
+            {
+                if (!pout[i].ParameterType.IsAssignableFrom(pin[i].ParameterType)) throw new ArgumentException($"{tin}(#{i}.{pin[i].ParameterType}) !<- {tout}(#{i}.{pout[i].ParameterType})");
+            }
+            return;
+        }
+        // Converts delegate A to B -- you're responsible for _everything_, and for impl reasons,
+        // it doesn't even check that they're delegates!!!
+        internal static TOut CrosscastDelegate<TIn, TOut>(TIn tin)
+        => (TOut)(object)Delegate.CreateDelegate(
+            typeof(TOut),
+            ((Delegate)(object)tin).Target,
+            ((Delegate)(object)tin).Method
+        );
+
         public static TOut UpcastOrDefault<TIn, TOut>(TIn tin, TOut @null, TOut @default)
         => tin switch
         {
@@ -47,9 +72,20 @@ namespace BDUtil
                 Default = new(Converter.UpcastOrDefault<TIn, TOut>);
                 return;
             }
-            // Handle implicit or explicit cast operators:
             try
             {
+                // This is awful, but necessary.
+                // Handle delegates by casting to a consistent alternate representation.
+                // Doesn't work if they're ACTUALLY multicast!
+                // This doesn't need to handle Cast<SomeAction, LiterallyADelegate> because those are cast convertible, above.
+                Type delType = typeof(Delegate);
+                if (delType.IsAssignableFrom(tin) && delType.IsAssignableFrom(tout))
+                {
+                    Converter.CheckInvokeMethodInfos(tin, tout);
+                    Default = new(Converter.CrosscastDelegate<TIn, TOut>);
+                    return;
+                }
+                // Handle implicit or explicit cast operators:
                 var source = Expression.Parameter(tin, "source");
                 var convert = Expression.Convert(source, tout);
                 Func<TIn, TOut> converted = Expression.Lambda<Func<TIn, TOut>>(convert, source).Compile();
@@ -60,10 +96,10 @@ namespace BDUtil
                 converted.Invoke(default);
                 Default = new(converted);
             }
-            // Handle inconvertibles.
+            // Handle inconvertibles by returning null.
             catch (Exception e)
             {
-                e.DoTrace($"Suppressing inconvertible {tin}=>{tout}");
+                e.DoTrace($"Suppressing inconvertible {tin}=>{tout}:\nBecause: {e}");
                 Default = null;
             }
         }

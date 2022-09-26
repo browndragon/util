@@ -36,14 +36,14 @@ namespace BDUtil
         public bool RemoveKey(TKey key) { Add(key, default); return true; }
         public bool RemoveKey(TKey key, out TValue value)
         {
-            int index = Enums<TKey>.GetOffset(key);
+            int index = (int)Enums<TKey>.GetOffset(key);
             value = Data[index];
             Data[index] = default;
             return true;
         }
         public bool TryGetValue(TKey key, out TValue value)
         {
-            int index = Enums<TKey>.GetOffset(key);
+            int index = (int)Enums<TKey>.GetOffset(key);
             value = Data[index];
             return true;
         }

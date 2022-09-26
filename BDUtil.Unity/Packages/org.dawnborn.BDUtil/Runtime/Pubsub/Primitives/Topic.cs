@@ -1,6 +1,8 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using BDUtil.Serialization;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace BDUtil.Pubsub
 {
@@ -8,12 +10,16 @@ namespace BDUtil.Pubsub
     [CreateAssetMenu(menuName = "BDUtil/Prim/Topic", order = 0)]
     public class Topic : ScriptableObject, ITopic, IPublisher
     {
-        protected event Action Action;
-        [field: SerializeField, OnChange(nameof(Publish), AsButton = true)]
+        [SerializeField] protected UnityEvent Action;
+
+        [SuppressMessage("IDE", "IDE0044")]
+        [SerializeField, Invoke(nameof(Publish))]
+        Invoke.Button publish;
+
         public Lock IsPublishing { get; protected set; }
-        public void AddListener(Action action) => Action += action;
-        public void RemoveListener(Action action) => Action -= action;
-        public void ClearAll() { Action = Action.UnsubscribeAll(); IsPublishing = default; }
+        public void AddListener(Action action) => Action.AddListener(Converter<Action, UnityAction>.Default.Convert(action));
+        public void RemoveListener(Action action) => Action.RemoveListener(Converter<Action, UnityAction>.Default.Convert(action));
+        public void RemoveAllListeners() { Action.RemoveAllListeners(); IsPublishing = default; }
         public void Publish()
         {
             if (IsPublishing++)  // Increase the amount of publishing, forcing renotification.
@@ -33,7 +39,7 @@ namespace BDUtil.Pubsub
             }
             finally { IsPublishing = false; }
         }
-        protected virtual void OnEnable() => ClearAll();
-        protected virtual void OnDisable() => ClearAll();
+        protected virtual void OnEnable() => RemoveAllListeners();
+        protected virtual void OnDisable() => RemoveAllListeners();
     }
 }
