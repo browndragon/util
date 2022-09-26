@@ -11,9 +11,12 @@ namespace BDUtil.Pubsub
     /// Topic with a payload (who knows what kind though!)
     public abstract class ObjectTopic : Topic, IObjectTopic
     {
+        [SerializeField, Invoke(nameof(DebugValue))] Invoke.Button debugValue;
+        protected virtual void DebugValue() => Debug.Log($"{this}.value = {Object}", this);
+
         object IHas.Value => Object;
         public abstract object Object { get; }
-        public override string ToString() => $"{base.ToString()}+{Object}";
+        public override string ToString() => $"{base.ToString()}";
     }
 
     /// Abstract type for any topic which holds or represents a value.
@@ -56,6 +59,9 @@ namespace BDUtil.Pubsub
     /// A type which holds a collection of other data; it can be directly affected by pushing/pulling Update objects.
     public abstract class CollectionTopic : Topic<Observable.Update>, IValueTopic<Observable.Update>, ICollectionTopic
     {
+        [SerializeField, Invoke(nameof(DebugLogContents))] Invoke.Button debugLogContents;
+        [SerializeField, Invoke(nameof(ClearData))] Invoke.Button clearData;
+
         [Flags]
         public enum PublishOns
         {
@@ -78,7 +84,11 @@ namespace BDUtil.Pubsub
         object ISet.Value { set => SetValue((Observable.Update)value); }
         IEnumerable IHasCollection.Collection => ObservableCollection;
         public abstract Observable.ICollection ObservableCollection { get; }
-        protected void ClearData() => ObservableCollection.Apply(Observable.Update.Clear());
+        protected virtual void ClearData()
+        {
+            ObservableCollection.Apply(Observable.Update.Clear());
+            value = default;
+        }
         protected override void OnEnable()
         {
             base.OnEnable();
@@ -113,9 +123,7 @@ namespace BDUtil.Pubsub
             if (!doPublish) return;
             Publish();
         }
-
-        public void DebugLogContents() => Debug.Log(this, this);
-        public override string ToString() => $"{base.ToString()}+[{Object}\\{ObservableCollection.Summarize()}]";
+        protected virtual void DebugLogContents() => Debug.Log($"{this}.Collection = [{ObservableCollection.Summarize()}]", this);
     }
     /// A type which holds a collection of other data and notifies on modification.
     public abstract class CollectionTopic<TColl> : CollectionTopic, ICollectionTopic<TColl>

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
@@ -29,17 +30,16 @@ namespace BDUtil.Serialization.Editor
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            Debug.Log($"Drawing Invoke(isButton={IsButton},isSuppressed={IsSuppressed})@fieldType={fieldInfo.FieldType}");
-            bool needs = false;
             if (IsButton)
             {
-                if (!IsSuppressed) needs = GUI.Button(position, label);
+                if (IsSuppressed) return;
+                if (!GUI.Button(position, label)) return;
             }
             else
             {
                 EditorGUI.BeginChangeCheck();
                 EditorGUI.PropertyField(position, property);
-                needs = EditorGUI.EndChangeCheck();
+                if (!EditorGUI.EndChangeCheck()) return;
             }
 
             object dirOwner = property.GetTargetObjectWithProperty();
@@ -47,16 +47,22 @@ namespace BDUtil.Serialization.Editor
             Type dirType = dirOwner.GetType();
             property.serializedObject.ApplyModifiedProperties();
 
+            List<MethodInfo> losers = new();
             foreach (MethodInfo method in dirType
                 .GetMethods(BindingFlags.Default | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
                 .Where(m => m.Name == attribute.MethodName)
             )
             {
                 if (method == null) continue;
-                if (method.GetParameters().Length != 0) continue;
+                if (method.GetParameters().Length != 0)
+                {
+                    losers.Add(method);
+                    continue;
+                }
                 method.Invoke(dirOwner, Array.Empty<object>());
-                break;
+                return;
             }
+            Debug.LogWarning($"Couldn't find a method for {dirOwner}.{attribute.MethodName}() (one of [{losers.Summarize()}] with wrong params?)");
         }
     }
 }
