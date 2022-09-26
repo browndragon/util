@@ -32,9 +32,8 @@ namespace BDUtil.Pubsub
         void InvokeAction() => Action?.Invoke(((ValueTopic<T>)topic).Value);
         ValueTopic<T> MakeNewTopic()
         {
-            Type bestType = Bind.Bindings<Bind.ImplAttribute>.Default
-                .GetBestType(typeof(ValueTopic<T>))
-                .OrThrowInternal("Can't instantiate {0}", typeof(ValueTopic<T>));
+            Type bestType = Bind.Bindings<Bind.ImplAttribute>.Default.GetBestType(typeof(ValueTopic<T>));
+            if (bestType == null) throw new NotSupportedException($"Can't instantiate {typeof(ValueTopic<T>)}");
             ValueTopic<T> valueTopic = (ValueTopic<T>)ScriptableObject.CreateInstance(bestType);
             valueTopic.DefaultValue = DefaultValue;
             return valueTopic;

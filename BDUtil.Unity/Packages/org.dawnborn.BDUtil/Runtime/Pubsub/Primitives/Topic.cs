@@ -10,7 +10,7 @@ namespace BDUtil.Pubsub
     [CreateAssetMenu(menuName = "BDUtil/Prim/Topic", order = 0)]
     public class Topic : ScriptableObject, ITopic, IPublisher
     {
-        [SerializeField] protected UnityEvent Action;
+        [SerializeField] protected UnityEvent Action = new();
 
         [SuppressMessage("IDE", "IDE0044")]
         [SerializeField, Invoke(nameof(Publish))]

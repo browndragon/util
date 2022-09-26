@@ -13,8 +13,8 @@ namespace BDUtil.Serialization
     public class Store<TCollection, T, TIn> : ISerializationCallbackReceiver, IHasCollection<TCollection>
     where TCollection : ICollection<T>, new()
     {
-        static readonly Converter<T, TIn> Inwards = Converter<T, TIn>.Default;
-        static readonly Converter<TIn, T> Outwards = Converter<TIn, T>.Default;
+        static readonly IConverter<T, TIn> Inwards = Converter<T, TIn>.Default;
+        static readonly IConverter<TIn, T> Outwards = Converter<TIn, T>.Default;
 
         static Store()
         {
@@ -23,7 +23,6 @@ namespace BDUtil.Serialization
             {
                 System.Diagnostics.Trace.WriteLine($"Null converters {typeof(T)}<->{typeof(TIn)}; won't display");
             }
-
         }
 
         public readonly TCollection Collection = new();
