@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using BDUtil.Serialization;
 using UnityEngine;
 
 namespace BDUtil
@@ -10,8 +9,20 @@ namespace BDUtil
     using UnityEditor;
 #endif
     /// These are safe to call from runtime code; they should degrade and handle the difference between the modes.
+
+#if UNITY_EDITOR
+    // https://medium.com/@fiftytwo/fast-singleton-approach-in-unity-fdba0b5309d5
+    [InitializeOnLoad]
+#endif
     public static class EditorUtils
     {
+        static EditorUtils()
+        {
+#if UNITY_EDITOR
+            Debug.Log($"Preloading {PlayerSettings.GetPreloadedAssets().Summarize()}");
+#endif
+        }
+
         public const string AssetsFolder = "Assets/";
         public const string ResourcesFolder = "/Resources/";
         public const string AssetSuffix = ".asset";
@@ -154,12 +165,13 @@ namespace BDUtil
             return null;
 #endif
         }
+        public interface IClone { string PrefabRef { get; } }
         public static string GetAssetPath(UnityEngine.Object @object) => @object switch
         {
             null => null,
-            Clone c => c.PrefabRef,
-            GameObject g => g.GetComponent<Clone>()?.PrefabRef ?? GetAssetPathOrNull(g),
-            Component c => c.GetComponent<Clone>()?.PrefabRef ?? GetAssetPathOrNull(c.gameObject),
+            IClone c => c.PrefabRef,
+            GameObject g => g.GetComponent<IClone>()?.PrefabRef ?? GetAssetPathOrNull(g),
+            Component c => c.GetComponent<IClone>()?.PrefabRef ?? GetAssetPathOrNull(c.gameObject),
             _ => GetAssetPathOrNull(@object),
         };
 

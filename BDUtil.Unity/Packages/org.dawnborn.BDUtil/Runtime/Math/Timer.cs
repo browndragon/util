@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace BDUtil
+namespace BDUtil.Math
 {
     /// Foreachable duration.
     /// The loop returns the ratio of elapsed over total duration; the original duration object could always be inspected.
@@ -92,12 +92,13 @@ namespace BDUtil
             if (reset) Start = Time.fixedTime;
             else Start = float.NegativeInfinity;
         }
+        static readonly WaitForFixedUpdate waitForFixed = new();
         public IEnumerator Foreach(Action<FixedTimer> action)
         {
             foreach (var t in this)
             {
                 try { action(t); } catch { yield break; }
-                yield return Coroutines.Fixed;
+                yield return waitForFixed;
             }
             action(this);
         }

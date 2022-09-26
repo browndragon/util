@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using BDUtil.Math;
 using UnityEngine;
 
-namespace BDUtil
+namespace BDUtil.Serialization
 {
     [RequireComponent(typeof(Collider2D))]
     public class SubtypeExample : MonoBehaviour, SubtypeExample.ILog

@@ -1,7 +1,7 @@
 using System;
-using System.Collections;
 using BDUtil;
 using BDUtil.Library;
+using BDUtil.Math;
 using UnityEngine;
 
 public class TweenLibrary : Library<TweenLibrary.Tween>
