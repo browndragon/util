@@ -8,7 +8,12 @@ namespace BDUtil
         public struct Parsey
         {
             public string value;
-            public static explicit operator float(Parsey thiz) => float.Parse(thiz.value);
+            public static explicit operator float(Parsey thiz) => thiz.value switch
+            {
+                null => default,
+                "" => default,
+                _ => float.Parse(thiz.value),
+            };
             public static explicit operator Parsey(float thiz) => new() { value = "" + thiz };
             public static implicit operator Parsey(string thiz) => new() { value = "" + thiz };
             public static implicit operator string(Parsey thiz) => thiz.value;

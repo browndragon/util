@@ -16,6 +16,16 @@ namespace BDUtil.Serialization
         static readonly Converter<T, TIn> Inwards = Converter<T, TIn>.Default;
         static readonly Converter<TIn, T> Outwards = Converter<TIn, T>.Default;
 
+        static Store()
+        {
+            Debugs.Initialize();
+            if (Inwards == null || Outwards == null)
+            {
+                System.Diagnostics.Trace.WriteLine($"Null converters {typeof(T)}<->{typeof(TIn)}; won't display");
+            }
+
+        }
+
         public readonly TCollection Collection = new();
         TCollection IHasCollection<TCollection>.Collection => Collection;
         IEnumerable IHasCollection.Collection => Collection;
@@ -27,7 +37,11 @@ namespace BDUtil.Serialization
         void ISerializationCallbackReceiver.OnBeforeSerialize()
         {
             Data.Clear();
-            foreach (T t in Collection) Data.Add(Inwards.Convert(t));
+            foreach (T t in Collection)
+            {
+                TIn converted = Inwards.Convert(t);
+                Data.Add(converted);
+            }
             // This gets called repeatedly while in view...
             // Collection.Clear();
         }
@@ -37,7 +51,11 @@ namespace BDUtil.Serialization
             Data.AddRange(Error);
             Error.Clear();
             foreach (TIn t in Data)
-                try { Collection.Add(Outwards.Convert(t)); }
+                try
+                {
+                    T converted = Outwards.Convert(t);
+                    Collection.Add(converted);
+                }
                 catch { Error.Add(t); }
         }
     }

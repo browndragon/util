@@ -7,15 +7,16 @@ namespace BDUtil.Raw
     /// Represents a base (collection) type which one can watch.
     public static class Observable
     {
+        // Mutable for (sigh) unity.
         [Serializable]
-        public readonly struct Update
+        public struct Update
         {
-            public enum Operation { Unknown = default, Add, Clear, Remove, Insert, RemoveAt, Set }
-            public readonly Operation Op;
-            public readonly object Index;
-            public readonly object New;
-            public readonly bool HasOld;
-            public readonly object Old;
+            public enum Operation { Unknown = default, Ignored, Add, Clear, Remove, Insert, RemoveAt, Set }
+            public Operation Op;
+            public object Index;
+            public object New;
+            public bool HasOld;
+            public object Old;
             public Update(Operation op, object index = default, object @new = default, bool hasOld = false, object old = default)
             {
                 Op = op;
@@ -49,7 +50,11 @@ namespace BDUtil.Raw
         public abstract class Collection<T> : ICollection<T>, IReadOnlyCollection<T>, ICollection
         {
             public event Action<Update> OnUpdate;
-            protected void Invoke(Update update) => OnUpdate?.Invoke(update);
+            protected void Invoke(Update update)
+            {
+                if (update.Op == Update.Operation.Ignored) return;
+                OnUpdate?.Invoke(update);
+            }
             public abstract int Count { get; }
             public abstract void Add(T item);
             public abstract void Clear();
@@ -66,6 +71,7 @@ namespace BDUtil.Raw
             {
                 switch (update.Op)
                 {
+                    case Update.Operation.Ignored: break;
                     case Update.Operation.Add: Add((T)update.New); break;
                     case Update.Operation.Clear: Clear(); break;
                     case Update.Operation.Remove: Remove((T)update.Old); break;
@@ -132,6 +138,7 @@ namespace BDUtil.Raw
             {
                 switch (update.Op)
                 {
+                    case Update.Operation.Ignored: break;
                     case Update.Operation.Add: Add((T)update.New); break;
                     case Update.Operation.Clear: Clear(); break;
                     case Update.Operation.Insert: Insert((int)update.Index, (T)update.New); break;
@@ -191,6 +198,7 @@ namespace BDUtil.Raw
             {
                 switch (update.Op)
                 {
+                    case Update.Operation.Ignored: break;
                     case Update.Operation.Add: Add((KeyValuePair<K, V>)update.New); break;
                     case Update.Operation.Clear: Clear(); break;
                     case Update.Operation.Insert: Add((K)update.Index, (V)update.New); break;

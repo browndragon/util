@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8a4ca0e358154ee1bac84cc465f346a, type: 3}
   m_Name: ActiveGuys
   m_EditorClassIdentifier: 
+  <Count>k__BackingField: 0
+  clearData: 0
   Store:
     Data: []
     Error: []
