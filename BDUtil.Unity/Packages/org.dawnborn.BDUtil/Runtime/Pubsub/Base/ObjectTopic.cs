@@ -74,7 +74,7 @@ namespace BDUtil.Pubsub
         }
         public PublishOns PublishOn = Enums<PublishOns>.Everything;
         int Count;  // Needed to change-detect Become{,Non}Empty.
-        [SerializeField] Observable.Update value;
+        Observable.Update value;
         public override Observable.Update Value
         {
             get => value;
@@ -84,11 +84,7 @@ namespace BDUtil.Pubsub
         object ISet.Value { set => SetValue((Observable.Update)value); }
         IEnumerable IHasCollection.Collection => ObservableCollection;
         public abstract Observable.ICollection ObservableCollection { get; }
-        protected virtual void ClearData()
-        {
-            ObservableCollection.Apply(Observable.Update.Clear());
-            value = default;
-        }
+        protected virtual void ClearData() => ObservableCollection.Apply(Observable.Update.Clear());
         protected override void OnEnable()
         {
             base.OnEnable();
@@ -99,7 +95,6 @@ namespace BDUtil.Pubsub
             base.OnDisable();
             ClearData();
         }
-
         protected virtual void OnUpdate(Observable.Update update)
         {
             value = update;
