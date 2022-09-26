@@ -1,25 +1,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using BDUtil.Math;
 using UnityEngine;
 
 namespace BDUtil.Pubsub
 {
-    [RequireComponent(typeof(Camera))]
     public class TestScript : MonoBehaviour
     {
         public ActionsHead ActionQueue;
-        public float Delay = .2f;
-        float Next = 0f;
-        [SuppressMessage("IDE", "IDE0051")]
-        void Update()
+        public Timer Delay = .25f;
+
+        void OnTriggerStay2D(Collider2D collider)
         {
-            float timeNow = Time.time;
-            if (timeNow < Next) return;
-            Next = timeNow + Delay;
-            Vector2 mouseWas = Input.mousePosition;
-            ActionQueue.Push(() => Debug.Log($"{Time.time}: {mouseWas}@{timeNow}"));
+            if (Delay) return;
+            ActionQueue.Push(() => Debug.Log($"{collider} hit (via action queue!)"));
+            Delay = Delay.Restart();
         }
     }
-
 }

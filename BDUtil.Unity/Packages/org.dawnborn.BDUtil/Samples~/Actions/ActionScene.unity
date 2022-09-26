@@ -134,7 +134,6 @@ GameObject:
   - component: {fileID: 271810751}
   - component: {fileID: 271810750}
   - component: {fileID: 271810749}
-  - component: {fileID: 271810752}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -208,20 +207,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &271810752
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 271810748}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 85ef00e1456c2401bb11f1e52a0d09a6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ActionQueue: {fileID: 11400000, guid: d9c108f6b3a81469da2ec5fa0e375f1c, type: 2}
-  Delay: 0.2
 --- !u!1 &606401508
 GameObject:
   m_ObjectHideFlags: 0
@@ -235,7 +220,7 @@ GameObject:
   - component: {fileID: 606401515}
   - component: {fileID: 606401513}
   - component: {fileID: 606401512}
-  - component: {fileID: 606401514}
+  - component: {fileID: 606401516}
   m_Layer: 0
   m_Name: Circle
   m_TagString: Untagged
@@ -346,53 +331,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!114 &606401514
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 606401508}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 97a264d963ece4166a5be45f7e811a26, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  OnEnter2D:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 11400000, guid: 48c229e5fa2dc4c54b7daddf0f32b167, type: 2}
-        m_TargetAssemblyTypeName: BDUtil.Pubsub.ValueTopic`1[[UnityEngine.Collider2D,
-          UnityEngine
-        m_MethodName: SetValue
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  OnStay2D:
-    m_PersistentCalls:
-      m_Calls: []
-  OnExit2D:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 11400000, guid: 48c229e5fa2dc4c54b7daddf0f32b167, type: 2}
-        m_TargetAssemblyTypeName: BDUtil.Pubsub.ValueTopic`1[[UnityEngine.Collider2D,
-          UnityEngine
-        m_MethodName: SetValue
-        m_Mode: 2
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Collider2D, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!58 &606401515
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -409,6 +347,20 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.5
+--- !u!114 &606401516
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 606401508}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85ef00e1456c2401bb11f1e52a0d09a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ActionQueue: {fileID: 11400000, guid: d9c108f6b3a81469da2ec5fa0e375f1c, type: 2}
+  Delay: 0.2
 --- !u!1 &1184057547
 GameObject:
   m_ObjectHideFlags: 0
