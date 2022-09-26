@@ -239,18 +239,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 478dbcb63d48e48799b754f50fee7d2d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Duration: 0
+  Duration:
+    Length: 0.5
+    Start: -Infinity
   Easer:
-    rid: -2
+    rid: 6355734163437387779
   Target:
-    serialized: 
-  Targets: []
-  Loggers: []
+    serialized: BDUtil.Serialization.SubtypeExample+MouseY, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  Loggers:
+  - rid: 6355734163437387780
   references:
     version: 2
     RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
+    - rid: 6355734163437387779
+      type: {class: Easings/EnumStruct, ns: BDUtil.Math, asm: BDUtil}
+      data:
+        Enum: 0
+    - rid: 6355734163437387780
+      type: {class: SubtypeExample/LogConst, ns: BDUtil.Serialization, asm: Assembly-CSharp}
+      data:
+        Const: second
 --- !u!61 &249461363
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -356,12 +365,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 478dbcb63d48e48799b754f50fee7d2d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Duration: 0
+  Duration:
+    Length: 0.5
+    Start: -Infinity
   Easer:
     rid: -2
   Target:
     serialized: 
-  Targets: []
   Loggers: []
   references:
     version: 2
@@ -492,39 +502,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 478dbcb63d48e48799b754f50fee7d2d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Duration: 0.25
+  Duration:
+    Length: 0.5
+    Start: -Infinity
   Easer:
     rid: 4670118501096095749
   Target:
-    serialized: BDUtil.SubtypeExample+MouseX, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-  Targets:
-  - serialized: BDUtil.SubtypeExample+MouseX, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-  - serialized: BDUtil.SubtypeExample+MouseY, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
+    serialized: BDUtil.Serialization.SubtypeExample+MouseX, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
   Loggers:
-  - rid: 4670118501096095745
-  - rid: 4670118501096095748
-  - rid: 4670118501096095746
+  - rid: 6355734163437387776
+  - rid: 6355734163437387777
   references:
     version: 2
     RefIds:
-    - rid: 4670118501096095745
-      type: {class: SubtypeExample/LogConst, ns: BDUtil, asm: Assembly-CSharp}
-      data:
-        Const: a
-    - rid: 4670118501096095746
-      type: {class: SubtypeExample/LogAffix, ns: BDUtil, asm: Assembly-CSharp}
-      data:
-        Pre: c
-        Post: d
-    - rid: 4670118501096095748
-      type: {class: SubtypeExample/LogAffix, ns: BDUtil, asm: Assembly-CSharp}
-      data:
-        Pre: b1
-        Post: b2
     - rid: 4670118501096095749
       type: {class: Easings/EnumStruct, ns: BDUtil.Math, asm: BDUtil}
       data:
         Enum: 15
+    - rid: 6355734163437387776
+      type: {class: SubtypeExample/LogConst, ns: BDUtil.Serialization, asm: Assembly-CSharp}
+      data:
+        Const: first
+    - rid: 6355734163437387777
+      type: {class: SubtypeExample/LogAffix, ns: BDUtil.Serialization, asm: Assembly-CSharp}
+      data:
+        Pre: pre1
+        Post: post1

@@ -238,12 +238,12 @@ MonoBehaviour:
     Data:
     - Key: nesty
       Value:
-        Data:
+        Data: []
+        Error:
         - zesty
         - tasty
         - nasty
         - awful
-        Error: []
     Error: []
   TargetNicks:
     Data:
@@ -308,7 +308,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   GameObjectRef:
-    assetPath: Assets/Samples/SerializedData/SomeObjectModified Variant.prefab
+    assetPath: Assets/Samples/SerializedData/SomeObject.prefab
   ScriptableObjectRef:
     assetPath: Assets/Samples/SerializedData/SomeStringTopic.asset
   TransformRef:

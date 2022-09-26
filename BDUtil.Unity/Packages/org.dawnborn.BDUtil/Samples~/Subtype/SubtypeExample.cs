@@ -7,29 +7,9 @@ using UnityEngine;
 namespace BDUtil.Serialization
 {
     [RequireComponent(typeof(Collider2D))]
-    public class SubtypeExample : MonoBehaviour, SubtypeExample.ILog
+    public class SubtypeExample : MonoBehaviour
     {
-        public interface ILog
-        {
-            void LogNow();
-        }
-
-        [Serializable]
-        public struct LogConst : ILog
-        {
-            public string Const;
-            public void LogNow() => Debug.Log(Const);
-        }
-
-        [Serializable]
-        public struct LogAffix : ILog
-        {
-            public string Pre;
-            public string Post;
-            public void LogNow() => Debug.Log($"{Pre}{Post}");
-        }
-
-        public float Duration = .5f;
+        public Timer Duration = .5f;
         [SerializeReference, Subtype]
         public Easings.IEase Easer = new Easings.EnumStruct();
         public interface ITarget
@@ -37,7 +17,6 @@ namespace BDUtil.Serialization
             Vector3 Get(Vector3 value);
         }
         public Subtype<ITarget> Target = typeof(MouseX);
-        public Subtype<ITarget>[] Targets;
 
         [Serializable]
         public struct MouseX : ITarget
@@ -58,6 +37,26 @@ namespace BDUtil.Serialization
                 pos.y = mPos.y;
                 return pos;
             }
+        }
+
+        public interface ILog
+        {
+            void LogNow();
+        }
+
+        [Serializable]
+        public struct LogConst : ILog
+        {
+            public string Const;
+            public void LogNow() => Debug.Log(Const);
+        }
+
+        [Serializable]
+        public struct LogAffix : ILog
+        {
+            public string Pre;
+            public string Post;
+            public void LogNow() => Debug.Log($"{Pre}{Post}");
         }
 
         [SerializeReference, Subtype]
