@@ -17,8 +17,8 @@ namespace BDUtil
                 isInstalled = true;
                 System.Diagnostics.Trace.Listeners.Add(new LogListener());
             }
-            public override void Write(String s) => UnityEngine.Debug.Log(s);
-            public override void WriteLine(String s) => UnityEngine.Debug.Log(s);
+            public override void Write(string s) => UnityEngine.Debug.Log(s ?? "");
+            public override void WriteLine(string s) => UnityEngine.Debug.Log(s ?? "");
         }
     }
 }
