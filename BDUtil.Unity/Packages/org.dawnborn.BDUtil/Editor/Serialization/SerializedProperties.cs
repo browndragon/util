@@ -13,7 +13,6 @@ namespace BDUtil.Serialization.Editor
         private const BindingFlags PropertyBindingAttr = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase;
         static readonly Type ListType = typeof(List<>);
         static readonly Type SubtypeType = typeof(Subtype<>);
-        static readonly Type RefType = typeof(Ref<>);
         /// Unwraps List<T>, T[], Subtype<T>, and ofc T => T.
         public static Type GetUnderlyingType(this Type thiz)
         {
@@ -24,7 +23,6 @@ namespace BDUtil.Serialization.Editor
                 {
                     case var x when x == ListType: type = type.GetGenericArguments()[0]; break;
                     case var x when x == SubtypeType: type = type.GetGenericArguments()[0]; break;
-                    case var x when x == RefType: type = type.GetGenericArguments()[0]; break;
                     default: @continue = false; break;
                 }
             return type;

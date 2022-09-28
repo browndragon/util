@@ -66,7 +66,7 @@ namespace BDUtil.Library
             return tag;
         }
     }
-    [Tooltip("A generic source of multiple assets (sprites, audio, treasure??).")]
+    [Tooltip("A generic source of multiple assets (sprites, audio, treasure??) with rules to pick between them.")]
     public class Library<T> : Library
     {
         public Entry[] Entries;

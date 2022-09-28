@@ -9,9 +9,10 @@ namespace BDUtil.Serialization
     {
         public IntTopic NumCreated;
         public IntTopic NumDestroyed;
+        public GameObject Proto;
+        public Val<int> ProofOfConcept = new();
 
         new Camera camera;
-        public Ref<Clone> Proto;
 
         [SuppressMessage("IDE", "IDE0051")]
         void Awake() => camera = Camera.main;
@@ -24,11 +25,11 @@ namespace BDUtil.Serialization
             if (atPoint != null)
             {
                 NumDestroyed.Value++;
-                Clone.Release(atPoint);
+                Clone.Pool.main.Release(atPoint.gameObject);
                 return;
             }
             NumCreated.Value++;
-            Clone cloned = Clone.Acquire(Proto);
+            GameObject cloned = Clone.Pool.main.Acquire(Proto);
             cloned.transform.SetPositionAndRotation(camera.ScreenToWorldPoint(Input.mousePosition).WithZ(0f), Quaternion.identity);
         }
     }

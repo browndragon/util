@@ -97,7 +97,6 @@ namespace BDUtil
             }
             try
             {
-
                 // This is awful, but necessary.
                 // Handle delegates by casting to a consistent alternate representation.
                 // Doesn't work if they're ACTUALLY multicast!

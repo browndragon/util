@@ -14,5 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TickerEvents: 00000000
   ActionHead: {fileID: 11400000, guid: d9c108f6b3a81469da2ec5fa0e375f1c, type: 2}
-  Subscriptions:
-  - {fileID: 11400000, guid: 48c229e5fa2dc4c54b7daddf0f32b167, type: 2}
+  Subscriptions: []

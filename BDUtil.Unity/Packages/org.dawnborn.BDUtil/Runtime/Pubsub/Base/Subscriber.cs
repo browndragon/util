@@ -26,43 +26,16 @@ namespace BDUtil.Pubsub
     public static class Subscribers
     {
         [Serializable]
-        public struct SendMessageConfig
-        {
-            public static readonly SendMessageConfig Default = new() { SendUpwards = false, SendMessageOptions = SendMessageOptions.DontRequireReceiver };
-            public bool SendUpwards;
-            public SendMessageOptions SendMessageOptions;
-        }
-        [Serializable]
         internal class MessageEvent : Subscriber.ISubscribe
         {
             [Tooltip("The topic on which to listen for updates")]
             public Topic Topic;
-            [Tooltip("The `this.SendMessage(\"MessageName\", topic, config)`")]
-            public string MessageName;
-            public SendMessageConfig Config = SendMessageConfig.Default;
+            public bool SendValue = true;
+            public Sender Sender;
 
-            public Action Subscribe(Subscriber thiz)
-            {
-                void SendMessage() => thiz.SendMessage(MessageName, Topic, Config.SendMessageOptions);
-                void SendMessageUpwards() => thiz.SendMessageUpwards(MessageName, Topic, Config.SendMessageOptions);
-                return Topic?.Subscribe(Config.SendUpwards ? SendMessageUpwards : SendMessage);
-            }
+            public Action Subscribe(Subscriber thiz) => Topic?.Subscribe(() => Sender.Send(thiz, SendValue && Topic is ObjectTopic o ? o.Object : null));
         }
-        [Serializable]
-        internal class MessageValueEvent : Subscriber.ISubscribe
-        {
-            [Tooltip("The topic on which to listen for updates")]
-            public ObjectTopic Topic;
-            [Tooltip("The `this.SendMessage(\"MessageName\", topic.Object, config)`")]
-            public string MessageName;
-            public SendMessageConfig Config = SendMessageConfig.Default;
-            public Action Subscribe(Subscriber thiz)
-            {
-                void SendMessage() => thiz.SendMessage(MessageName, Topic.Object, Config.SendMessageOptions);
-                void SendMessageUpwards() => thiz.SendMessageUpwards(MessageName, Topic.Object, Config.SendMessageOptions);
-                return Topic?.Subscribe(Config.SendUpwards ? SendMessageUpwards : SendMessage);
-            }
-        }
+
         [Serializable]
         internal class UEvent : Subscriber.ISubscribe
         {

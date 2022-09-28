@@ -1,3 +1,6 @@
+using System;
+using System.Reflection;
+using BDUtil.Serialization;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,10 +11,19 @@ namespace BDUtil
         [MenuItem("Assets/Create/BDUtil/Script Asset", false, 0)]
         public static void CreateScriptableObject()
         {
-            var selection = Selection.activeObject;
-            var assetPath = AssetDatabase.GetAssetPath(selection.GetInstanceID());
-            var path = $"{System.IO.Directory.GetParent(assetPath)}/{selection.name}.asset";
-            ProjectWindowUtil.CreateAsset(ScriptableObject.CreateInstance(selection.name), path);
+            MonoScript selection = (MonoScript)Selection.activeObject;
+            Type type = selection.GetClass();
+            StaticAsset.FilePathAttribute fpA = type.GetCustomAttribute<StaticAsset.FilePathAttribute>();
+            // First try the "proper location" (if it has one).
+            string path = fpA?.GetFilePath(type);
+            if (path == null)
+            {
+                // Otherwise, the current location.
+                string assetPath = AssetDatabase.GetAssetPath(selection.GetInstanceID());
+                path = $"{System.IO.Directory.GetParent(assetPath)}/{type.Name}.asset";
+            }
+            UnityEngine.Object asset = ScriptableObject.CreateInstance(type);
+            ProjectWindowUtil.CreateAsset(asset, path);
         }
 
         [MenuItem("Assets/Create/BDUtil/Script Asset", true)]

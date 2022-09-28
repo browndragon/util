@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
@@ -7,12 +8,31 @@ namespace BDUtil
     [SuppressMessage("IDE", "IDE0051")]
     public class Ticker : MonoBehaviour
     {
+        static event Action onMain;
+        public static event Action OnMain
+        {
+            add
+            {
+                if (_main == null) onMain += value;
+                else value?.Invoke();
+            }
+            remove => throw new NotSupportedException();
+        }
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        public static void _FireDelayed()
+        {
+            Debug.Log($"FireDelayed subsys reg");
+            main.OrThrow();
+            onMain?.Invoke();
+            onMain = onMain.UnsubscribeAll();
+        }
+
         static Ticker _main;
         [SuppressMessage("IDE", "IDE1006")]
         public static Ticker main
         {
-            get => _main ??= Create<Ticker>();
-            protected set => _main = value;
+            get => _main ??= FindObjectOfType<Ticker>() ?? Create<Ticker>();
+            private set => _main = value;
         }
         public enum Event
         {
@@ -73,13 +93,17 @@ namespace BDUtil
 
         private void OnEnable()
         {
-            main = this;
+            if (_main != null && _main != this)
+                Debug.LogWarning($"Somehow you had another ticker {_main.GetInstanceID()} vs {GetInstanceID()}?");
+            _main = this;
             EnableEvent.Publish();
         }
         private void OnDisable()
         {
             DisableEvent.Publish();
-            if (main == this) main = null;
+            if (_main != null && _main != this)
+                Debug.LogWarning($"Somehow you had another ticker {_main.GetInstanceID()} vs {GetInstanceID()}?");
+            _main = null;
             /// We're hide & don't save, baybee.
             DestroyImmediate(gameObject);
         }
@@ -126,8 +150,7 @@ namespace BDUtil
         {
             var go = new GameObject(name) { hideFlags = hideFlags };
             DontDestroyOnLoad(go);
-            var ticker = go.AddComponent<TTicker>();
-            return ticker;
+            return go.AddComponent<TTicker>();
         }
     }
 }

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace BDUtil.Serialization
 {
-    /// Any monobehaviour that implements IPickle can
+    /// Any monobehaviour that implements IPickle can participate in filling out a pickle map, for later rehydration.
     public interface IPickle
     {
         /// If you return null, you won't depickle; index is the callth of your type.

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-namespace BDUtil
+namespace BDUtil.Serialization
 {
 #if UNITY_EDITOR
     using UnityEditor;
@@ -24,8 +24,8 @@ namespace BDUtil
         }
 
         public const string AssetsFolder = "Assets/";
-        public const string ResourcesFolder = "/Resources/";
-        public const string AssetSuffix = ".asset";
+        public const string ResourcesFolder = "Resources/";
+        public static string DefaultFolder = $"{AssetsFolder}{ResourcesFolder}";
 
         public static bool IsPlayingOrWillChangePlaymode =>
 #if UNITY_EDITOR
@@ -48,6 +48,8 @@ namespace BDUtil
 #endif  // UNITY_EDITOR
         }
 
+        /// Instantiates a prefab with a link back to the parent.
+        /// Mostly for editor scripts, since there's no such beast @ real runtime.
         public static T InstantiateWithLink<T>(T go) where T : UnityEngine.Object =>
 #if UNITY_EDITOR
             (T)PrefabUtility.InstantiatePrefab(go)
@@ -55,6 +57,45 @@ namespace BDUtil
             UnityEngine.Object.Instantiate(go)
 #endif  // UNITY_EDITOR
         ;
+        public interface ICloned { GameObject gameObject { get; } GameObject Root { get; } }
+        /// Support for the CloneTag type. At runtime, all it can do is examine the CloneTag instance,
+        /// but in the editor it can also examine the PrefabUtility and see what it says;
+        /// CloneTag uses _this_ to ensure it's correct.
+        public static GameObject GetCloneRoot(ICloned cloneInstance)
+        {
+            if (cloneInstance == null)
+            {
+                Debug.Log($"Got null cloneTag {cloneInstance} somehow?!");
+                return null;
+            }
+            if (!cloneInstance.gameObject.scene.IsValid())
+            {
+                Debug.Log($"Got cloneTag {cloneInstance} from no-scene somehow?! (asset?)");
+                return cloneInstance.Root;
+            }
+            GameObject bestRoot = cloneInstance.Root;
+#if UNITY_EDITOR
+            bestRoot = PrefabUtility.GetCorrespondingObjectFromSource(cloneInstance.gameObject);
+            if (bestRoot == null)
+            {
+                Debug.LogWarning($"Encountered awake clone with no parents! {cloneInstance}(.root={cloneInstance.Root}, .bestRoot={bestRoot})");
+                return null;
+            }
+            if (bestRoot == cloneInstance.gameObject)
+            {
+                Debug.LogWarning($"Snake eating own tail! {cloneInstance}(.root={cloneInstance.Root}, .bestRoot={bestRoot})");
+                return null;
+            }
+            if (cloneInstance.Root != null && cloneInstance.Root != bestRoot)
+            {
+                Debug.LogWarning($"Prefab & CloneTag disagree (going with prefab)! {cloneInstance}(.root={cloneInstance.Root}, .bestRoot={bestRoot})");
+                return bestRoot;
+            }
+#endif
+            // At runtime, we just have to hope that we've wired all of the other state up correctly.
+            return bestRoot;
+        }
+
         public static GameObject CloneInactive(GameObject gameObject)
         {
             bool wasActive = gameObject.activeSelf;
@@ -73,31 +114,72 @@ namespace BDUtil
             if (!Application.isPlaying) for (int i = transform.childCount - 1; i >= 0; --i) UnityEngine.Object.DestroyImmediate(transform.GetChild(i).gameObject);
             else for (int i = transform.childCount - 1; i >= 0; --i) UnityEngine.Object.Destroy(transform.GetChild(i).gameObject);
         }
-
-        /// Load or, if can't be loaded, _create_, an asset of the given type at the given path.
-        public static UnityEngine.Object AcquireAsset(Type t, string assetPath = default)
+        public static string AssetNaiveBasename(UnityEngine.Object o) => o switch
+        {
+            null => null,
+            GameObject => $"{o.name}.prefab",
+            Component => $"{o.name}.prefab",
+            _ => $"{o.name}.asset",
+        };
+        public static void StoreNewAsset(UnityEngine.Object o, string assetPath = null)
         {
 #if UNITY_EDITOR
-            assetPath ??= $"{AssetsFolder}{ResourcesFolder}{t.Name}{AssetSuffix}";
-            var instance = Load(assetPath, t, false);
-
-            if (instance == null)
+            assetPath ??= Path.Join(DefaultFolder, AssetNaiveBasename(o));
+            string[] parts = assetPath.Split(Path.DirectorySeparatorChar);
+            Debug.Log($"Attempting to store {o} @ {assetPath} = {parts.Length} components");
+            string path = parts[0];
+            for (int i = 1; i < parts.Length - 1; ++i)
             {
-                instance = ScriptableObject.CreateInstance(t);
-                string directoryPath = Path.GetDirectoryName(assetPath);
-                if (!Directory.Exists(directoryPath)) Directory.CreateDirectory(directoryPath);
-                AssetDatabase.Refresh();
-                AssetDatabase.CreateAsset(instance, assetPath);
-                AssetDatabase.SaveAssets();
+                string nextPath = Path.Join(path, parts[i]);
+                if (!AssetDatabase.IsValidFolder(nextPath))
+                {
+                    Debug.Log($"Creating {nextPath}");
+                    AssetDatabase.CreateFolder(path, parts[i]);
+                }
+                else
+                {
+                    Debug.Log($"Had {nextPath}");
+                }
+                path = nextPath;
             }
-
-            // Changing the preloaded assets is only effective if the editor is not in play mode
-            if (!IsPlayingOrWillChangePlaymode) InsertPreloadedAsset(instance);
-
-            return instance;
+            assetPath = AssetDatabase.GenerateUniqueAssetPath(assetPath);
+            try
+            {
+                AssetDatabase.CreateAsset(o, assetPath);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"Can't store {o} @ {assetPath}: {e}");
+            }
+            AssetDatabase.SaveAssets();
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+            EditorGUIUtility.PingObject(o);
 #else
-            throw new NotSupportedException($"Can't acquire {t} @ {assetPath} at runtime!");
+            Debug.LogWarning($"Can't store {o} @ {assetPath} at runtime!");
 #endif
+        }
+
+        /// Easy filtering of the preloaded asset list.
+        /// All nulls, as well as anything of T & matching the predicate, will be removed.
+        /// All non-T or failing the predicate will be retained.
+        /// Then the @new element will be appended (no predicate)
+        /// However, in play mode... none of this happens at all.
+        public static void AdjustPreloadedAssets<T>(Func<T, bool> removePredicate, T @new = default)
+        where T : UnityEngine.Object
+        {
+#if UNITY_EDITOR
+            UnityEngine.Object[] hadPreloadedAssets = PlayerSettings.GetPreloadedAssets();
+            var newPreloadedAssets = new List<UnityEngine.Object>();
+            foreach (UnityEngine.Object @object in hadPreloadedAssets)
+            {
+                if (@object == null) continue;
+                if (@object is not T t) { newPreloadedAssets.Add(@object); continue; }
+                if (!removePredicate(t)) newPreloadedAssets.Add(t);
+            }
+            if (@new != null) newPreloadedAssets.Add(@new);
+            PlayerSettings.SetPreloadedAssets(newPreloadedAssets.ToArray());
+            AssetDatabase.SaveAssets();
+#endif  // UNITY_EDITOR
         }
 
         public static void InsertPreloadedAsset(UnityEngine.Object asset = default)
@@ -118,28 +200,6 @@ namespace BDUtil
                 PlayerSettings.SetPreloadedAssets(newPreloadedAssets.ToArray());
                 AssetDatabase.SaveAssets();
             }
-#endif  // UNITY_EDITOR
-        }
-        public static void RemoveEmptyPreloadedAssets() => InsertPreloadedAsset(null);
-
-        public static void CreateAssetInFolder(UnityEngine.Object newAsset, string ParentFolder, string AssetName)
-        {
-#if UNITY_EDITOR
-            string[] pathSegments = ParentFolder.Split(new char[] { '/' });
-            string accumulatedUnityFolder = "Assets";
-            string accumulatedSystemFolder = Application.dataPath + System.IO.Path.GetDirectoryName("Assets");
-            foreach (string folder in pathSegments)
-            {
-                // TODO: Apparently very unsafe -- meaning so is the ^^^ singleton-supporting code?
-                if (!System.IO.Directory.Exists(accumulatedSystemFolder + System.IO.Path.GetDirectoryName(accumulatedUnityFolder + "/" + folder)))
-                    AssetDatabase.CreateFolder(accumulatedUnityFolder, folder);
-                accumulatedSystemFolder += "/" + folder;
-                accumulatedUnityFolder += "/" + folder;
-            }
-
-            AssetDatabase.CreateAsset(newAsset, AssetsFolder + ParentFolder + "/" + AssetName + ".asset");
-#else  // UNITY_EDITOR
-            Debug.Log($"Can't create missing {newAsset} @ {ParentFolder}/{AssetName} at runtime!");
 #endif  // UNITY_EDITOR
         }
 
@@ -165,15 +225,6 @@ namespace BDUtil
             return null;
 #endif
         }
-        public interface IClone { string PrefabRef { get; } }
-        public static string GetAssetPath(UnityEngine.Object @object) => @object switch
-        {
-            null => null,
-            IClone c => c.PrefabRef,
-            GameObject g => g.GetComponent<IClone>()?.PrefabRef ?? GetAssetPathOrNull(g),
-            Component c => c.GetComponent<IClone>()?.PrefabRef ?? GetAssetPathOrNull(c.gameObject),
-            _ => GetAssetPathOrNull(@object),
-        };
 
         public static UnityEngine.Object Load(string assetPath, Type loadType, bool logWarning = true)
         {

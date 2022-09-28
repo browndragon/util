@@ -9,13 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8a4ca0e358154ee1bac84cc465f346a, type: 3}
-  m_Name: ActiveGuys
+  m_Script: {fileID: 11500000, guid: 1b87c155ff60d43acbfe1c54cba29af8, type: 3}
+  m_Name: Pool
   m_EditorClassIdentifier: 
-  Action:
-    m_PersistentCalls:
-      m_Calls: []
-  PublishOn: -1
-  Store:
+  CacheSceneLimit: 100
+  PerCacheLimit: 3
+  caches:
+    Data: []
+    Error: []
+  extant:
     Data: []
     Error: []

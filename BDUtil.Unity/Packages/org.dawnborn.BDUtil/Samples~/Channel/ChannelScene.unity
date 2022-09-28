@@ -222,5 +222,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   NumCreated: {fileID: 11400000, guid: 204252bc76e434cf1ac2243b23d537ed, type: 2}
   NumDestroyed: {fileID: 11400000, guid: 9db7dd93993304d84ae0752d126c05f2, type: 2}
-  Proto:
-    assetPath: Assets/Samples/Channel/Guy.prefab
+  Proto: {fileID: 1736792110445641669, guid: 444acf0db4400446fb31aec1279863b9, type: 3}
+  ProofOfConcept:
+    topic: {fileID: 11400000, guid: 68e40ef2fa8384e74bb58f5600c2b9de, type: 2}
+    DefaultValue: 0
+    Action:
+      m_PersistentCalls:
+        m_Calls: []

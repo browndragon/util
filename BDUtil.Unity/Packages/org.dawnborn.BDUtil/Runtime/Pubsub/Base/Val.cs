@@ -1,4 +1,5 @@
 using System;
+using BDUtil.Serialization;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -10,7 +11,7 @@ namespace BDUtil.Pubsub
     {
         // Don't be fooled; if this is the wrong parent type, we won't use it.
         // A custom editor will help ensure you only use valid types though.
-        [SerializeField] ObjectTopic topic;
+        [SerializeField, Expandable] ObjectTopic topic;
         public T DefaultValue;
         [SerializeField] UnityEvent<T> Action = new();
         bool hasSubscribed = false;

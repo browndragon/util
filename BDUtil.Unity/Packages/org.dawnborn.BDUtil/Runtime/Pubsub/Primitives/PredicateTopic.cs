@@ -1,4 +1,5 @@
 using System;
+using BDUtil.Serialization;
 using UnityEngine;
 
 namespace BDUtil.Pubsub
@@ -29,12 +30,10 @@ namespace BDUtil.Pubsub
         public struct AST
         {
             public Predicate Predicate;
-            public ObjectTopic[] Topics;
-            public AST[] Children;
+            [Expandable] public ObjectTopic[] Topics;
             public void Subscribe(Action onUpdate, Disposes.All unsubscribe)
             {
                 if (Topics != null) foreach (ObjectTopic topic in Topics) unsubscribe.Add(topic.Subscribe(onUpdate));
-                if (Children != null) foreach (AST child in Children) child.Subscribe(onUpdate, unsubscribe);
             }
             public bool Evaluate() => Predicate switch
             {
@@ -49,21 +48,18 @@ namespace BDUtil.Pubsub
             {
                 bool value = true;
                 if (Topics != null) foreach (ObjectTopic topic in Topics) value ^= topic.IsValuePositive();
-                if (Children != null) foreach (AST ast in Children) value ^= ast.Evaluate();
                 return value;
             }
             bool EvaluateAll()
             {
                 bool value = true;
                 if (Topics != null) foreach (ObjectTopic topic in Topics) if (!(value &= topic.IsValuePositive())) break;
-                if (value && Children != null) foreach (AST ast in Children) if (!(value &= ast.Evaluate())) break;
                 return value;
             }
             bool EvaluateAny()
             {
                 bool value = false;
                 if (Topics != null) foreach (ObjectTopic topic in Topics) if (value |= topic.IsValuePositive()) break;
-                if (value && Children != null) foreach (AST ast in Children) if (value |= ast.Evaluate()) break;
                 return value;
             }
         }

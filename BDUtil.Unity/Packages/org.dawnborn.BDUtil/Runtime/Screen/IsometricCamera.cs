@@ -1,4 +1,5 @@
 using BDUtil;
+using BDUtil.Serialization;
 using UnityEngine;
 
 namespace BDUtil.Screen
@@ -27,7 +28,8 @@ namespace BDUtil.Screen
         void OnValidate()
         {
             UpdateCameraGeometry();
-            EditorUtils.Delay(this, UpdateWithCurrentCamera);  // "SendMessage can't be called from OnValidate" grumble grumble.
+            // "SendMessage can't be called from OnValidate" grumble grumble.
+            EditorUtils.Delay(this, UpdateWithCurrentCamera);
         }
 
         public void UpdateCameraGeometry()

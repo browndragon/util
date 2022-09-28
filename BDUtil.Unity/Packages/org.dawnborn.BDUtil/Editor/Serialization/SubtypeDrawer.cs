@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using BDUtil.Serialization;
 using BDUtil.Serialization.Editor;
 using UnityEditor;
 using UnityEngine;
@@ -10,7 +11,7 @@ namespace BDUtil.Editor
     /// Selects things that are Subtype<T>, serializable type tokens -- OR tagged with SubtypeAttribute -- OR both.
     [CustomPropertyDrawer(typeof(Subtype<>))]
     [CustomPropertyDrawer(typeof(SubtypeAttribute))]
-    public class SubtypeDrawer : AbstractTypeDrawer
+    public class SubtypeDrawer : ChoiceDrawer
     {
         static Type GetTypeByString(string s) => (s == null || s.Length <= 0) ? null : Type.GetType(s);
         static string GetSerializedType(SerializedProperty @base)
@@ -28,10 +29,7 @@ namespace BDUtil.Editor
             SubtypeAttribute attribute = fieldInfo.GetCustomAttribute<SubtypeAttribute>();
 
             // TODO: support per-field preferences, renames, etc?
-            Choices choices = GetCachedSubclassData(new(
-                baseType,
-                attribute
-            ), attribute?.PrintDebug ?? false);
+            Choices choices = Choices.Get(new TypeKey(baseType, attribute));
             List<Type> objects = (List<Type>)choices.Objects.OrThrow();
             // TODO: cache me?
             choices.Index = objects.IndexOf(hasType);
@@ -53,11 +51,7 @@ namespace BDUtil.Editor
             Type baseType = fieldInfo.FieldType.GetUnderlyingType();
             // TODO: support per-field preferences, renames, etc?
             SubtypeAttribute attribute = fieldInfo.GetCustomAttribute<SubtypeAttribute>();
-            Choices choices = GetCachedSubclassData(
-                new(baseType, attribute),
-                attribute?.PrintDebug ?? false
-            );
-
+            Choices choices = Choices.Get(new TypeKey(baseType, attribute));
             string hasTypeString = GetSerializedType(property);
             Type hasType = GetTypeByString(hasTypeString);
             // TODO: cache me?
@@ -70,8 +64,9 @@ namespace BDUtil.Editor
             return choices;
         }
 
-        protected override void Update(SerializedProperty property, Type selectedType)
+        protected override void Update(SerializedProperty property, Choices choices, int prev, int next)
         {
+            Type selectedType = (Type)choices.Objects[next];
             if (property.propertyType == SerializedPropertyType.ManagedReference)
             {
                 UpdateMR(property, selectedType);

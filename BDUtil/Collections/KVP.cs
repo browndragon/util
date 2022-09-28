@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using BDUtil.Raw;
@@ -69,6 +70,24 @@ namespace BDUtil
             public bool Remove(V item) => throw new System.NotImplementedException();
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
+        public static int PreIncrement<K>(this IDictionary<K, int> thiz, K key, int incr = 1)
+        {
+            if (!thiz.TryGetValue(key, out int value)) value = 0;
+            int sum = value + incr;
+            if (sum == 0) thiz.Remove(key);
+            else thiz[key] = sum;
+            return value;
+        }
+        public static int Increment<K>(this IDictionary<K, int> thiz, K key, int incr = 1)
+        {
+            int sum = incr + (thiz.TryGetValue(key, out int value) ? value : 0);
+            if (sum == 0) thiz.Remove(key);
+            else thiz[key] = sum;
+            return sum;
+        }
+        public static int Decrement<K>(this IDictionary<K, int> thiz, K key, int decr = 1)
+        => thiz.Increment(key, -decr);
+
         public static bool Contains<K, VColl, V>(this IDictionary<K, VColl> thiz, K key, V value)
         where VColl : ICollection<V>
         => thiz.TryGetValue(key, out VColl vs) && vs.Contains(value);

@@ -1,26 +1,12 @@
-using System;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace BDUtil.Editor
+namespace BDUtil.Serialization.Editor
 {
-    public abstract class ChoiceDrawer<T> : PropertyDrawer
+    public abstract class ChoiceDrawer : PropertyDrawer
     {
-        public struct Choices
-        {
-            public IReadOnlyList<T> Objects;
-            public string[] Labels;
-            public int Index;
-            public void Deconstruct(out IReadOnlyList<T> objects, out string[] labels, out int index)
-            {
-                objects = Objects;
-                labels = Labels;
-                index = Index;
-            }
-        }
         protected abstract Choices GetChoices(SerializedProperty property);
-        protected abstract void Update(SerializedProperty property, T update);
+        protected abstract void Update(SerializedProperty property, Choices choices, int prevIndex, int index);
         protected virtual float InnerHeight(SerializedProperty property)
         => EditorGUIUtility.singleLineHeight;
         // Just label the field.
@@ -42,7 +28,8 @@ namespace BDUtil.Editor
                     EditorGUI.HelpBox(position, $"TODO: Can't multiedit choices", MessageType.Warning);
                     return;
                 }
-                (var objects, var labels, var prevIndex) = GetChoices(property);
+                Choices choices = GetChoices(property);
+                (var objects, var labels, var prevIndex) = choices;
                 if (objects == null || objects.Count <= 0 || labels == null || labels.Length <= 0)
                 {
                     EditorGUI.HelpBox(position, $"Can't find choices for {property.propertyType}", MessageType.Warning);
@@ -64,8 +51,7 @@ namespace BDUtil.Editor
                     Debug.LogWarning($"User selected {currentIndex} outside [0, {labels.Length}); suppressing");
                     currentIndex = prevIndex;
                 }
-                T selected = objects[currentIndex];
-                Update(property, selected);
+                Update(property, choices, prevIndex, currentIndex);
                 DrawInnerField(position, property, label);
             }
             finally { EditorGUI.EndProperty(); }

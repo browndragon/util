@@ -42,27 +42,36 @@ namespace BDUtil.Serialization.Editor
                 if (!EditorGUI.EndChangeCheck()) return;
             }
 
+            InvokeNamedMethod(property, attribute.MethodName);
+        }
+        public static object InvokeNamedMethod(SerializedProperty property, string name, Type requireReturnType = null)
+        {
             object dirOwner = property.GetTargetObjectWithProperty();
             dirOwner.OrThrow();
             Type dirType = dirOwner.GetType();
             property.serializedObject.ApplyModifiedProperties();
-
+            bool NameMatches(MethodInfo m) => m.Name == name;
             List<MethodInfo> losers = new();
             foreach (MethodInfo method in dirType
-                .GetMethods(BindingFlags.Default | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
-                .Where(m => m.Name == attribute.MethodName)
+                .GetMethods(BindingFlags.Default | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+                .Where(NameMatches)
             )
             {
                 if (method == null) continue;
+                if (requireReturnType != null && !requireReturnType.IsAssignableFrom(method.ReturnType))
+                {
+                    losers.Add(method);
+                    continue;
+                }
                 if (method.GetParameters().Length != 0)
                 {
                     losers.Add(method);
                     continue;
                 }
-                method.Invoke(dirOwner, Array.Empty<object>());
-                return;
+                return method.Invoke(method.IsStatic ? null : dirOwner, Array.Empty<object>());
             }
-            Debug.LogWarning($"Couldn't find a method for {dirOwner}.{attribute.MethodName}() (one of [{losers.Summarize()}] with wrong params?)");
+            Debug.LogWarning($"Couldn't find a method for `{(requireReturnType != null ? requireReturnType.ToString() : "")}{dirOwner}.{name}()` (try one of[{losers.Summarize()}] with wrong params/return type?)");
+            return null;
         }
     }
 }
