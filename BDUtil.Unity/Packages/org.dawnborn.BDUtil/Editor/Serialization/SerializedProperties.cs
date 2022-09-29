@@ -59,48 +59,106 @@ namespace BDUtil.Serialization.Editor
             return (typeAssemblyName, typeClassName);
         }
 
-        public static object GetTargetObjectWithProperty(this SerializedProperty thiz)
+        public static Type GetTargetValueType(this SerializedProperty thiz)
+        {
+            var ptr = thiz.GetTargetParent(out string suffix, out int _);
+            return GetTargetChildMember(ptr, suffix) switch
+            {
+                null => null,
+                PropertyInfo property => property.PropertyType.GetUnderlyingType(),
+                FieldInfo field => field.FieldType.GetUnderlyingType(),
+                _ => throw new NotSupportedException(),
+            };
+        }
+        public static object GetTargetValue(this SerializedProperty thiz)
+        {
+            var ptr = thiz.GetTargetParent(out string suffix, out int suffIndex);
+            if (suffIndex < 0) return GetTargetChildData(ptr, suffix);
+            return GetTargetChildArray(ptr, suffix, suffIndex);
+        }
+        public static bool SetTargetValue(this SerializedProperty thiz, object value)
+        {
+            var ptr = thiz.GetTargetParent(out string suffix, out int suffIndex);
+            if (suffIndex < 0) return SetTargetChildData(ptr, suffix, value);
+            return SetTargetChildArray(ptr, suffix, suffIndex, value);
+        }
+        /// Get the value of this serialized property in real-object space.
+        /// Rewrites the property so that `x.Array.data[0].y.Array.data[1]` is `x[0].y[1]`; returns `x[0]` and the string "y", int 1.
+        /// If it had been `...data[x]....y` (no trailing index), i would be negative.
+        public static object GetTargetParent(this SerializedProperty thiz, out string suffix, out int suffixIndex)
         {
             string path = thiz.propertyPath.Replace(".Array.data[", "[");
             object obj = thiz.serializedObject.targetObject;
             string[] elements = path.Split('.');
-
             for (int i = 0; i < elements.Length - 1; i++)
             {
-                string element = elements[i];
-                int lbrace = element.IndexOf("[");
-                if (lbrace > 0)
-                {
-                    string elementName = element[..lbrace];
-                    int rbrace = element.IndexOf("]");
-                    int index = Convert.ToInt32(element[(lbrace + 1)..rbrace]);
-                    obj = GetListValue(obj, elementName, index);
-                }
-                else obj = GetValue(obj, element);
+                (suffix, suffixIndex) = ParsePathComponent(elements[i]);
+                if (suffixIndex < 0) obj = GetTargetChildData(obj, suffix);
+                else obj = GetTargetChildArray(obj, suffix, suffixIndex);
             }
-
+            (suffix, suffixIndex) = ParsePathComponent(elements[^1]);
             return obj;
         }
-        private static object GetValue(object source, string name)
+        private static (string key, int index) ParsePathComponent(string element)
+        {
+            int lbrace = element.IndexOf("[");
+            if (lbrace > 0)
+            {
+                string key = element[..lbrace];
+                int rbrace = element.IndexOf("]");
+                int index = Convert.ToInt32(element[(lbrace + 1)..rbrace]);
+                return (key, index);
+            }
+            return (element, -1);
+        }
+        private static MemberInfo GetTargetChildMember(object source, string name)
         {
             if (source == null) return null;
             for (Type type = source.GetType(); type != null; type = type.BaseType)
             {
                 FieldInfo field = type.GetField(name, FieldBindingAttr);
-                if (field != null) return field.GetValue(source);
+                if (field != null) return field;
                 PropertyInfo property = type.GetProperty(name, PropertyBindingAttr);
-                if (property != null) return property.GetValue(source, null);
+                if (property != null) return property;
             }
             return null;
         }
-
-        private static object GetListValue(object source, string name, int index)
+        private static object GetTargetChildData(object source, string name)
+        => GetTargetChildMember(source, name) switch
         {
-            if (GetValue(source, name) is not IEnumerable enumerable) return null;
+            null => null,
+            FieldInfo field => field.GetValue(source),
+            PropertyInfo property => property.GetValue(source),
+            _ => throw new NotSupportedException(),
+        };
+        private static object GetTargetChildArray(object source, string name, int index)
+        {
+            if (GetTargetChildData(source, name) is not IEnumerable enumerable) return null;
             if (enumerable is IList list) return index < list.Count ? list[index] : null;
             IEnumerator enumerator = enumerable.GetEnumerator();
             for (int i = 0; i <= index; i++) if (!enumerator.MoveNext()) return null;
             return enumerator.Current;
+        }
+
+        private static bool SetTargetChildData(object source, string name, object toValue)
+        {
+            switch (GetTargetChildMember(source, name))
+            {
+                case null: return false;
+                case FieldInfo field: field.SetValue(source, toValue); return true;
+                case PropertyInfo property: property.SetValue(source, toValue); return true;
+                default: throw new NotSupportedException();
+            }
+        }
+        private static bool SetTargetChildArray(object source, string name, int index, object toValue)
+        {
+            switch (GetTargetChildData(source, name))
+            {
+                case null: return false;
+                case object[] a: a[index] = toValue; return true;
+                case IList l: l[index] = toValue; return true;
+                default: return false;
+            }
         }
     }
 }

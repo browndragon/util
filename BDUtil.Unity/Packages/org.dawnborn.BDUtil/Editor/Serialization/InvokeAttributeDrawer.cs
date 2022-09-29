@@ -46,8 +46,11 @@ namespace BDUtil.Serialization.Editor
         }
         public static object InvokeNamedMethod(SerializedProperty property, string name, Type requireReturnType = null)
         {
-            object dirOwner = property.GetTargetObjectWithProperty();
+            /// These are _barely_ used: the field name is duplicated for the button name.
+            string fieldNamed; int index;
+            object dirOwner = property.GetTargetParent(out fieldNamed, out index);
             dirOwner.OrThrow();
+
             Type dirType = dirOwner.GetType();
             property.serializedObject.ApplyModifiedProperties();
             bool NameMatches(MethodInfo m) => m.Name == name;

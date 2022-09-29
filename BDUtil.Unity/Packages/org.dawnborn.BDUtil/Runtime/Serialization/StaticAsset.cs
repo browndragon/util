@@ -64,24 +64,14 @@ namespace BDUtil.Serialization
             get
             {
                 if (_main == null)
-                    CreateAndLoad();
+                    LoadOrCreate();
                 return _main;
             }
         }
-        public string Path
-        {
-            get
-            {
-                Type type = typeof(T);
-                FilePathAttribute filePathAttribute = type.GetCustomAttribute<StaticAsset.FilePathAttribute>() ?? StaticAsset.FilePathAttribute.Default;
-                return filePathAttribute.GetFilePath(type);
-            }
-        }
-
         // On domain reload ScriptableObject objects gets reconstructed from a backup. We therefore set the s_Instance here
         protected StaticAsset()
         {
-            if (_main != null && _main != this) Debug.LogError($"{GetType().Name}.main={_main.GetInstanceID()} already exists vs this={this.GetInstanceID()}. Did you query the singleton in a constructor?");
+            if (_main != null && _main != this) Debug.LogError($"Duplicate {GetType().Name}.main={_main.GetInstanceID()} already exists vs this={this.GetInstanceID()}");
             else
             {
                 _main = this as T;
@@ -89,7 +79,7 @@ namespace BDUtil.Serialization
             }
         }
 
-        private static void CreateAndLoad()
+        static void LoadOrCreate()
         {
             System.Diagnostics.Debug.Assert(_main == null);
             Type type = typeof(T);
@@ -104,12 +94,9 @@ namespace BDUtil.Serialization
             }
             if (_main == null)
             {
-                // Create
-                T t = CreateInstance<T>();
-                t.name = t.name.IsEmpty() ? $"{typeof(T).Name}.main" : t.name;
-                EditorUtils.StoreNewAsset(_main, filePath);
+                T t = (T)EditorUtils.CreateScriptableObjectOfType(typeof(T), true);
+                System.Diagnostics.Debug.Assert(t != null && _main == t);
             }
-
             System.Diagnostics.Debug.Assert(_main != null);
         }
     }

@@ -96,10 +96,10 @@ namespace BDUtil.Editor
             }
         }
 
-        protected override float InnerHeight(SerializedProperty property)
-        => property.propertyType == SerializedPropertyType.ManagedReference
-            ? EditorGUI.GetPropertyHeight(property, true)
-            : base.InnerHeight(property);
+        // protected override float InnerHeight(SerializedProperty property)
+        // => property.propertyType == SerializedPropertyType.ManagedReference
+        //     ? EditorGUI.GetPropertyHeight(property, true)
+        //     : base.InnerHeight(property);
 
         protected override void DrawInnerField(Rect position, SerializedProperty property, GUIContent label)
         {

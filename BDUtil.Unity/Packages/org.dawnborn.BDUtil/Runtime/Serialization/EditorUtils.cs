@@ -5,6 +5,8 @@ using UnityEngine;
 
 namespace BDUtil.Serialization
 {
+    using System.Reflection;
+    using BDUtil.Math;
 #if UNITY_EDITOR
     using UnityEditor;
 #endif
@@ -121,43 +123,6 @@ namespace BDUtil.Serialization
             Component => $"{o.name}.prefab",
             _ => $"{o.name}.asset",
         };
-        public static void StoreNewAsset(UnityEngine.Object o, string assetPath = null)
-        {
-#if UNITY_EDITOR
-            assetPath ??= Path.Join(DefaultFolder, AssetNaiveBasename(o));
-            string[] parts = assetPath.Split(Path.DirectorySeparatorChar);
-            Debug.Log($"Attempting to store {o} @ {assetPath} = {parts.Length} components");
-            string path = parts[0];
-            for (int i = 1; i < parts.Length - 1; ++i)
-            {
-                string nextPath = Path.Join(path, parts[i]);
-                if (!AssetDatabase.IsValidFolder(nextPath))
-                {
-                    Debug.Log($"Creating {nextPath}");
-                    AssetDatabase.CreateFolder(path, parts[i]);
-                }
-                else
-                {
-                    Debug.Log($"Had {nextPath}");
-                }
-                path = nextPath;
-            }
-            assetPath = AssetDatabase.GenerateUniqueAssetPath(assetPath);
-            try
-            {
-                AssetDatabase.CreateAsset(o, assetPath);
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning($"Can't store {o} @ {assetPath}: {e}");
-            }
-            AssetDatabase.SaveAssets();
-            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
-            EditorGUIUtility.PingObject(o);
-#else
-            Debug.LogWarning($"Can't store {o} @ {assetPath} at runtime!");
-#endif
-        }
 
         /// Easy filtering of the preloaded asset list.
         /// All nulls, as well as anything of T & matching the predicate, will be removed.
@@ -228,8 +193,6 @@ namespace BDUtil.Serialization
 
         public static UnityEngine.Object Load(string assetPath, Type loadType, bool logWarning = true)
         {
-            if (assetPath.IsEmpty()) return null;
-
             if (loadType == null) return null;
             Type getComponent = null;
             if (typeof(Component).IsAssignableFrom(loadType))
@@ -237,9 +200,9 @@ namespace BDUtil.Serialization
                 getComponent = loadType;
                 loadType = typeof(GameObject);
             }
+            if (assetPath.IsEmpty()) assetPath = GuessAssetPath(loadType);
 
             string resourcesPath = GetResourcesPath(assetPath);
-
             if (!resourcesPath.IsEmpty())
             {
                 var resource = Resources.Load(resourcesPath, loadType);
@@ -260,5 +223,97 @@ namespace BDUtil.Serialization
         /// Loads an e.g. prefab based on its assetpath.
         public static T Load<T>(string assetPath) where T : UnityEngine.Object
         => (T)Load(assetPath, typeof(T));
+
+        public static bool IsSO(Type type) => type != null && typeof(ScriptableObject).IsAssignableFrom(type);
+        public static string GuessAssetPath(Type type)
+        {
+            if (type == null) return null;
+            StaticAsset.FilePathAttribute fpA = type.GetCustomAttribute<StaticAsset.FilePathAttribute>();
+            if (typeof(StaticAsset).IsAssignableFrom(type)) fpA ??= StaticAsset.FilePathAttribute.Default;
+            // First try the "proper location" (if it has one).
+            // This catches e.g. singletons, which are precise about naming.
+            if (fpA != null) return fpA.GetFilePath(type);
+
+            // Otherwise, if we have a selection (like a script), place it nearby
+            if (Selection.activeObject != null)
+            {
+                foreach (string guid in Selection.assetGUIDs ?? Array.Empty<string>())
+                {
+                    string selected = AssetDatabase.GUIDToAssetPath(guid);
+                    if (string.IsNullOrEmpty(selected)) continue;
+                    string dir = Path.GetDirectoryName(selected);
+                    string asset = Path.Combine(dir, $"{type.Name}.asset");
+                    return asset;
+                }
+            }
+            // If we've got a useful ProjectWindow, use that.
+            string projectWindow = ProjectWindowPath;
+            if (!projectWindow.IsEmpty()) return projectWindow;
+
+            // Finally, stick it in the default location.
+            return StaticAsset.FilePathAttribute.Default.GetFilePath(type);
+        }
+        static readonly Type projectWindowUtilType = typeof(ProjectWindowUtil);
+        // SIGH
+        static readonly MethodInfo getActiveFolderPath = projectWindowUtilType.GetMethod("GetActiveFolderPath", BindingFlags.Static | BindingFlags.NonPublic);
+        public static string ProjectWindowPath => getActiveFolderPath.Invoke(null, Array.Empty<object>())?.ToString();
+
+        /// Creates an asset where it wants to go, in your current context, or else in the default location.
+        public static ScriptableObject CreateScriptableObjectOfType(Type type, bool store)
+        {
+            if (!IsSO(type)) return null;
+            ScriptableObject asset = ScriptableObject.CreateInstance(type);
+            if (store)
+            {
+#if UNITY_EDITOR
+                string path = GuessAssetPath(type).OrThrow();
+                ProjectWindowUtil.CreateAsset(asset, path);
+                Debug.Log($"Created {asset} wanted {path} got {AssetDatabase.GetAssetOrScenePath(asset)}");
+                return asset;
+#else
+                asset.name = $"{type.Name}.{asset.GetInstanceID()}";
+                Debug.LogWarning($"Created runtime-only {asset}; can't store", asset);
+#endif
+            }
+            return asset;
+        }
+
+        //         public static void StoreNewAsset(UnityEngine.Object o, string assetPath = null)
+        //         {
+        // #if UNITY_EDITOR
+        //             assetPath ??= Path.Join(DefaultFolder, AssetNaiveBasename(o));
+        //             string[] parts = assetPath.Split(Path.DirectorySeparatorChar);
+        //             Debug.Log($"Attempting to store {o} @ {assetPath} = {parts.Length} components");
+        //             string path = parts[0];
+        //             for (int i = 1; i < parts.Length - 1; ++i)
+        //             {
+        //                 string nextPath = Path.Join(path, parts[i]);
+        //                 if (!AssetDatabase.IsValidFolder(nextPath))
+        //                 {
+        //                     Debug.Log($"Creating {nextPath}");
+        //                     AssetDatabase.CreateFolder(path, parts[i]);
+        //                 }
+        //                 else
+        //                 {
+        //                     Debug.Log($"Had {nextPath}");
+        //                 }
+        //                 path = nextPath;
+        //             }
+        //             assetPath = AssetDatabase.GenerateUniqueAssetPath(assetPath);
+        //             try
+        //             {
+        //                 AssetDatabase.CreateAsset(o, assetPath);
+        //             }
+        //             catch (Exception e)
+        //             {
+        //                 Debug.LogWarning($"Can't store {o} @ {assetPath}: {e}");
+        //             }
+        //             AssetDatabase.SaveAssets();
+        //             AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+        //             EditorGUIUtility.PingObject(o);
+        // #else
+        //             Debug.LogWarning($"Can't store {o} @ {assetPath} at runtime!");
+        // #endif
+        //         }
     }
 }

@@ -3,12 +3,15 @@ using UnityEngine;
 
 namespace BDUtil.Serialization.Editor
 {
+    // Psyche! It would make sense if this implemented ChoiceAttribute, but that's ChooseDrawer : ChoiceDrawer.
+    // This also covers selecting type-restricted SubtypeDrawer.
     public abstract class ChoiceDrawer : PropertyDrawer
     {
         protected abstract Choices GetChoices(SerializedProperty property);
         protected abstract void Update(SerializedProperty property, Choices choices, int prevIndex, int index);
         protected virtual float InnerHeight(SerializedProperty property)
-        => EditorGUIUtility.singleLineHeight;
+        => EditorGUI.GetPropertyHeight(property, true);
+
         // Just label the field.
         // Alternatives (see ByRefDrawer) might instead recurse!
         protected virtual void DrawInnerField(Rect position, SerializedProperty property, GUIContent label)

@@ -109,9 +109,7 @@ namespace BDUtil.Serialization
                 if (selected > 0)
                 {
                     Type chosen = (Type)choices.Objects[selected];
-                    ScriptableObject created = ScriptableObject.CreateInstance(chosen);
-                    created.name = $"Default{chosen.Name}";
-                    EditorUtils.StoreNewAsset(created);
+                    ScriptableObject created = EditorUtils.CreateScriptableObjectOfType(chosen, true);
                     property.serializedObject.Update();
                     property.objectReferenceValue = created;
                     property.serializedObject.ApplyModifiedProperties();

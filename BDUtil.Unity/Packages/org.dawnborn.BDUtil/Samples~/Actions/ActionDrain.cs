@@ -15,7 +15,7 @@ namespace BDUtil
 
         void OnEnable()
         {
-            if (ActionHead == null) throw new ArgumentNullException($"Set {this}.ActionHead!");
+            if (ActionHead == null) throw new ArgumentNullException(nameof(ActionHead), this.ToString());
             unsubscribe.Add(ActionHead.Subscribe(a => a()));
 
             /// scriptableobjects are loaded too early to actually use ticker.main, so guard that behind a slow load.
