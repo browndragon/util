@@ -16,7 +16,6 @@ namespace BDUtil.Pubsub
 
         object IHas.Value => Object;
         public abstract object Object { get; }
-        public override string ToString() => $"{base.ToString()}";
     }
 
     /// Abstract type for any topic which holds or represents a value.
@@ -126,14 +125,19 @@ namespace BDUtil.Pubsub
     {
         public abstract TColl Collection { get; }
         public override Observable.ICollection ObservableCollection => Collection;
-        public CollectionTopic() => Collection.OnUpdate += OnUpdate;
+        protected virtual void Awake() => Collection.OnUpdate += OnUpdate;
     }
     /// A type which holds a collection of other data and notifies on modification.
     public abstract class CollectionTopic<TColl, T> : CollectionTopic<TColl>
     where TColl : Observable.ICollection, ICollection<T>, new()
     {
-        [SerializeField, SuppressMessage("IDE", "IDE0044")] Store<TColl, T> Store = new();
+        [SerializeField, SuppressMessage("IDE", "IDE0044")] Store<TColl, T> Store;
         public override TColl Collection => Store.Collection;
+        protected override void Awake()
+        {
+            Store = new();
+            base.Awake();
+        }
     }
     /// A type which holds a collection of other data and notifies on modification.
     public abstract class CollectionTopic<TColl, K, V> : CollectionTopic<TColl>

@@ -11,7 +11,7 @@ namespace BDUtil.Pubsub
     /// Value writes insert to the queue (sorted or not by config).
     /// Notifies on pop nonempty.
     /// Somebody else has to repeatedly call Pop (potentially in response to watching a queue?)
-    public abstract class HeadTopic<T> : Topic<T>, IValueTopic<T>, ISerializationCallbackReceiver
+    public abstract class HeadTopic<T> : Topic<T>, IValueTopic<T>
     {
         [Tooltip("Data source to adapt")]
         public CollectionTopic<Observable.Deque<T>> Deque;
@@ -20,8 +20,6 @@ namespace BDUtil.Pubsub
         public Deques.Ends PopEnd = Deques.Ends.Front;
 
         [Tooltip("Null: Insert @ back; any other value: binary insert using value")]
-        /// Their serializer isn't smart enough to handle a [SerializeReference,Subtype]IComparer<T>.
-        /// ... but I am!
         public Subtype<IComparer<T>> Comparer;
         IComparer<T> cached;
 
@@ -33,16 +31,6 @@ namespace BDUtil.Pubsub
             set => SetValue(value);
         }
         public void SetValue(T value) => Push(value);
-
-        [SerializeField, SuppressMessage("IDE", "IDE0052")] string PoppedString;
-        [SerializeField, SuppressMessage("IDE", "IDE0052")] string PeekString;
-
-        void ISerializationCallbackReceiver.OnBeforeSerialize()
-        {
-            PoppedString = value?.ToString() ?? "none";
-            PeekString = Deque == null ? "unset" : Peek?.ToString() ?? "none";
-        }
-        void ISerializationCallbackReceiver.OnAfterDeserialize() { }
 
         readonly Disposes.All unsubscribe = new();
         protected override void OnEnable()

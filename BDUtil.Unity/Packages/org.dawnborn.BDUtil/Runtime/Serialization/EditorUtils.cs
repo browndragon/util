@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using UnityEngine;
 
 namespace BDUtil.Serialization
 {
-    using System.Reflection;
-    using BDUtil.Math;
 #if UNITY_EDITOR
     using UnityEditor;
 #endif
@@ -59,10 +58,18 @@ namespace BDUtil.Serialization
             UnityEngine.Object.Instantiate(go)
 #endif  // UNITY_EDITOR
         ;
-        public interface ICloned { GameObject gameObject { get; } GameObject Root { get; } }
-        /// Support for the CloneTag type. At runtime, all it can do is examine the CloneTag instance,
+        /// See Cloned for the implementation of this.
+        public interface ICloned
+        {
+            /// The game object that is *this* object.
+            GameObject gameObject { get; }
+            /// The game object that is our root prefab.
+            GameObject Root { get; }
+        }
+        /// Support for the Cloned type. At runtime, all it can do is examine the Cloned instance,
         /// but in the editor it can also examine the PrefabUtility and see what it says;
-        /// CloneTag uses _this_ to ensure it's correct.
+        /// Cloned uses this editor time check, plus assuming it's instantiated via Pool.Acquire(),
+        /// to maintain the linkage.
         public static GameObject GetCloneRoot(ICloned cloneInstance)
         {
             if (cloneInstance == null)
@@ -98,32 +105,6 @@ namespace BDUtil.Serialization
             return bestRoot;
         }
 
-        public static GameObject CloneInactive(GameObject gameObject)
-        {
-            bool wasActive = gameObject.activeSelf;
-            try
-            {
-                gameObject.SetActive(false);
-                return InstantiateWithLink(gameObject);
-            }
-            finally
-            {
-                gameObject.SetActive(wasActive);
-            }
-        }
-        public static void DestroyChildrenByPlaystate(Transform transform)
-        {
-            if (!Application.isPlaying) for (int i = transform.childCount - 1; i >= 0; --i) UnityEngine.Object.DestroyImmediate(transform.GetChild(i).gameObject);
-            else for (int i = transform.childCount - 1; i >= 0; --i) UnityEngine.Object.Destroy(transform.GetChild(i).gameObject);
-        }
-        public static string AssetNaiveBasename(UnityEngine.Object o) => o switch
-        {
-            null => null,
-            GameObject => $"{o.name}.prefab",
-            Component => $"{o.name}.prefab",
-            _ => $"{o.name}.asset",
-        };
-
         /// Easy filtering of the preloaded asset list.
         /// All nulls, as well as anything of T & matching the predicate, will be removed.
         /// All non-T or failing the predicate will be retained.
@@ -147,27 +128,6 @@ namespace BDUtil.Serialization
 #endif  // UNITY_EDITOR
         }
 
-        public static void InsertPreloadedAsset(UnityEngine.Object asset = default)
-        {
-#if UNITY_EDITOR
-            var newPreloadedAssets = new List<UnityEngine.Object>();
-            int instanceId = asset?.GetInstanceID() ?? 0;
-            UnityEngine.Object[] hadPreloadedAssets = PlayerSettings.GetPreloadedAssets();
-            foreach (UnityEngine.Object @object in hadPreloadedAssets)
-            {
-                if (!@object) continue;
-                newPreloadedAssets.Add(@object);
-                if (@object.GetInstanceID() == instanceId) instanceId = 0;
-            }
-            if (instanceId != 0 || newPreloadedAssets.Count != hadPreloadedAssets.Length)
-            {
-                if (instanceId != 0) newPreloadedAssets.Add(asset);
-                PlayerSettings.SetPreloadedAssets(newPreloadedAssets.ToArray());
-                AssetDatabase.SaveAssets();
-            }
-#endif  // UNITY_EDITOR
-        }
-
         /// Translate a "Assets/MyProject/Resources/MyStage/MyAsset.prefab" -> "MyStage/MyAsset" for loading as a resource.
         public static string GetResourcesPath(string assetPath)
         {
@@ -179,16 +139,6 @@ namespace BDUtil.Serialization
             if (lastDot < 0) lastDot = assetPath.Length;
             string resourcesPath = assetPath[resourceIndex..lastDot];
             return resourcesPath;
-        }
-
-        static string GetAssetPathOrNull(UnityEngine.Object @object)
-        {
-#if UNITY_EDITOR
-            return AssetDatabase.GetAssetPath(@object);
-#else  // UNITY_EDITOR
-            Debug.LogWarning($"Can't get {@object} path at runtime!!!");
-            return null;
-#endif
         }
 
         public static UnityEngine.Object Load(string assetPath, Type loadType, bool logWarning = true)
@@ -224,7 +174,7 @@ namespace BDUtil.Serialization
         public static T Load<T>(string assetPath) where T : UnityEngine.Object
         => (T)Load(assetPath, typeof(T));
 
-        public static bool IsSO(Type type) => type != null && typeof(ScriptableObject).IsAssignableFrom(type);
+        static bool IsSO(Type type) => type != null && typeof(ScriptableObject).IsAssignableFrom(type);
         public static string GuessAssetPath(Type type)
         {
             if (type == null) return null;
@@ -277,43 +227,5 @@ namespace BDUtil.Serialization
             }
             return asset;
         }
-
-        //         public static void StoreNewAsset(UnityEngine.Object o, string assetPath = null)
-        //         {
-        // #if UNITY_EDITOR
-        //             assetPath ??= Path.Join(DefaultFolder, AssetNaiveBasename(o));
-        //             string[] parts = assetPath.Split(Path.DirectorySeparatorChar);
-        //             Debug.Log($"Attempting to store {o} @ {assetPath} = {parts.Length} components");
-        //             string path = parts[0];
-        //             for (int i = 1; i < parts.Length - 1; ++i)
-        //             {
-        //                 string nextPath = Path.Join(path, parts[i]);
-        //                 if (!AssetDatabase.IsValidFolder(nextPath))
-        //                 {
-        //                     Debug.Log($"Creating {nextPath}");
-        //                     AssetDatabase.CreateFolder(path, parts[i]);
-        //                 }
-        //                 else
-        //                 {
-        //                     Debug.Log($"Had {nextPath}");
-        //                 }
-        //                 path = nextPath;
-        //             }
-        //             assetPath = AssetDatabase.GenerateUniqueAssetPath(assetPath);
-        //             try
-        //             {
-        //                 AssetDatabase.CreateAsset(o, assetPath);
-        //             }
-        //             catch (Exception e)
-        //             {
-        //                 Debug.LogWarning($"Can't store {o} @ {assetPath}: {e}");
-        //             }
-        //             AssetDatabase.SaveAssets();
-        //             AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
-        //             EditorGUIUtility.PingObject(o);
-        // #else
-        //             Debug.LogWarning($"Can't store {o} @ {assetPath} at runtime!");
-        // #endif
-        //         }
     }
 }

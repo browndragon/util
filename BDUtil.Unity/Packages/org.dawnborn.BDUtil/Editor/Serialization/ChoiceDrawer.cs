@@ -20,7 +20,7 @@ namespace BDUtil.Serialization.Editor
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             // Necessary per docs.
-            EditorGUI.BeginProperty(position, label, property);
+            label = EditorGUI.BeginProperty(position, label, property);
             try
             {
                 // Don't support multi!

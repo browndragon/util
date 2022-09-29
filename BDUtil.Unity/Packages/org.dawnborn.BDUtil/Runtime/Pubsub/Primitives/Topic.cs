@@ -15,13 +15,38 @@ namespace BDUtil.Pubsub
         [SuppressMessage("IDE", "IDE0044")]
         [SerializeField, Invoke(nameof(Publish))]
         Invoke.Button publish;
+        [SuppressMessage("IDE", "IDE0044")]
+        [SerializeField, Invoke(nameof(DebugPrintSubscribers))]
+        Invoke.Button debugPrintSubscribers;
+        [Flags]
+        public enum TraceOns
+        {
+            None = default,
+            Add,
+            Remove,
+            Publish,
+        };
+        public TraceOns TraceOn = Enums<TraceOns>.Everything;
 
         public Lock IsPublishing { get; protected set; }
-        public void AddListener(Action action) => Action.AddListener(Converter<Action, UnityAction>.Default.Convert(action));
-        public void RemoveListener(Action action) => Action.RemoveListener(Converter<Action, UnityAction>.Default.Convert(action));
-        public void RemoveAllListeners() { Action.RemoveAllListeners(); IsPublishing = default; }
+        public void AddListener(Action action)
+        {
+            if (TraceOn.HasFlag(TraceOns.Add)) Debug.Log($"{this}.Add({action.Target}.{action.Method})");
+            Action.AddListener(Converter<Action, UnityAction>.Default.Convert(action));
+        }
+        public void RemoveListener(Action action)
+        {
+            if (TraceOn.HasFlag(TraceOns.Remove)) Debug.Log($"{this}.Remove({action.Target}.{action.Method})");
+            Action.RemoveListener(Converter<Action, UnityAction>.Default.Convert(action));
+        }
+        public void RemoveAllListeners()
+        {
+            if (TraceOn.HasFlag(TraceOns.Remove)) Debug.Log($"{this}.RemoveAll()");
+            Action.RemoveAllListeners(); IsPublishing = default;
+        }
         public void Publish()
         {
+            if (TraceOn.HasFlag(TraceOns.Publish)) Debug.Log($"{this}.Publish()");
             if (IsPublishing++)  // Increase the amount of publishing, forcing renotification.
             {
                 Debug.Log($"Suppressing {this}.Publish(); already in flight.", this);
@@ -39,7 +64,17 @@ namespace BDUtil.Pubsub
             }
             finally { IsPublishing = false; }
         }
-        protected virtual void OnEnable() => RemoveAllListeners();
+        protected void DebugPrintSubscribers()
+        {
+            Debug.Log($"All subscribers {this}:---", this);
+            int i = 0;
+            foreach (Delegate subscriber in ReflectionUtils.GetSubscribers(Action))
+            {
+                Debug.Log($"#{i}: {subscriber?.Target}.{subscriber?.Method} => {subscriber?.GetInvocationList().Summarize()}", subscriber?.Target as UnityEngine.Object ?? this);
+            }
+            Debug.Log($"---:All subscribers {this}", this);
+        }
+        protected virtual void OnEnable() { }
         protected virtual void OnDisable() => RemoveAllListeners();
     }
 }
