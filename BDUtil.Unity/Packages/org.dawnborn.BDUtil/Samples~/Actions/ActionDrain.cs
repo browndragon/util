@@ -8,24 +8,24 @@ namespace BDUtil
     [FilePath]
     public class ActionDrain : StaticAsset<ActionDrain>
     {
-        public Ticker.Event[] TickerEvents;
+        public Lifecycle.Event[] TickerEvents;
         public ActionsHead ActionHead;
         public Topic[] Subscriptions;
         readonly Disposes.All unsubscribe = new();
 
-        void OnEnable()
+        protected void OnEnable()
         {
             if (ActionHead == null) throw new ArgumentNullException(nameof(ActionHead), this.ToString());
             unsubscribe.Add(ActionHead.Subscribe(a => a()));
 
             /// scriptableobjects are loaded too early to actually use ticker.main, so guard that behind a slow load.
-            Ticker.OnMain += () =>
+            Lifecycle.OnMain += () =>
             {
                 Debug.Log($"Ticker showed up; registering for ticks");
-                foreach (Ticker.Event @event in TickerEvents)
+                foreach (Lifecycle.Event @event in TickerEvents)
                 {
                     Debug.Log($"Subscribing {ActionHead}.Pop to {@event}");
-                    unsubscribe.Add(Ticker.main.Topics[@event].Subscribe(ActionHead.Pop));
+                    unsubscribe.Add(Lifecycle.main.Topics[@event].Subscribe(ActionHead.Pop));
                 }
             };
 
@@ -35,8 +35,8 @@ namespace BDUtil
                 unsubscribe.Add(t.Subscribe(OnTopic));
             }
         }
-        void OnDisable() => unsubscribe.Dispose();
-        void OnTopic(ITopic t)
+        protected void OnDisable() => unsubscribe.Dispose();
+        protected void OnTopic(ITopic t)
         {
             switch (t)
             {

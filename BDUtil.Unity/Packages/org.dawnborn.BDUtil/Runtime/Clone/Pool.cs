@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using BDUtil.Raw;
 using BDUtil.Serialization;
 using UnityEngine;
@@ -35,10 +36,10 @@ namespace BDUtil.Clone
                 return cachingScene;
             }
         }
-        [SerializeField] StoreMap<GameObject, List<GameObject>> caches = new();
-        [SerializeField] StoreMap<int, GameObject> extant = new();
+        [SerializeField, SuppressMessage("IDE", "IDE0044")] StoreMap<GameObject, List<GameObject>> caches = new();
+        [SerializeField, SuppressMessage("IDE", "IDE0044")] StoreMap<int, GameObject> extant = new();
 
-        void Awake()
+        protected void Awake()
         {
             caches.Collection.Clear();
             extant.Collection.Clear();

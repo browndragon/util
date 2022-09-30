@@ -15,12 +15,12 @@ namespace BDUtil.Pubsub
         public UnityEvent OnDrag;
         public UnityEvent OnUp;
 
-        void OnMouseEnter() => OnEnter?.Invoke();
-        void OnMouseOver() => OnOver?.Invoke();
-        void OnMouseExit() => OnExit?.Invoke();
-        void OnMouseDown() => OnDown?.Invoke();
-        void OnMouseDrag() => OnDrag?.Invoke();
-        void OnMouseUp() => OnUp?.Invoke();
+        protected void OnMouseEnter() => OnEnter?.Invoke();
+        protected void OnMouseOver() => OnOver?.Invoke();
+        protected void OnMouseExit() => OnExit?.Invoke();
+        protected void OnMouseDown() => OnDown?.Invoke();
+        protected void OnMouseDrag() => OnDrag?.Invoke();
+        protected void OnMouseUp() => OnUp?.Invoke();
 
         public void Log(string ident) => Debug.Log(ident);
         public void LogWithPos(string ident) => Debug.Log($"{ident}: {Input.mousePosition}");

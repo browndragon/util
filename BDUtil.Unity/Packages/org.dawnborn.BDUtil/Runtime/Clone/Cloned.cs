@@ -14,12 +14,12 @@ namespace BDUtil.Clone
         public bool HasRoot => Root != null;
         public bool WithRoot(out GameObject root) => HasRoot.Let(root = Root);
         public override string ToString() => $"{base.ToString()}:{gameObject.GetInstanceID()}";
-        void Awake()
+        protected void Awake()
         {
             Root = EditorUtils.GetCloneRoot(this);
             Pool.main.OnNewCloneAwake(this);
         }
-        void OnDestroy() => Pool.main.OnNewCloneDestroyed(this);
+        protected void OnDestroy() => Pool.main.OnNewCloneDestroyed(this);
 
         GameObject EditorUtils.ICloned.gameObject => gameObject;
     }

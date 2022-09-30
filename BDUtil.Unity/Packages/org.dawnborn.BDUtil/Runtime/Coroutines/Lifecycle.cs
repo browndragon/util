@@ -6,8 +6,9 @@ namespace BDUtil
 {
     [Tooltip("Proxies unity monobehaviour events into listenable actions. See TickTopic to turn them into normal topics. See Coroutines to implicitly run on them.")]
     [SuppressMessage("IDE", "IDE0051")]
-    public class Ticker : MonoBehaviour
+    public class Lifecycle : MonoBehaviour
     {
+        [SuppressMessage("IDE", "IDE1006")]
         static event Action onMain;
         public static event Action OnMain
         {
@@ -19,7 +20,7 @@ namespace BDUtil
             remove => throw new NotSupportedException();
         }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        public static void _FireDelayed()
+        public static void OnSubsystemRegistrationFireDelayed()
         {
             Debug.Log($"FireDelayed subsys reg");
             main.OrThrow();
@@ -27,11 +28,11 @@ namespace BDUtil
             onMain = onMain.UnsubscribeAll();
         }
 
-        static Ticker _main;
+        static Lifecycle _main;
         [SuppressMessage("IDE", "IDE1006")]
-        public static Ticker main
+        public static Lifecycle main
         {
-            get => _main ??= FindObjectOfType<Ticker>() ?? Create<Ticker>();
+            get => _main ??= FindObjectOfType<Lifecycle>() ?? Create<Lifecycle>();
             private set => _main = value;
         }
         public enum Event
@@ -60,7 +61,7 @@ namespace BDUtil
 
         [SerializeField]
         public EnumArray<Event, MemTopic> Topics = new();
-        public Ticker()
+        public Lifecycle()
         {
             for (int i = 0; i < Topics.Data.Length; ++i)
             {
@@ -146,7 +147,7 @@ namespace BDUtil
 
         #endregion
 
-        public static TTicker Create<TTicker>(string name = "Ticker", HideFlags hideFlags = HideFlags.DontSave) where TTicker : Ticker
+        public static TTicker Create<TTicker>(string name = "Ticker", HideFlags hideFlags = HideFlags.DontSave) where TTicker : Lifecycle
         {
             var go = new GameObject(name) { hideFlags = hideFlags };
             DontDestroyOnLoad(go);

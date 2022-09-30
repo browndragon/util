@@ -9,8 +9,8 @@ namespace BDUtil.Screen
     public class ContinuousBillboardCamera : MonoBehaviour
     {
         new Camera camera;
-        void Awake() => camera = GetComponent<Camera>();
-        void LateUpdate() => Billboard.BillboardAll(camera);
-        void Start() => Debug.Log($"Info: You're using a continuous billboard camera, broadcasting each tick...");
+        protected void Awake() => camera = GetComponent<Camera>();
+        protected void LateUpdate() => Billboard.BillboardAll(camera);
+        protected void Start() => Debug.Log($"Info: You're using a continuous billboard camera, broadcasting each tick...");
     }
 }

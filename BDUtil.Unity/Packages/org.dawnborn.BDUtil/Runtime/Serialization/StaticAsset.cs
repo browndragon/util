@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using UnityEngine;
 
@@ -55,6 +56,7 @@ namespace BDUtil.Serialization
     // https://github.com/Unity-Technologies/UnityCsReference/blob/master/Editor/Mono/ScriptableSingleton.cs
     public class StaticAsset<T> : StaticAsset where T : StaticAsset<T>
     {
+        [SuppressMessage("IDE", "IDE0044"), SuppressMessage("IDE", "IDE0051")]
         [SerializeField] Invokable.Layout buttons;
 
         [Tooltip("Push this to clean the preloaded list, and ensure that THIS is the preloaded instance")]
@@ -65,6 +67,7 @@ namespace BDUtil.Serialization
             Debug.Log($"Added {this} to preloaded assets (you should stop seeing duplicate static asset errors!)");
         }
         static T _main;
+        [SuppressMessage("IDE", "IDE1006")]
         public static T main
         {
             get

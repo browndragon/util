@@ -8,9 +8,9 @@ namespace BDUtil
     public static class Coroutines
     {
         // How horrible! But... it works...
-        public static Coroutine StartCoroutine(IEnumerator coroutine) => Ticker.main.StartCoroutine(coroutine);
+        public static Coroutine StartCoroutine(IEnumerator coroutine) => Lifecycle.main.StartCoroutine(coroutine);
         // How horrible! But... it works...
-        public static Coroutine StartCoroutine(IEnumerable coroutine) => Ticker.main.StartCoroutine(coroutine.GetEnumerator());
+        public static Coroutine StartCoroutine(IEnumerable coroutine) => Lifecycle.main.StartCoroutine(coroutine.GetEnumerator());
 
         public static WaitForSeconds Seconds(float seconds) => new(seconds);
         public static WaitForSecondsRealtime SecondsRealtime(float seconds) => new(seconds);

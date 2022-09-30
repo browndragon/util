@@ -12,10 +12,10 @@ namespace BDUtil.Pubsub
         public UnityEvent OnDisable_;
         public UnityEvent OnDestroy_;
 
-        void Start() => OnStart_?.Invoke();
-        void OnEnable() => OnEnable_?.Invoke();
-        void OnDisable() => OnDisable_?.Invoke();
-        void OnDestroy() => OnDestroy_?.Invoke();
+        protected void Start() => OnStart_?.Invoke();
+        protected void OnEnable() => OnEnable_?.Invoke();
+        protected void OnDisable() => OnDisable_?.Invoke();
+        protected void OnDestroy() => OnDestroy_?.Invoke();
 
         /// Support for animator bools. Could use triggers, but this is fine.
         Animator animator;

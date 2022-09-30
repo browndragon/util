@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using BDUtil.Raw;
 using UnityEngine;
 
@@ -75,9 +76,11 @@ namespace BDUtil.Library
         [Serializable]
         public struct Entry : IEntry
         {
+            [SuppressMessage("IDE", "IDE0044")]
             [Tooltip("These can be animator states; if so, `name` matches state enter and continue; `-name` matches state exit. The hash encoding matches; exits are the negative of the statehash.")]
             [SerializeField] string[] tags;
             public IEnumerable<string> Tags => tags.IsEmpty() ? EmptyTag : tags;
+            [SuppressMessage("IDE", "IDE0044")]
             [SerializeField] float odds;
             public float Odds => DefaultSafe(odds);
             public T Data;
@@ -115,8 +118,8 @@ namespace BDUtil.Library
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
-        void OnEnable() => Recalculate();
-        void OnValidate() => Recalculate();
+        protected void OnEnable() => Recalculate();
+        protected void OnValidate() => Recalculate();
 
         public Category GetCategory(string tag)
         => new(TagOdds.GetValueOrDefault(tag), TagEntries.GetValueOrDefault(tag));

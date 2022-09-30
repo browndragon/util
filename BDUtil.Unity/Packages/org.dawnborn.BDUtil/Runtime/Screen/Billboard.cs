@@ -15,9 +15,9 @@ namespace BDUtil.Screen
         public Vector3 PreAdjust;
         [Tooltip("Modify sprite positioning *after* billboarding (you shouldn't use me for tiles!)")]
         public Vector3 PostAdjust = new(0f, 0f, .5f);
-        void OnStart() => FaceCamera(Camera.main);
-        void OnValidate() => EditorUtils.Delay(this, () => FaceCamera(Camera.main));  // "SendMessage can't be called from OnValidate" grumble grumble.
-        void OnReset() => EditorUtils.Delay(this, () => FaceCamera(Camera.main));  // "SendMessage can't be called from OnValidate" grumble grumble.
+        protected void OnStart() => FaceCamera(Camera.main);
+        protected void OnValidate() => EditorUtils.Delay(this, () => FaceCamera(Camera.main));  // "SendMessage can't be called from OnValidate" grumble grumble.
+        protected void OnReset() => EditorUtils.Delay(this, () => FaceCamera(Camera.main));  // "SendMessage can't be called from OnValidate" grumble grumble.
         public static void BillboardAll(Camera camera)
         { foreach (Billboard b in FindObjectsOfType<Billboard>()) b.FaceCamera(camera); }
         [ContextMenu("BDUtil/Face Camera")]

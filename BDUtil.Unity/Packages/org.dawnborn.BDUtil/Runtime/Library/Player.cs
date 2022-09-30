@@ -50,7 +50,7 @@ namespace BDUtil.Library
         }
         public void PlayByCategory(string tag) => PlayByCategoryForce(tag, false);
         public void PlayCurrentCategory() => PlayByCategory(Category);
-        void Update()
+        protected void Update()
         {
             if (Delay.IsRunning) return;
             switch (Automation_)

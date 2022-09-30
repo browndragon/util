@@ -10,7 +10,7 @@ namespace BDUtil.Serialization
     [CustomPropertyDrawer(typeof(ExpandableAttribute))]
     public class ExpandableAttributeDrawer : PropertyDrawer
     {
-        private enum BackgroundStyles
+        public enum BackgroundStyles
         {
             None,
             HelpBox,
@@ -18,33 +18,33 @@ namespace BDUtil.Serialization
             Lighten
         }
 
-        private static bool SHOW_SCRIPT_FIELD = false;
+        public static readonly bool SHOW_SCRIPT_FIELD = false;
 
         /// <summary>
         /// The spacing on the inside of the background rect.
         /// </summary>
-        private static float INNER_SPACING = 6.0f;
+        public static readonly float INNER_SPACING = 6.0f;
 
         /// <summary>
         /// The spacing on the outside of the background rect.
         /// </summary>
-        private static float OUTER_SPACING = 4.0f;
-        private static float DROPDOWN_AFFORDANCE = 32f;
+        public static readonly float OUTER_SPACING = 4.0f;
+        public static readonly float DROPDOWN_AFFORDANCE = 32f;
 
         /// <summary>
         /// The style the background uses.
         /// </summary>
-        private static BackgroundStyles BACKGROUND_STYLE = BackgroundStyles.HelpBox;
+        public static readonly BackgroundStyles BACKGROUND_STYLE = BackgroundStyles.HelpBox;
 
         /// <summary>
         /// The colour that is used to darken the background.
         /// </summary>
-        private static Color DARKEN_COLOUR = new Color(0.0f, 0.0f, 0.0f, 0.2f);
+        public static readonly Color DARKEN_COLOUR = new(0.0f, 0.0f, 0.0f, 0.2f);
 
         /// <summary>
         /// The colour that is used to lighten the background.
         /// </summary>
-        private static Color LIGHTEN_COLOUR = new Color(1.0f, 1.0f, 1.0f, 0.2f);
+        public static readonly Color LIGHTEN_COLOUR = new(1.0f, 1.0f, 1.0f, 0.2f);
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
@@ -52,7 +52,7 @@ namespace BDUtil.Serialization
             totalHeight += EditorGUIUtility.singleLineHeight;
             if (property.objectReferenceValue == null) return totalHeight;
             if (!property.isExpanded) return totalHeight;
-            SerializedObject targetObject = new SerializedObject(property.objectReferenceValue);
+            SerializedObject targetObject = new(property.objectReferenceValue);
 
             if (targetObject == null) return totalHeight;
             SerializedProperty field = targetObject.GetIterator();
@@ -128,10 +128,10 @@ namespace BDUtil.Serialization
 
 
             #region Format Field Rects
-            List<Rect> propertyRects = new List<Rect>();
-            Rect marchingRect = new Rect(fieldRect);
+            List<Rect> propertyRects = new();
+            Rect marchingRect = fieldRect;
 
-            Rect bodyRect = new Rect(fieldRect);
+            Rect bodyRect = fieldRect;
             bodyRect.xMin += EditorGUI.indentLevel * 14;
             bodyRect.yMin += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing
                 + OUTER_SPACING;

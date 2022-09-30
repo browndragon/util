@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using BDUtil.Raw;
 using UnityEngine;
 
@@ -57,6 +58,7 @@ namespace BDUtil.Pubsub
                 }
             }
         }
+        [SuppressMessage("IDE", "IDE0044")]
         [Tooltip("Reverse polish notation; implemented using a standard list of floats to store values.")]
         [SerializeField] AST[] asts;
         readonly List<float> scratch;
@@ -72,7 +74,7 @@ namespace BDUtil.Pubsub
             }
         }
         readonly Disposes.All unsubscribe = new();
-        void OnValidate()
+        protected void OnValidate()
         {
             unsubscribe.Dispose();
             Resubscribe();

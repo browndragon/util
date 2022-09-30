@@ -25,7 +25,7 @@ namespace BDUtil.Screen
         [Tooltip("For UpdateWithCurrentCamera; which way is up? It's recommended this be `back` or `up` (though either works)")]
         public Vector3 WorldUp = Vector3.back;
         public float Distance = 10f;
-        void OnValidate()
+        protected void OnValidate()
         {
             UpdateCameraGeometry();
             // "SendMessage can't be called from OnValidate" grumble grumble.

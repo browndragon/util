@@ -2,46 +2,56 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace BDUtil.Math
 {
-    /// Foreachable duration.
-    /// The loop returns the ratio of elapsed over total duration; the original duration object could always be inspected.
-    /// `foreach (Timer t in new Timer(5f)) { fadeAlpha(t.Ratio); yield return null; }`
     [Serializable]
-    public struct Timer : IEnumerable<Timer>, IEnumerator<Timer>
+    public readonly struct Tick
+    {
+        public readonly float Elapsed;
+        public readonly float Length;
+        public Tick(float elapsed, float length)
+        {
+            Elapsed = elapsed;
+            Length = length;
+        }
+        public void Deconstruct(out float elapsed, out float length)
+        {
+            elapsed = Elapsed;
+            length = Length;
+        }
+        public float Ratio => Mathf.Min(1f, FullRatio);
+        public float FullRatio => Elapsed / Length;
+        public static implicit operator float(in Tick t) => t.Ratio;
+        public override string ToString() => $"{Elapsed}/{Length}s";
+    }
+    public struct Timer : IEnumerable<Tick>, IEnumerator<Tick>
     {
         public float Length;
-        // Weakly mutable: Reset (etc) operations change me.
-        // Nothing else does! Which breaks the enumerable (etc) contracts a little:
-        // Current can change if you suspend for some time; MoveNext can't be fastforwarded, etc.
         public float Start;
-
         public float End => Start + Length;
         public float Delta => Time.deltaTime;
-        public float Elapsed => Time.time - Start;
-        public float FullRatio => Elapsed / Length;
-        public float Ratio => Mathf.Min(1f, FullRatio);
+        public Tick Elapsed => new(Time.time - Start, Length);
+        public static implicit operator Tick(Timer timer) => new(timer.Elapsed, timer.Length);
         public bool IsStarted => float.IsFinite(Start) && Start != default;
-        public bool IsRunning => IsStarted && Elapsed <= Length;
-        public static implicit operator float(in Timer t) => t.Ratio;
-        public static implicit operator bool(in Timer t) => t.IsRunning;
+        public bool IsRunning => IsStarted && Elapsed < Length;
+        public static implicit operator bool(Timer timer) => timer.IsRunning;
         public static implicit operator Timer(float t) => new(t, false);
-
         public Timer(float length, bool reset = true)
         {
             Length = length;
             if (reset) Start = Time.time;
             else Start = float.NegativeInfinity;
         }
-        public IEnumerator Foreach(Action<Timer> action)
+        public IEnumerator Foreach(Action<Tick> onTick)
         {
-            foreach (var t in this)
+            foreach (var tick in this)
             {
-                try { action(t); } catch { yield break; }
+                onTick(tick);
                 yield return null;
             }
-            action(this);
+            onTick(new(Length, Length));
         }
         public Timer Restart()
         {
@@ -53,55 +63,46 @@ namespace BDUtil.Math
             Start = float.NegativeInfinity;
             return this;
         }
+
         public void Reset() => Start = Time.time;
+
         public bool MoveNext() => IsRunning;
         public Timer GetEnumerator() => this;
         public void Dispose() { }
-
-        public Timer Current => this;
-        object IEnumerator.Current => Current;
-        IEnumerator<Timer> IEnumerable<Timer>.GetEnumerator() => this;
+        public Tick Current => this;
+        object IEnumerator.Current => this;
+        IEnumerator<Tick> IEnumerable<Tick>.GetEnumerator() => this;
         IEnumerator IEnumerable.GetEnumerator() => this;
     }
-
-    /// Foreachable duration for physics.
-    /// The loop returns the ratio of elapsed over total duration; the original duration object could always be inspected.
-    /// `foreach (Timer t in new Timer(5f)) { fadeAlpha(t.Ratio); yield return null; }`
-    public struct FixedTimer : IEnumerable<FixedTimer>, IEnumerator<FixedTimer>
+    public struct FixedTimer : IEnumerable<Tick>, IEnumerator<Tick>
     {
         public float Length;
-        // Weakly mutable: Reset (etc) operations change me.
-        // Nothing else does! Which breaks the enumerable (etc) contracts a little:
-        // Current can change if you suspend for some time; MoveNext can't be fastforwarded, etc.
         public float Start;
-
         public float End => Start + Length;
         public float Delta => Time.fixedDeltaTime;
-        public float Elapsed => Time.fixedTime - Start;
-        public float FullRatio => Elapsed / Length;
-        public float Ratio => Mathf.Min(1f, FullRatio);
+        public Tick Elapsed => new(Time.fixedTime - Start, Length);
+        public static implicit operator Tick(FixedTimer timer) => new(timer.Elapsed, timer.Length);
         public bool IsStarted => float.IsFinite(Start) && Start != default;
         public bool IsRunning => IsStarted && Elapsed <= Length;
-        public static implicit operator float(in FixedTimer t) => t.Ratio;
-        public static implicit operator bool(in FixedTimer t) => t.IsRunning;
+        public static implicit operator bool(FixedTimer timer) => timer.IsRunning;
         public static implicit operator FixedTimer(float t) => new(t, false);
-
         public FixedTimer(float length, bool reset = true)
         {
             Length = length;
             if (reset) Start = Time.fixedTime;
             else Start = float.NegativeInfinity;
         }
-        static readonly WaitForFixedUpdate waitForFixed = new();
-        public IEnumerator Foreach(Action<FixedTimer> action)
+        static readonly WaitForFixedUpdate waitForFixedUpdate = new();
+        public IEnumerator Foreach(Action<Tick> onTick)
         {
-            foreach (var t in this)
+            foreach (var tick in this)
             {
-                try { action(t); } catch { yield break; }
-                yield return waitForFixed;
+                onTick(tick);
+                yield return waitForFixedUpdate;
             }
-            action(this);
+            onTick(new(Length, Length));
         }
+
         public FixedTimer Restart()
         {
             Reset();
@@ -113,16 +114,14 @@ namespace BDUtil.Math
             return this;
         }
 
-        public void Reset() => Start = Time.fixedTime;
+        public void Reset() => Start = Time.time;
 
         public bool MoveNext() => IsRunning;
         public FixedTimer GetEnumerator() => this;
-
         public void Dispose() { }
-
-        public FixedTimer Current => this;
+        public Tick Current => this;
         object IEnumerator.Current => this;
-        IEnumerator<FixedTimer> IEnumerable<FixedTimer>.GetEnumerator() => this;
+        IEnumerator<Tick> IEnumerable<Tick>.GetEnumerator() => this;
         IEnumerator IEnumerable.GetEnumerator() => this;
     }
 }

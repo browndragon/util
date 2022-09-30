@@ -76,7 +76,7 @@ namespace BDUtil.Pubsub
             }
         }
         readonly Disposes.All unsubscribe = new();
-        void OnValidate()
+        protected void OnValidate()
         {
             unsubscribe.Dispose();
             ast.Subscribe(Reevaluate, unsubscribe);

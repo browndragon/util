@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using BDUtil.Serialization;
 using UnityEngine;
 using UnityEngine.Events;
@@ -13,7 +14,7 @@ namespace BDUtil.Pubsub
         // A custom editor will help ensure you only use valid types though.
         [SerializeField, Expandable] ObjectTopic topic;
         public T DefaultValue;
-        [SerializeField] UnityEvent<T> Action = new();
+        [SerializeField, SuppressMessage("IDE", "IDE0044")] UnityEvent<T> Action = new();
         bool hasSubscribed = false;
 
         public ValueTopic<T> Topic

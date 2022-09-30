@@ -8,16 +8,15 @@ namespace BDUtil.Pubsub
     [RequireComponent(typeof(Collider))]
     public class Collision3DInvoker : MonoBehaviour
     {
-        Collider myCollider;
         public UnityEvent<Collider> OnEnter;
         public UnityEvent<Collider> OnStay;
         public UnityEvent<Collider> OnExit;
 
-        void OnCollisionEnter(Collision collision) => OnEnter?.Invoke(collision.collider);
-        void OnCollisionStay(Collision collision) => OnStay?.Invoke(collision.collider);
-        void OnCollisionExit(Collision collision) => OnExit?.Invoke(collision.collider);
-        void OnTriggerEnter(Collider collider) => OnEnter?.Invoke(collider);
-        void OnTriggerStay(Collider collider) => OnStay?.Invoke(collider);
-        void OnTriggerExit(Collider collider) => OnExit?.Invoke(collider);
+        protected void OnCollisionEnter(Collision collision) => OnEnter?.Invoke(collision.collider);
+        protected void OnCollisionStay(Collision collision) => OnStay?.Invoke(collision.collider);
+        protected void OnCollisionExit(Collision collision) => OnExit?.Invoke(collision.collider);
+        protected void OnTriggerEnter(Collider collider) => OnEnter?.Invoke(collider);
+        protected void OnTriggerStay(Collider collider) => OnStay?.Invoke(collider);
+        protected void OnTriggerExit(Collider collider) => OnExit?.Invoke(collider);
     }
 }

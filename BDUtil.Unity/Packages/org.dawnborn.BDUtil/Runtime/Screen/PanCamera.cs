@@ -14,11 +14,11 @@ namespace BDRPG.Screen
         public float PinchSensitivity = -.25f;
         public Vector2 Limits = new(1f, 100f);
         new Camera camera;
-        void Awake() => camera = GetComponent<Camera>();
         float StartTime = float.NaN;
         Vector3 StartPos;
 
-        void Update()
+        protected void Awake() => camera = GetComponent<Camera>();
+        protected void Update()
         {
             Vector3 position = camera.ScreenPointToRay(Input.mousePosition).AtZ();
             float delta = Input.mouseScrollDelta.y * ScrollSensitivity;

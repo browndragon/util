@@ -72,22 +72,16 @@ namespace BDUtil.Serialization
             if (!Input.GetMouseButtonUp(0)) return;
             LogNow();
             ITarget instance = Target.CreateInstance();
-            if (instance != null) StartCoroutine(Tween(instance).GetEnumerator());
+            if (instance != null) StartCoroutine(Tween(instance));
         }
-        IEnumerable Tween(ITarget instance)
+        IEnumerator Tween(ITarget instance)
         {
             Vector3 startPos = transform.position;
             Vector3 endPos = instance.Get(transform.position);
             IArith<Vector3> arith = Arith<Vector3>.Default;
-
-            for (float elapsed = 0f;
-                elapsed < Duration;
-                elapsed += Time.deltaTime)
-            {
-                transform.position = arith.Lerp(startPos, endPos, Easer.ClampInvoke(elapsed / Duration));
-                yield return null;
-            }
-            transform.position = endPos;
+            return Duration.Foreach(
+                tick => transform.position = arith.Lerp(startPos, endPos, Easer.ClampInvoke(tick))
+            );
         }
     }
 }

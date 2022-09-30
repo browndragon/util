@@ -5,9 +5,9 @@ namespace BDUtil.Pubsub
     [CreateAssetMenu(menuName = "BDUtil/Prim/TickTopic")]
     public class TickTopic : Topic
     {
-        [SerializeField] Ticker.Event tickerEvent;
+        [SerializeField] Lifecycle.Event tickerEvent;
         readonly Disposes.All unsubscribe = new();
-        public Ticker.Event TickerEvent
+        public Lifecycle.Event TickerEvent
         {
             get => tickerEvent;
             set
@@ -20,12 +20,12 @@ namespace BDUtil.Pubsub
         {
             if (!Application.isPlaying) return;
             unsubscribe.Dispose();
-            if (Application.isPlaying) unsubscribe.Add(Ticker.main.Topics[tickerEvent].Subscribe(Publish));
+            if (Application.isPlaying) unsubscribe.Add(Lifecycle.main.Topics[tickerEvent].Subscribe(Publish));
         }
         protected override void OnEnable()
         {
             base.OnEnable();
-            if (Application.isPlaying) unsubscribe.Add(Ticker.main.Topics[tickerEvent].Subscribe(Publish));
+            if (Application.isPlaying) unsubscribe.Add(Lifecycle.main.Topics[tickerEvent].Subscribe(Publish));
         }
         protected override void OnDisable()
         {

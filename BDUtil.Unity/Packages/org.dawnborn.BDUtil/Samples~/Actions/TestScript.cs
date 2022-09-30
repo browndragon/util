@@ -11,7 +11,7 @@ namespace BDUtil.Pubsub
         public ActionsHead ActionQueue;
         public Timer Delay = .25f;
 
-        void OnTriggerStay2D(Collider2D collider)
+        protected void OnTriggerStay2D(Collider2D collider)
         {
             if (Delay) return;
             ActionQueue.Push(() => Debug.Log($"{collider} hit (via action queue!)"));

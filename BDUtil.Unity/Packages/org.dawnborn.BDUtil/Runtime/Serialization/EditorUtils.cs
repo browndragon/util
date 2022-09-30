@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace BDUtil.Serialization
 {
+    using System.Diagnostics.CodeAnalysis;
 #if UNITY_EDITOR
     using UnityEditor;
 #endif
@@ -61,6 +62,7 @@ namespace BDUtil.Serialization
         /// See Cloned for the implementation of this.
         public interface ICloned
         {
+            [SuppressMessage("IDE", "IDE1006")]
             /// The game object that is *this* object.
             GameObject gameObject { get; }
             /// The game object that is our root prefab.

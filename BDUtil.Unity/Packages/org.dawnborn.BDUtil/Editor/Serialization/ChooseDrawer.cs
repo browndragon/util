@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using BDUtil.Serialization;
 using BDUtil.Serialization.Editor;
@@ -13,6 +14,7 @@ namespace BDUtil.Editor
     [CustomPropertyDrawer(typeof(ChoiceAttribute))]
     public class ChooseDrawer : ChoiceDrawer
     {
+        [SuppressMessage("IDE", "IDE1006")]
         public new ChoiceAttribute attribute => (ChoiceAttribute)base.attribute;
         protected override Choices GetChoices(SerializedProperty property)
         {
@@ -73,7 +75,7 @@ namespace BDUtil.Editor
             }
             if (hadChosen < 0)
             {
-                if (hadValue == null && set == null) hadValue = index;
+                if (hadValue == null && set == null) { } // hadValue = index;
                 else if (hadValue?.Equals(set) ?? false) hadChosen = index;
             }
             labels.Add(display);
