@@ -12,10 +12,12 @@ namespace BDUtil.Serialization.Editor
         protected virtual float InnerHeight(SerializedProperty property)
         => EditorGUI.GetPropertyHeight(property, true);
 
+        protected virtual Rect DrawPrefixLabel(Rect position, SerializedProperty property, GUIContent label)
+        => EditorGUI.PrefixLabel(position, label);
         // Just label the field.
         // Alternatives (see ByRefDrawer) might instead recurse!
         protected virtual void DrawInnerField(Rect position, SerializedProperty property, GUIContent label)
-        => EditorGUI.PrefixLabel(position, label);
+        { }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
@@ -48,7 +50,8 @@ namespace BDUtil.Serialization.Editor
                     Debug.LogWarning($"Can't find index {prevIndex} anymore!");
                     prevIndex = 0;
                 }
-                int currentIndex = EditorGUI.Popup(GetPopupPosition(position), prevIndex, labels);
+                Rect remainder = DrawPrefixLabel(position, property, label);
+                int currentIndex = EditorGUI.Popup(remainder, prevIndex, labels);
                 if (currentIndex < 0 || currentIndex >= objects.Count)
                 {
                     Debug.LogWarning($"User selected {currentIndex} outside [0, {labels.Length}); suppressing");
@@ -64,14 +67,6 @@ namespace BDUtil.Serialization.Editor
         {
             if (property.serializedObject.isEditingMultipleObjects) return EditorGUIUtility.singleLineHeight;
             return InnerHeight(property);
-        }
-        Rect GetPopupPosition(Rect currentPosition)
-        {
-            Rect popupPosition = new(currentPosition);
-            popupPosition.width -= EditorGUIUtility.labelWidth;
-            popupPosition.x += EditorGUIUtility.labelWidth;
-            popupPosition.height = EditorGUIUtility.singleLineHeight;
-            return popupPosition;
         }
     }
 }

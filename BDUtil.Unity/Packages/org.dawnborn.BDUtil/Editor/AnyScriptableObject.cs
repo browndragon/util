@@ -9,7 +9,7 @@ namespace BDUtil
 {
     public static class AnyScriptableObject
     {
-        [MenuItem("Assets/Create/BDUtil/Script Asset", false, 0)]
+        [MenuItem("Assets/Create/BDUtil/Script Asset", false, -1)]
         public static void CreateScriptableObject()
         {
             EditorUtils.CreateScriptableObjectOfType(((MonoScript)Selection.activeObject).GetClass(), true);

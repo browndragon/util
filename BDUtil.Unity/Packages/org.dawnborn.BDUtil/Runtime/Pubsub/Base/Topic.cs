@@ -7,7 +7,7 @@ using UnityEngine.Events;
 namespace BDUtil.Pubsub
 {
     // MAYBE this belongs in Base, since it's actually the base class of the hierarchy. Or not!
-    [CreateAssetMenu(menuName = "BDUtil/Prim/Topic", order = 0)]
+    [CreateAssetMenu(menuName = "BDUtil/Prim/Topic", order = -1)]
     public class Topic : ScriptableObject, ITopic, IPublisher
     {
         [SerializeField] protected UnityEvent Action = new();
@@ -18,35 +18,26 @@ namespace BDUtil.Pubsub
         [SuppressMessage("IDE", "IDE0044")]
         [SerializeField, Invoke(nameof(DebugPrintSubscribers))]
         Invoke.Button debugPrintSubscribers;
-        [Flags]
-        public enum TraceOns
-        {
-            None = default,
-            Add,
-            Remove,
-            Publish,
-        };
-        public TraceOns TraceOn = Enums<TraceOns>.Everything;
 
         public Lock IsPublishing { get; protected set; }
         public void AddListener(Action action)
         {
-            if (TraceOn.HasFlag(TraceOns.Add)) Debug.Log($"{this}.Add({action.Target}.{action.Method})");
+            TopicDebugging.main.LogOnAddListener(this, action);
             Action.AddListener(Converter<Action, UnityAction>.Default.Convert(action));
         }
         public void RemoveListener(Action action)
         {
-            if (TraceOn.HasFlag(TraceOns.Remove)) Debug.Log($"{this}.Remove({action.Target}.{action.Method})");
+            TopicDebugging.main.LogOnRemoveListener(this, action);
             Action.RemoveListener(Converter<Action, UnityAction>.Default.Convert(action));
         }
         public void RemoveAllListeners()
         {
-            if (TraceOn.HasFlag(TraceOns.Remove)) Debug.Log($"{this}.RemoveAll()");
-            Action.RemoveAllListeners(); IsPublishing = default;
+            TopicDebugging.main.LogOnRemoveAllListeners(this);
+            Action.RemoveAllListeners();
+            IsPublishing = default;
         }
         public void Publish()
         {
-            if (TraceOn.HasFlag(TraceOns.Publish)) Debug.Log($"{this}.Publish()");
             if (IsPublishing++)  // Increase the amount of publishing, forcing renotification.
             {
                 Debug.Log($"Suppressing {this}.Publish(); already in flight.", this);
@@ -57,6 +48,7 @@ namespace BDUtil.Pubsub
                 for (int i = 0; IsPublishing; ++i)
                 {
                     IsPublishing = (Lock)1;  // Discard any additional isPublishing we had entering the loop
+                    TopicDebugging.main.LogOnPublish(this);
                     Action?.Invoke();  // invoke the actions; some might republish: if they do, detect it:
                     if (i > 7) throw new NotSupportedException($"Too many ({i}) republishes on {this}");
                     if (--IsPublishing) Debug.Log($"Republishing ({i}th time) on {this}", this);
@@ -66,15 +58,23 @@ namespace BDUtil.Pubsub
         }
         protected void DebugPrintSubscribers()
         {
-            Debug.Log($"All subscribers {this}:---", this);
+            Debug.Log($"All subscribers of {this}:---", this);
             int i = 0;
             foreach (Delegate subscriber in ReflectionUtils.GetSubscribers(Action))
             {
-                Debug.Log($"#{i}: {subscriber?.Target}.{subscriber?.Method} => {subscriber?.GetInvocationList().Summarize()}", subscriber?.Target as UnityEngine.Object ?? this);
+                Debug.Log($"#{i++}: target={subscriber?.Target}.method={subscriber?.Method}", subscriber?.Target as UnityEngine.Object ?? this);
             }
-            Debug.Log($"---:All subscribers {this}", this);
+            Debug.Log($"---:All {i} subscribers of {this}", this);
         }
-        protected virtual void OnEnable() { }
-        protected virtual void OnDisable() => RemoveAllListeners();
+        protected virtual void OnEnable()
+        {
+            TopicDebugging.main.LogOnEnable(this);
+        }
+        protected virtual void OnDisable()
+        {
+            TopicDebugging.main.LogOnDisable(this);
+            Action.RemoveAllListeners();
+            IsPublishing = default;
+        }
     }
 }

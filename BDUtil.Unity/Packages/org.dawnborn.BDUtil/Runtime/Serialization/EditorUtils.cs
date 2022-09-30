@@ -196,9 +196,9 @@ namespace BDUtil.Serialization
                     return asset;
                 }
             }
-            // If we've got a useful ProjectWindow, use that.
+            // OTHERWISE, If we've got a useful ProjectWindow, use that.
             string projectWindow = ProjectWindowPath;
-            if (!projectWindow.IsEmpty()) return projectWindow;
+            if (!projectWindow.IsEmpty()) return StaticAsset.GetFilePath(type, projectWindow, StaticAsset.Basenames.ByT);
 
             // Finally, stick it in the default location.
             return StaticAsset.FilePathAttribute.Default.GetFilePath(type);

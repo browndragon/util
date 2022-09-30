@@ -10,8 +10,6 @@ namespace BDUtil.Serialization
         public IntTopic NumCreated;
         public IntTopic NumDestroyed;
         public GameObject Proto;
-        public Val<int> ProofOfConcept = new();
-
         new Camera camera;
 
         [SuppressMessage("IDE", "IDE0051")]

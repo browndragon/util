@@ -78,22 +78,16 @@ namespace BDUtil.Editor
         {
             string hasTypeString = GetSerializedType(property);
             string wantsTypeString = selectedType?.AssemblyQualifiedName;
-            if (hasTypeString != wantsTypeString)
-            {
-                property.serializedObject.Update();
-                SetSerializedType(property, wantsTypeString);
-                property.serializedObject.ApplyModifiedProperties();
-            }
+            if (hasTypeString == wantsTypeString) return;
+            SetSerializedType(property, wantsTypeString);
         }
         void UpdateMR(SerializedProperty property, Type selectedType)
         {
             Type hasType = property.managedReferenceValue?.GetType();  // We mightn't have a type if it was null...
-            if (hasType != selectedType)
-            {
-                property.serializedObject.Update();
-                property.managedReferenceValue = selectedType == null ? null : Activator.CreateInstance(selectedType);
-                property.serializedObject.ApplyModifiedProperties();
-            }
+            if (hasType == selectedType) return;
+            property.managedReferenceValue = selectedType == null
+                ? null
+                : Activator.CreateInstance(selectedType);
         }
 
         protected override float InnerHeight(SerializedProperty property)
@@ -101,6 +95,18 @@ namespace BDUtil.Editor
             ? EditorGUI.GetPropertyHeight(property, true)
             : base.InnerHeight(property);
 
+        protected override Rect DrawPrefixLabel(Rect position, SerializedProperty property, GUIContent label)
+        {
+            if (property.propertyType == SerializedPropertyType.ManagedReference)
+            {
+                // DON'T draw the label, but DO position it as if we had.
+                position.width -= EditorGUIUtility.labelWidth;
+                position.x += EditorGUIUtility.labelWidth;
+                position.height = EditorGUIUtility.singleLineHeight;
+                return position;
+            }
+            return base.DrawPrefixLabel(position, property, label);
+        }
         protected override void DrawInnerField(Rect position, SerializedProperty property, GUIContent label)
         {
             if (property.propertyType == SerializedPropertyType.ManagedReference)
@@ -109,7 +115,9 @@ namespace BDUtil.Editor
                 EditorGUI.PropertyField(position, property, label, true);
                 return;
             }
-            base.DrawInnerField(position, property, label);
+            Debug.Log($"Trying prefixLabel {label}@{position}");
+            EditorGUI.PrefixLabel(position, label);
+            // base.DrawInnerField(position, property, label);
         }
     }
 }

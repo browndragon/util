@@ -52,7 +52,6 @@ namespace BDUtil.Serialization.Editor
             dirOwner.OrThrow();
 
             Type dirType = dirOwner.GetType();
-            property.serializedObject.ApplyModifiedProperties();
             bool NameMatches(MethodInfo m) => m.Name == name;
             List<MethodInfo> losers = new();
             foreach (MethodInfo method in dirType

@@ -11,8 +11,8 @@ namespace BDUtil.Pubsub
     /// Topic with a payload (who knows what kind though!)
     public abstract class ObjectTopic : Topic, IObjectTopic
     {
-        [SerializeField, Invoke(nameof(DebugValue))] Invoke.Button debugValue;
-        protected virtual void DebugValue() => Debug.Log($"{this}.value = {Object}", this);
+        [SerializeField, Invoke(nameof(DebugPrintValue))] Invoke.Button debugPrintValue;
+        protected virtual void DebugPrintValue() => Debug.Log($"{this}.value = {Object}", this);
 
         object IHas.Value => Object;
         public abstract object Object { get; }
@@ -72,7 +72,7 @@ namespace BDUtil.Pubsub
             Update = 1 << 4,
         }
         public PublishOns PublishOn = Enums<PublishOns>.Everything;
-        int Count;  // Needed to change-detect Become{,Non}Empty.
+        [SerializeField, ReadOnly] int Count;  // Needed to change-detect Become{,Non}Empty.
         Observable.Update value;
         public override Observable.Update Value
         {

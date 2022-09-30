@@ -224,7 +224,7 @@ MonoBehaviour:
   NumDestroyed: {fileID: 11400000, guid: 9db7dd93993304d84ae0752d126c05f2, type: 2}
   Proto: {fileID: 1736792110445641669, guid: 444acf0db4400446fb31aec1279863b9, type: 3}
   ProofOfConcept:
-    topic: {fileID: 11400000, guid: 009239c7cf3354c589d7545c31430fff, type: 2}
+    topic: {fileID: 0}
     DefaultValue: 0
     Action:
       m_PersistentCalls:

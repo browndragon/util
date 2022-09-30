@@ -110,9 +110,7 @@ namespace BDUtil.Serialization
                 {
                     Type chosen = (Type)choices.Objects[selected];
                     ScriptableObject created = EditorUtils.CreateScriptableObjectOfType(chosen, true);
-                    property.serializedObject.Update();
                     property.objectReferenceValue = created;
-                    property.serializedObject.ApplyModifiedProperties();
                 }
             }
 
