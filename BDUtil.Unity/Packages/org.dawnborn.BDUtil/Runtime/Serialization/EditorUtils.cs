@@ -50,63 +50,6 @@ namespace BDUtil.Serialization
 #endif  // UNITY_EDITOR
         }
 
-        /// Instantiates a prefab with a link back to the parent.
-        /// Mostly for editor scripts, since there's no such beast @ real runtime.
-        public static T InstantiateWithLink<T>(T go) where T : UnityEngine.Object =>
-#if UNITY_EDITOR
-            (T)PrefabUtility.InstantiatePrefab(go)
-#else  // !UNITY_EDITOR
-            UnityEngine.Object.Instantiate(go)
-#endif  // UNITY_EDITOR
-        ;
-        /// See Cloned for the implementation of this.
-        public interface ICloned
-        {
-            [SuppressMessage("IDE", "IDE1006")]
-            /// The game object that is *this* object.
-            GameObject gameObject { get; }
-            /// The game object that is our root prefab.
-            GameObject Root { get; }
-        }
-        /// Support for the Cloned type. At runtime, all it can do is examine the Cloned instance,
-        /// but in the editor it can also examine the PrefabUtility and see what it says;
-        /// Cloned uses this editor time check, plus assuming it's instantiated via Pool.Acquire(),
-        /// to maintain the linkage.
-        public static GameObject GetCloneRoot(ICloned cloneInstance)
-        {
-            if (cloneInstance == null)
-            {
-                Debug.Log($"Got null cloneTag {cloneInstance} somehow?!");
-                return null;
-            }
-            if (!cloneInstance.gameObject.scene.IsValid())
-            {
-                Debug.Log($"Got cloneTag {cloneInstance} from no-scene somehow?! (asset?)");
-                return cloneInstance.Root;
-            }
-            GameObject bestRoot = cloneInstance.Root;
-#if UNITY_EDITOR
-            bestRoot = PrefabUtility.GetCorrespondingObjectFromSource(cloneInstance.gameObject);
-            if (bestRoot == null)
-            {
-                Debug.LogWarning($"Encountered awake clone with no parents! {cloneInstance}(.root={cloneInstance.Root}, .bestRoot={bestRoot})");
-                return null;
-            }
-            if (bestRoot == cloneInstance.gameObject)
-            {
-                Debug.LogWarning($"Snake eating own tail! {cloneInstance}(.root={cloneInstance.Root}, .bestRoot={bestRoot})");
-                return null;
-            }
-            if (cloneInstance.Root != null && cloneInstance.Root != bestRoot)
-            {
-                Debug.LogWarning($"Prefab & CloneTag disagree (going with prefab)! {cloneInstance}(.root={cloneInstance.Root}, .bestRoot={bestRoot})");
-                return bestRoot;
-            }
-#endif
-            // At runtime, we just have to hope that we've wired all of the other state up correctly.
-            return bestRoot;
-        }
-
         /// Easy filtering of the preloaded asset list.
         /// All nulls, as well as anything of T & matching the predicate, will be removed.
         /// All non-T or failing the predicate will be retained.
@@ -219,8 +162,34 @@ namespace BDUtil.Serialization
             {
 #if UNITY_EDITOR
                 string path = GuessAssetPath(type).OrThrow();
+                string dir = Path.GetDirectoryName(path);
+                ;
+                if (!AssetDatabase.IsValidFolder(dir))
+                {
+                    int prevSlash = dir.IndexOf("/"), slash = dir.IndexOf("/", prevSlash + 1);
+                    while (slash >= 0)
+                    {
+                        if (!AssetDatabase.IsValidFolder(dir[0..slash]))
+                        {
+                            string pre = dir[0..prevSlash];
+                            string post = dir[(prevSlash + 1)..slash];
+                            Debug.Log($"Creating {pre} + {post}");
+                            AssetDatabase.CreateFolder(pre, post);
+                        }
+                        prevSlash = slash;
+                        slash = dir.IndexOf("/", prevSlash + 1);
+                    }
+                    if (!dir.EndsWith("/"))
+                    {
+                        string pre = dir[0..prevSlash];
+                        string post = dir[(prevSlash + 1)..];
+                        Debug.Log($"Creating final {pre} + {post}");
+                        AssetDatabase.CreateFolder(pre, post);
+                    }
+                }
+                if (!AssetDatabase.IsValidFolder(dir)) Debug.Log($"WTF see above?!");
+                Debug.Log($"Trying to create {asset} at {path}");
                 ProjectWindowUtil.CreateAsset(asset, path);
-                Debug.Log($"Created {asset} wanted {path} got {AssetDatabase.GetAssetOrScenePath(asset)}");
                 return asset;
 #else
                 asset.name = $"{type.Name}.{asset.GetInstanceID()}";

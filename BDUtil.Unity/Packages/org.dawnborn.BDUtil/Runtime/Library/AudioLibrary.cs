@@ -1,4 +1,5 @@
 using System;
+using BDUtil.Math;
 using UnityEngine;
 
 namespace BDUtil.Library
@@ -11,23 +12,20 @@ namespace BDUtil.Library
         [Serializable]
         public struct Clip : Player.IPlayable
         {
-            [SerializeField] Vector2 volume;
-            public float MinVolume => DefaultSafe(volume.x);
-            public float MaxVolume => DefaultSafe(volume.y, MinVolume);
-            [SerializeField] Vector2 delay;
-            public float MinDelay => DefaultSafe(delay.x);
-            public float MaxDelay => DefaultSafe(delay.y, MinDelay);
+            // Formerly used.
+            [SerializeField, MinMax.Range] Vector2 volume;
+            [SerializeField, MinMax.Range(Max = 10f)] Vector2 delay;
             public AudioClip AudioClip;
 
             public float PlayOn(Player player)
             {
                 AudioSource source = player.GetComponent<AudioSource>().OrThrow();
-                float delay = UnityEngine.Random.Range(MinDelay, MaxDelay);
+                float delay = ((MinMax)this.delay).Random;
                 if (AudioClip != null)
                 {
                     source.clip = AudioClip;
                     float scale = DefaultSafe(((AudioLibrary)player.Library).VolumeScale);
-                    source.volume = scale * UnityEngine.Random.Range(MinVolume, MaxVolume);
+                    source.volume = scale * ((MinMax)this.volume).Random;
                     delay += AudioClip.length;
                     source.Play();
                 }

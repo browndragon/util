@@ -13,7 +13,18 @@ namespace BDUtil.Clone
     {
         public int CacheSceneLimit = 100;
         public int PerCacheLimit = 10;
-        string SceneName => $"{name}.Scene";
+        [Flags]
+        public enum LogEvents
+        {
+            None = default,
+            Awake = 1 << 0,
+            OnDestroyInvalid = 1 << 1,
+            OnDestroyValid = 1 << 2,
+        }
+        public LogEvents LogNormal = LogEvents.Awake;
+        public LogEvents LogPrefabStage = LogEvents.Awake;
+
+        public string SceneName => $"{name}.Scene";
         Scene cachingScene;
         public Scene CachingScene
         {
@@ -47,19 +58,52 @@ namespace BDUtil.Clone
 
         internal void OnNewCloneAwake(Cloned newClone)
         {
-            newClone.HasRoot.OrThrow();
+            if (!Application.IsPlaying(newClone))
+            {
+                if (LogPrefabStage.HasFlag(LogEvents.Awake)) Debug.Log($"Clone.PrefabStage.Awake: {newClone.IDStr()}.Root={newClone.Root.IDStr()}");
+                return;
+            }
+            if (LogNormal.HasFlag(LogEvents.Awake)) Debug.Log($"Clone.Awake: {newClone.IDStr()}.Root={newClone.Root.IDStr()}");
+            newClone.Root.OrThrow();
             extant.Collection[newClone.gameObject.GetInstanceID()] = newClone.gameObject;
         }
         internal void OnNewCloneDestroyed(Cloned newClone)
         {
+            if (newClone == null) return;
+
+            bool isValidRelease = newClone.Root == null || !newClone.gameObject.scene.IsValid();
+            bool isPrefabStage = Application.IsPlaying(newClone);
+            LogEvents perStage = isPrefabStage ? LogPrefabStage : LogNormal;
+
             extant.Collection.Remove(newClone.gameObject.GetInstanceID());
-            if (!newClone.HasRoot) return;  // This is fine; it's been denatured before destruction.
-            // THIS is fine; the scene is going away. It should already have deactivated
-            if (!newClone.gameObject.scene.IsValid()) return;
+
+            if (isValidRelease)
+            {
+                if (!perStage.HasFlag(LogEvents.OnDestroyValid)) return;
+                Debug.Log(
+                    $"Clone{(isPrefabStage ? ".PrefabStage" : "")}.OnDestroy.Valid: {newClone.IDStr()}.Root={newClone.Root.IDStr()}"
+                );
+                return;
+            }
+            if (!perStage.HasFlag(LogEvents.OnDestroyInvalid)) return;
+            Debug.LogWarning(
+                $"Clone{(isPrefabStage ? ".PrefabStage" : "")}.OnDestroy.INVALID: {newClone.IDStr()}.Root={newClone.Root.IDStr()} should be Should Clone.main.Release()ed, not GameObject.Destroy()ed!"
+            );
+        }
+
+        public GameObject GetPrefab(GameObject postfab)
+        {
+            if (postfab == null) return null;
+            if (!postfab.scene.IsValid()) return postfab;
+            Cloned clone = postfab.GetComponent<Cloned>();
+            if (clone == null) return null;
+            if (clone.Root == null) return null;
+            return clone.Root;
         }
 
         public GameObject Acquire(GameObject prefab, bool activate = true)
         {
+            prefab = GetPrefab(prefab);
             List<GameObject> cache = caches.Collection.GetValueOrDefault(prefab);
             GameObject postfab = null;
             if (cache != null)
@@ -68,18 +112,7 @@ namespace BDUtil.Clone
                 if (cache.Count == 0) caches.Collection.Remove(prefab);
             }
 
-            if (postfab == null)
-            {  // We need to create a new one. That's fine!
-                bool wasActive = prefab.activeSelf;
-                if (wasActive) prefab.SetActive(false);
-                postfab = EditorUtils.InstantiateWithLink(prefab);
-                Cloned tag = postfab.GetComponent<Cloned>() ?? postfab.AddComponent<Cloned>();
-                // This is the really _really_ important step!
-                // It ensures that the clonetag points to the root, instead of getting re-mapped to self!
-                tag.Root = prefab;
-                if (wasActive) prefab.SetActive(true);
-            }
-
+            if (postfab == null) postfab = Cloned.InstantiateInactiveCloneWithRoot(prefab)?.gameObject;
             SceneManager.MoveGameObjectToScene(postfab, SceneManager.GetActiveScene());
             if (activate) postfab.SetActive(true);
             return postfab;

@@ -84,7 +84,7 @@ namespace BDUtil.Serialization
             else
             {
                 _main = this as T;
-                System.Diagnostics.Debug.Assert(_main != null);
+                System.Diagnostics.Debug.Assert(_main != null, $"{this.GetInstanceID()} (of {typeof(T)}) static init ran but left _main=(null){_main?.GetInstanceID() ?? 0}");
             }
         }
 

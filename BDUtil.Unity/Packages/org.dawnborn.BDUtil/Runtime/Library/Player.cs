@@ -1,12 +1,15 @@
 using System;
 using BDUtil.Math;
 using BDUtil.Pubsub;
+using BDUtil.Serialization;
 using UnityEngine;
 
 namespace BDUtil.Library
 {
     public class Player : MonoBehaviour, OnState.IEnter, OnState.IExit
     {
+        [SerializeField] protected Invokable.Layout buttons;
+
         public interface IPlayable
         {
             float PlayOn(Player player);
@@ -49,6 +52,7 @@ namespace BDUtil.Library
             if (Automation_ == Automation.Startup) Automation_ = Automation.Continue;
         }
         public void PlayByCategory(string tag) => PlayByCategoryForce(tag, false);
+        [Invokable]
         public void PlayCurrentCategory() => PlayByCategory(Category);
         protected void Update()
         {
