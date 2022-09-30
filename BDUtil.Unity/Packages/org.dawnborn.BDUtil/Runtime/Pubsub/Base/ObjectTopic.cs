@@ -11,8 +11,8 @@ namespace BDUtil.Pubsub
     /// Topic with a payload (who knows what kind though!)
     public abstract class ObjectTopic : Topic, IObjectTopic
     {
-        [SerializeField, Invoke(nameof(DebugPrintValue))] Invoke.Button debugPrintValue;
-        protected virtual void DebugPrintValue() => Debug.Log($"{this}.value = {Object}", this);
+        [Invokable(order = +10)]
+        protected virtual void DebugLogValue() => Debug.Log($"{this}.value = {Object}", this);
 
         object IHas.Value => Object;
         public abstract object Object { get; }
@@ -58,9 +58,6 @@ namespace BDUtil.Pubsub
     /// A type which holds a collection of other data; it can be directly affected by pushing/pulling Update objects.
     public abstract class CollectionTopic : Topic<Observable.Update>, IValueTopic<Observable.Update>, ICollectionTopic
     {
-        [SerializeField, Invoke(nameof(DebugLogContents))] Invoke.Button debugLogContents;
-        [SerializeField, Invoke(nameof(ClearData))] Invoke.Button clearData;
-
         [Flags]
         public enum PublishOns
         {
@@ -83,6 +80,7 @@ namespace BDUtil.Pubsub
         object ISet.Value { set => SetValue((Observable.Update)value); }
         IEnumerable IHasCollection.Collection => ObservableCollection;
         public abstract Observable.ICollection ObservableCollection { get; }
+        [Invokable(order = +100)]
         protected virtual void ClearData() => ObservableCollection.Apply(Observable.Update.Clear());
         protected override void OnEnable()
         {
@@ -117,6 +115,7 @@ namespace BDUtil.Pubsub
             if (!doPublish) return;
             Publish();
         }
+        [Invokable(order = +10)]
         protected virtual void DebugLogContents() => Debug.Log($"{this}.Collection = [{ObservableCollection.Summarize()}]", this);
     }
     /// A type which holds a collection of other data and notifies on modification.

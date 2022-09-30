@@ -10,15 +10,8 @@ namespace BDUtil.Pubsub
     [CreateAssetMenu(menuName = "BDUtil/Prim/Topic", order = -1)]
     public class Topic : ScriptableObject, ITopic, IPublisher
     {
+        [SerializeField] Invokable.Layout invokeButtons;
         [SerializeField] protected UnityEvent Action = new();
-
-        [SuppressMessage("IDE", "IDE0044")]
-        [SerializeField, Invoke(nameof(Publish))]
-        Invoke.Button publish;
-        [SuppressMessage("IDE", "IDE0044")]
-        [SerializeField, Invoke(nameof(DebugPrintSubscribers))]
-        Invoke.Button debugPrintSubscribers;
-
         public Lock IsPublishing { get; protected set; }
         public void AddListener(Action action)
         {
@@ -30,12 +23,14 @@ namespace BDUtil.Pubsub
             TopicDebugging.main.LogOnRemoveListener(this, action);
             Action.RemoveListener(Converter<Action, UnityAction>.Default.Convert(action));
         }
+        [Invokable(order = +100)]
         public void RemoveAllListeners()
         {
             TopicDebugging.main.LogOnRemoveAllListeners(this);
             Action.RemoveAllListeners();
             IsPublishing = default;
         }
+        [Invokable(order = -1)]
         public void Publish()
         {
             if (IsPublishing++)  // Increase the amount of publishing, forcing renotification.
@@ -56,6 +51,7 @@ namespace BDUtil.Pubsub
             }
             finally { IsPublishing = false; }
         }
+        [Invokable(order = +10)]
         protected void DebugPrintSubscribers()
         {
             Debug.Log($"All subscribers of {this}:---", this);

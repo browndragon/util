@@ -55,9 +55,15 @@ namespace BDUtil.Serialization
     // https://github.com/Unity-Technologies/UnityCsReference/blob/master/Editor/Mono/ScriptableSingleton.cs
     public class StaticAsset<T> : StaticAsset where T : StaticAsset<T>
     {
+        [SerializeField] Invokable.Layout buttons;
+
         [Tooltip("Push this to clean the preloaded list, and ensure that THIS is the preloaded instance")]
-        [SerializeField, Invoke(nameof(EnsurePreloaded))] Invoke.Button ensurePreloaded;
-        internal void EnsurePreloaded() => EditorUtils.AdjustPreloadedAssets(remove => true, this);
+        [Invokable]
+        internal void EnsurePreloaded()
+        {
+            EditorUtils.AdjustPreloadedAssets(remove => true, this);
+            Debug.Log($"Added {this} to preloaded assets (you should stop seeing duplicate static asset errors!)");
+        }
         static T _main;
         public static T main
         {

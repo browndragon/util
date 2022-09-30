@@ -16,7 +16,7 @@ namespace BDUtil.Editor
         public new ChoiceAttribute attribute => (ChoiceAttribute)base.attribute;
         protected override Choices GetChoices(SerializedProperty property)
         {
-            object retval = InvokeAttributeDrawer.InvokeNamedMethod(property, attribute?.MethodName, typeof(IEnumerable));
+            object retval = InvokableAttributeDrawer.InvokeNamedMethod(property, attribute?.MethodName, typeof(IEnumerable));
             if (retval is not IEnumerable @enum) throw new NotSupportedException($"Couldn't find {attribute?.MethodName} in {property}");
             int i = -1;
             List<GUIContent> labels = new();
