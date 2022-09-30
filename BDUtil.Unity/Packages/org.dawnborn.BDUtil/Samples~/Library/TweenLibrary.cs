@@ -18,7 +18,7 @@ public class TweenLibrary : Library<TweenLibrary.Tween>
             player.StopAllCoroutines();
             Vector3 euler = target.transform.eulerAngles;
             Tween thiz = this;
-            player.StartCoroutine(new Timer(thiz.Duration).Foreach(
+            player.StartCoroutine(new Timer(thiz.Duration, Time.time).Foreach(
                 t => target.transform.eulerAngles = Vector3.Lerp(euler, thiz.Euler, t))
             );
             return Duration;

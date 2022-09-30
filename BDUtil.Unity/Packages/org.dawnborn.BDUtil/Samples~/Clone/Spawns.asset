@@ -19,12 +19,12 @@ MonoBehaviour:
     Data:
       Prefab: {fileID: 1321638923735474941, guid: eaf774b5eee8e4e9b9dbaa27a31cbdfc, type: 3}
       Delay:
-        Min: 1.4154105
-        Max: 7.403685
+        Min: 0.5
+        Max: 1.2956449
   - tags: []
     odds: 1
     Data:
       Prefab: {fileID: 2796729260312305393, guid: 8a2c72d9e901a4d48bcd61a6ab76be62, type: 3}
       Delay:
-        Min: 1.4154105
-        Max: 7.403685
+        Min: 0.5
+        Max: 0.5

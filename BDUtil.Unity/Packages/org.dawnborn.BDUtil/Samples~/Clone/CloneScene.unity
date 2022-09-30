@@ -452,7 +452,7 @@ MonoBehaviour:
   CanInterrupt: 1
   Library: {fileID: 11400000, guid: fe0ec5380b7284725870f2104d54c1d8, type: 2}
   Category: 
-  Automation_: 2
+  Automation_: 1
   index: -1
 --- !u!114 &1548719914
 MonoBehaviour:

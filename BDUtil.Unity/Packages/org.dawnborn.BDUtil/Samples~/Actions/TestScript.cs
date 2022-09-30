@@ -15,7 +15,7 @@ namespace BDUtil.Pubsub
         {
             if (Delay) return;
             ActionQueue.Push(() => Debug.Log($"{collider} hit (via action queue!)"));
-            Delay = Delay.Restart();
+            Delay = Delay.Started();
         }
     }
 }

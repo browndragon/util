@@ -22,8 +22,8 @@ namespace BDUtil.Library
         public enum Automation
         {
             None = default,
-            Continue,
-            Startup,
+            Continuous,
+            AfterStart,
         }
         public Strategies Strategy;
         public bool CanInterrupt = true;
@@ -34,11 +34,11 @@ namespace BDUtil.Library
         public Automation Automation_;
         // For round robin, lets you specify a start offset.
         public int index = -1;
-        Timer Delay = 0f;
+        public Timer Delay = 0f;
         public void PlayByCategoryForce(string tag, bool forceInterrupt)
         {
             if (tag == null) return;
-            if (Delay.IsRunning && !CanInterrupt && !forceInterrupt) return;
+            if (Delay.Tick.IsLive && !CanInterrupt && !forceInterrupt) return;
             Library.ICategory category = Library.GetICategory(tag);
             if (category == null) return;
             index = Strategy switch
@@ -48,18 +48,30 @@ namespace BDUtil.Library
                 _ => throw new NotImplementedException($"Unrecognized {Strategy}"),
             };
             object entry = category[index.CheckRange(0, category.Count)];
-            Delay = new Timer(((IPlayable)entry).PlayOn(this));
-            if (Automation_ == Automation.Startup) Automation_ = Automation.Continue;
+            Delay = ((IPlayable)entry).PlayOn(this);
+            ResetDelay();
+            if (Automation_ == Automation.AfterStart) Automation_ = Automation.Continuous;
+        }
+        void ResetDelay()
+        {
+            int startWas = Bitcast.Int(Delay.Start);
+            Delay.Reset();
+            int startIs = Bitcast.Int(Delay.Start);
+            if (startIs == startWas) throw new NotSupportedException($"After a reset, {Delay} has same start {startWas} vs {startIs}");
         }
         public void PlayByCategory(string tag) => PlayByCategoryForce(tag, false);
         [Invokable]
         public void PlayCurrentCategory() => PlayByCategory(Category);
+        protected void Start()
+        {
+            if (Automation_ == Automation.Continuous) ResetDelay();
+        }
         protected void Update()
         {
-            if (Delay.IsRunning) return;
+            if (Delay.Tick.IsLive) return;
             switch (Automation_)
             {
-                case Automation.Continue: break;
+                case Automation.Continuous: break;
                 default: return;
             }
             PlayCurrentCategory();
