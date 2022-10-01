@@ -1,4 +1,5 @@
 using BDUtil.Bind;
+using BDUtil.Fluent;
 
 namespace BDUtil.Math
 {

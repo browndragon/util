@@ -1,32 +1,30 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using BDUtil.Fluent;
 
 namespace BDUtil
 {
-    namespace Bi
+    public interface IReadOnlyBiMap<K, V> : IReadOnlyDictionary<K, V>
     {
-        public interface IReadOnlyMap<K, V> : IReadOnlyDictionary<K, V>
-        {
-            IReadOnlyDictionary<V, IReadOnlyCollection<K>> Reverse { get; }
-        }
-        public interface IMap<K, V> : IDictionary<K, V>
-        {
-            IReadOnlyDictionary<V, IReadOnlyCollection<K>> Reverse { get; }
-        }
+        IReadOnlyDictionary<V, IReadOnlyCollection<K>> Reverse { get; }
+    }
+    public interface IBiMap<K, V> : IDictionary<K, V>
+    {
+        IReadOnlyDictionary<V, IReadOnlyCollection<K>> Reverse { get; }
     }
 
-    namespace Raw.Bi
+    namespace Raw
     {
-        public class Map<K, V, KColl> : BDUtil.Bi.IMap<K, V>, BDUtil.Bi.IReadOnlyMap<K, V>
+        public class BiMap<K, V, KColl> : IBiMap<K, V>, IReadOnlyBiMap<K, V>
         where KColl : ICollection<K>, IReadOnlyCollection<K>, new()
         {
             readonly Dictionary<K, V> _Forward = new();
             readonly Dictionary<V, KColl> _Reverse = new();
             public KVP.Upcast<V, KColl, IReadOnlyCollection<K>> Reverse;
-            public Map() => Reverse = new(_Reverse);
-            IReadOnlyDictionary<V, IReadOnlyCollection<K>> BDUtil.Bi.IReadOnlyMap<K, V>.Reverse => Reverse;
-            IReadOnlyDictionary<V, IReadOnlyCollection<K>> BDUtil.Bi.IMap<K, V>.Reverse => Reverse;
+            public BiMap() => Reverse = new(_Reverse);
+            IReadOnlyDictionary<V, IReadOnlyCollection<K>> IReadOnlyBiMap<K, V>.Reverse => Reverse;
+            IReadOnlyDictionary<V, IReadOnlyCollection<K>> IBiMap<K, V>.Reverse => Reverse;
             public V this[K key]
             {
                 get => _Forward[key];
@@ -80,6 +78,6 @@ namespace BDUtil
             bool ICollection<KeyValuePair<K, V>>.IsReadOnly => ((ICollection<KeyValuePair<K, V>>)_Forward).IsReadOnly;
             void ICollection<KeyValuePair<K, V>>.CopyTo(KeyValuePair<K, V>[] array, int arrayIndex) => _Forward.WriteTo(array, arrayIndex);
         }
-        public class Map<K, V> : Map<K, V, HashSet<K>> { }
+        public class BiMap<K, V> : BiMap<K, V, HashSet<K>> { }
     }
 }

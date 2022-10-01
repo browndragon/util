@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace BDUtil
+namespace BDUtil.Fluent
 {
     /// Extensions for anything listlike: IEnumerable, string, list, and array.
     /// Also contains extensions for working with IEnum

@@ -1,7 +1,7 @@
 using System;
 using BDUtil.Math;
 
-namespace BDUtil
+namespace BDUtil.Fluent
 {
     /// Extensions & utilities for working with Func & Action.
     public static class Funcs

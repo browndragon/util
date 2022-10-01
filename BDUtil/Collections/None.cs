@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using BDUtil.Bi;
+using BDUtil.Fluent;
 
 namespace BDUtil
 {

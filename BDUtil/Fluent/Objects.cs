@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 
-namespace BDUtil
+namespace BDUtil.Fluent
 {
     /// Object/reference utilties.
     public static class Objects
@@ -45,6 +45,13 @@ namespace BDUtil
         {
             string label = thiz.GetFalseyLabel();
             if (label == null) throw new InvalidOperationException($"Unexpectedly truthy {thiz}:{string.Format(tmpl ?? "", args)}");
+        }
+
+        /// Lets you write "new Timer(1f).Let(out var start, 12).Let(out var end, 14).Foreach(t=>tween(start, end, t))".
+        public static T Let<T, T1>(this T thiz, out T1 bindee, in T1 value)
+        {
+            bindee = value;
+            return thiz;
         }
 
         /// discards the arguments returning thiz (allowing side effects during an assignment)

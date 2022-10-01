@@ -1,4 +1,5 @@
 using System;
+using BDUtil.Fluent;
 using Xunit;
 
 namespace BDUtil.Raw

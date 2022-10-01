@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using BDUtil.Fluent;
 using UnityEngine;
 
 namespace BDUtil.Serialization
