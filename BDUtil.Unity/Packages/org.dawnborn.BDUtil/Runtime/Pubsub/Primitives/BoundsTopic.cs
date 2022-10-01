@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace BDUtil.Pubsub
 {
-    [CreateAssetMenu(menuName = "BDUtil/Prim/BoundsTopic")]
+    [CreateAssetMenu(menuName = "BDUtil/Prim/BoundsTopic", order = +1)]
     [Bind.Impl(typeof(ValueTopic<Bounds>))]
     public class BoundsTopic : ValueTopic<Bounds>
     {

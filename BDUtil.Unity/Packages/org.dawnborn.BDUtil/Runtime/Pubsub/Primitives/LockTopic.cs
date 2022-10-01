@@ -5,7 +5,7 @@ using UnityEngine;
 namespace BDUtil.Pubsub
 {
     /// Notifies when it transitions from held to released.
-    [CreateAssetMenu(menuName = "BDUtil/Prim/LockTopic")]
+    [CreateAssetMenu(menuName = "BDUtil/Prim/LockTopic", order = +1)]
     [Bind.Impl(typeof(ValueTopic<Lock>))]
     public class LockTopic : ValueTopic<Lock>, Scopes.IScopable<bool>, IEnumerable, IEnumerator
     {

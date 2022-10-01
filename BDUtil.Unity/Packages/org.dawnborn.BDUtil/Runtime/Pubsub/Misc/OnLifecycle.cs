@@ -17,10 +17,19 @@ namespace BDUtil.Pubsub
         protected void OnDisable() => OnDisable_?.Invoke();
         protected void OnDestroy() => OnDestroy_?.Invoke();
 
-        /// Support for animator bools. Could use triggers, but this is fine.
+
         Animator animator;
-        Animator Animator => animator ??= GetComponent<Animator>().OrThrow();
+        Animator Animator
+        {
+            get
+            {
+                if (animator == null) animator = GetComponent<Animator>();
+                return animator;
+            }
+        }
+        /// More generic/reflective support for animator bools. Could use triggers, but this is fine.
         public void SetAnimatorParamTrue(string name) => Animator.SetBool(name, true);
         public void SetAnimatorParamFalse(string name) => Animator.SetBool(name, false);
+        public void SetAnimatorParamTwiddle(string name) => Animator.SetBool(name, Animator.GetBool(name));
     }
 }

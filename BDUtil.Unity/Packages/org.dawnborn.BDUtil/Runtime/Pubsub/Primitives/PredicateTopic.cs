@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace BDUtil.Pubsub
 {
-    [CreateAssetMenu(menuName = "BDUtil/Prim/PredicateTopic")]
+    [CreateAssetMenu(menuName = "BDUtil/Prim/PredicateTopic", order = +1)]
     [Tooltip("Considers positive integers & floats (& locks, & non-null, etc) true.")]
     public class PredicateTopic : Topic<bool>
     {

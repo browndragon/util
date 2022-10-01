@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace BDUtil.Pubsub
 {
-    [CreateAssetMenu(menuName = "BDUtil/Prim/TickTopic")]
+    [CreateAssetMenu(menuName = "BDUtil/Prim/TickTopic", order = +1)]
     public class TickTopic : Topic
     {
         [SerializeField] Lifecycle.Event tickerEvent;

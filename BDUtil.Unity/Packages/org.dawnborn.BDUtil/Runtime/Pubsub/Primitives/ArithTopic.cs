@@ -12,7 +12,7 @@ namespace BDUtil.Pubsub
     /// so note the stack order for the binops that care (-, /, %, ^)!
     /// Since Predicate checks for positivity, you can get GTEQ (etc) behaviour using subtraction.
     /// Collections' value is their length; boolean (or convertible to boolean...) are 1f/0f.
-    [CreateAssetMenu(menuName = "BDUtil/Prim/ArithTopic")]
+    [CreateAssetMenu(menuName = "BDUtil/Prim/ArithTopic", order = +1)]
     public class ArithTopic : Topic<float>
     {
         public enum Instruction
