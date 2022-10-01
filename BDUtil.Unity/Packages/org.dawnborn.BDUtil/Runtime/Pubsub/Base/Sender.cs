@@ -3,7 +3,9 @@ using UnityEngine;
 
 namespace BDUtil.Pubsub
 {
-    /// Wraps send message, broadcast, etc.
+    /// Wraps send message, broadcast, etc. Serializably.
+    /// This isn't _really_ pubsub per se, but it's *unity's* old *pub* mechanism...
+    /// ... and I need it for subscriber to delegate to sending.
     [Serializable]
     public struct Sender
     {

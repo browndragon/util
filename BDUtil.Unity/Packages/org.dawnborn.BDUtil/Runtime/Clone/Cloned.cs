@@ -50,13 +50,14 @@ namespace BDUtil.Clone
         internal static GameObject FixCloneRootFromInstance(Cloned cloned = default)
         {
 #if UNITY_EDITOR
-            if (cloned != null)
+            if (EditorApplication.isPlayingOrWillChangePlaymode) { }
+            else if (cloned != null)
             {
                 bool isPartVariant = PrefabUtility.IsPartOfVariantPrefab(cloned.gameObject);
-                bool isAsset = PrefabUtility.IsPartOfNonAssetPrefabInstance(cloned.gameObject);
-                if (!isAsset)
+                bool isInstance = PrefabUtility.IsPartOfNonAssetPrefabInstance(cloned.gameObject);
+                if (!isInstance)
                 {
-                    Debug.Log($"Cloned is an _asset_ somehow?! Ignoring. {cloned.IDStr()}.Root={cloned.Root.IDStr()}");
+                    Debug.Log($"Cloned is not an instance (an asset?) somehow?! Ignoring. {cloned.IDStr()}.Root={cloned.Root.IDStr()}");
                     return null;
                 }
                 PrefabStage stage = PrefabStageUtility.GetCurrentPrefabStage();
