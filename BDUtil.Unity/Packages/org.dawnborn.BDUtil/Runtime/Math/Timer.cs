@@ -43,12 +43,12 @@ namespace BDUtil.Math
         public static implicit operator Tick(Timer timer) => timer.Tick;
         public static implicit operator float(Timer timer) => timer.Tick;
         public static implicit operator bool(Timer timer) => timer.Tick;
-        public Timer(float length, float start)
+        public Timer(float length, float start = default)
         {
             Length = length;
-            Start = start;
+            Start = (start == default) ? Time.time : start;
         }
-        public IEnumerator Foreach(Action<Tick> onTick)
+        public IEnumerator Foreach(Action<Tick> onTick, Action onComplete = default)
         {
             foreach (var tick in this)
             {
@@ -56,6 +56,7 @@ namespace BDUtil.Math
                 yield return null;
             }
             onTick(new(Length, Length));
+            onComplete?.Invoke();
         }
         public Timer Stopped()
         {
@@ -89,12 +90,12 @@ namespace BDUtil.Math
         public static implicit operator Tick(FixedTimer timer) => timer.Tick;
         public static implicit operator float(FixedTimer timer) => timer.Tick;
         public static implicit operator bool(FixedTimer timer) => timer.Tick;
-        public FixedTimer(float length, float start)
+        public FixedTimer(float length, float start = default)
         {
             Length = length;
-            Start = start;
+            Start = (start == default) ? Time.fixedTime : start;
         }
-        public IEnumerator Foreach(Action<Tick> onTick)
+        public IEnumerator Foreach(Action<Tick> onTick, Action onComplete = default)
         {
             foreach (var tick in this)
             {
@@ -102,6 +103,7 @@ namespace BDUtil.Math
                 yield return Coroutines.Fixed;
             }
             onTick(new(Length, Length));
+            onComplete?.Invoke();
         }
         public FixedTimer Stopped()
         {
