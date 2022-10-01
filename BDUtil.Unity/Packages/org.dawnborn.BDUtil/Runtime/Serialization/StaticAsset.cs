@@ -83,8 +83,9 @@ namespace BDUtil.Serialization
             if (_main != null && _main != this) Debug.LogError($"Duplicate {GetType().Name}.main={_main.GetInstanceID()} already exists vs this={this.GetInstanceID()}");
             else
             {
-                _main = this as T;
-                System.Diagnostics.Debug.Assert(_main != null, $"{this.GetInstanceID()} (of {typeof(T)}) static init ran but left _main=(null){_main?.GetInstanceID() ?? 0}");
+                object casted = this;
+                _main = casted as T;
+                System.Diagnostics.Debug.Assert(_main != null, $"{typeof(T)}).cctor() ran but left _main==null!");
             }
         }
 

@@ -4,6 +4,6 @@ using UnityEngine;
 
 namespace BDUtil.Pubsub
 {
-    [CreateAssetMenu(menuName = "BDUtil/Objs/Deque")]
+    [CreateAssetMenu(menuName = "BDUtil/Objs/Deque", order = +4)]
     public class ObjsDeque : CollectionTopic<Observable.Deque<GameObject>, GameObject> { }
 }

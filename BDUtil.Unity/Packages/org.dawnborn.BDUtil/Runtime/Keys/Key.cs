@@ -4,7 +4,7 @@ using UnityEngine;
 namespace BDUtil.Library
 {
     // Like an enum element, dictionary key, etc.
-    [CreateAssetMenu(menuName = "BDUtil/Key")]
+    [CreateAssetMenu(menuName = "BDUtil/Key", order = +100)]
     public class Key : ScriptableObject, IEquatable<Key>
     {
         public virtual bool Equals(Key other) => this == other;

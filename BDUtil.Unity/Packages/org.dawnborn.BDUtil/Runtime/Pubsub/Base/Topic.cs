@@ -7,7 +7,7 @@ using UnityEngine.Events;
 namespace BDUtil.Pubsub
 {
     // MAYBE this belongs in Base, since it's actually the base class of the hierarchy. Or not!
-    [CreateAssetMenu(menuName = "BDUtil/Prim/Topic", order = -1)]
+    [CreateAssetMenu(menuName = "BDUtil/Topic", order = +1)]
     public class Topic : ScriptableObject, ITopic, IPublisher
     {
         [SerializeField, SuppressMessage("IDE", "IDE0051"), SuppressMessage("IDE", "IDE0044")]

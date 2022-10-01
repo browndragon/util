@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace BDUtil.Pubsub
 {
-    [CreateAssetMenu(menuName = "BDUtil/Objs/ById")]
+    [CreateAssetMenu(menuName = "BDUtil/Objs/ById", order = +4)]
     [Tooltip("Topic of InstanceId->GameObject; useful for set membership")]
     public class ObjsById : CollectionTopic<Observable.Dictionary<int, GameObject>, int, GameObject>
     {

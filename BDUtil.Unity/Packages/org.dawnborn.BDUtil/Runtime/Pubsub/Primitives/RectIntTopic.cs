@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace BDUtil.Pubsub
 {
-    [CreateAssetMenu(menuName = "BDUtil/Prim/V/RectIntTopic", order = +1)]
+    [CreateAssetMenu(menuName = "BDUtil/Geom/RectIntTopic", order = +5)]
     [Bind.Impl(typeof(ValueTopic<RectInt>))]
     public class RectIntTopic : ValueTopic<RectInt>
     {

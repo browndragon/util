@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace BDUtil.Pubsub
 {
-    [CreateAssetMenu(menuName = "BDUtil/Prim/V2Topic", order = +1)]
+    [CreateAssetMenu(menuName = "BDUtil/Geom/2Topic", order = +5)]
     [Bind.Impl(typeof(ValueTopic<Vector2>))]
     public class V2Topic : ValueTopic<Vector2>
     {

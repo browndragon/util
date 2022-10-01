@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace BDUtil.Pubsub
 {
-    [CreateAssetMenu(menuName = "BDUtil/Objs/Head")]
+    [CreateAssetMenu(menuName = "BDUtil/Objs/Head", order = +4)]
     public class ObjsHead : HeadTopic<GameObject>
     {
         /// If you just want a stable ordering...?

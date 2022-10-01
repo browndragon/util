@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace BDUtil.Pubsub
 {
-    [CreateAssetMenu(menuName = "BDUtil/Actions/Head")]
+    [CreateAssetMenu(menuName = "BDUtil/Actions/Head", order = +3)]
     public class ActionsHead : HeadTopic<Action>
     {
         [Serializable]
