@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using BDUtil.Fluent;
 using BDUtil.Serialization;
 using UnityEngine;
 using UnityEngine.Events;
@@ -22,7 +23,7 @@ namespace BDUtil.Pubsub
             get
             {
                 topic ??= MakeNewTopic();
-                ValueTopic<T> ret = (ValueTopic<T>)topic;
+                ValueTopic<T> ret = topic.Downcast(default(ValueTopic<T>));
                 if (!hasSubscribed)
                 {
                     ret.AddListener(InvokeAction);
@@ -31,7 +32,7 @@ namespace BDUtil.Pubsub
                 return ret;
             }
         }
-        void InvokeAction() => Action?.Invoke(((ValueTopic<T>)topic).Value);
+        void InvokeAction() => Action?.Invoke(topic.Downcast(default(ValueTopic<T>)).Value);
         ValueTopic<T> MakeNewTopic()
         {
             Type bestType = Bind.Bindings<Bind.ImplAttribute>.Default.GetBestType(typeof(ValueTopic<T>));

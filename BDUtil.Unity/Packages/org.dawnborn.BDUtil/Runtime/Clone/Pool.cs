@@ -26,6 +26,9 @@ namespace BDUtil.Clone
         public LogEvents LogPrefabStage = LogEvents.Awake;
 
         public string SceneName => $"{name}.Scene";
+        public string PreAcquireMessage = "PreAcquire";
+        public string PreReleaseMessage = "PreRelease";
+        public string PreDestroyMessage = "PreDestroy";
         Scene cachingScene;
         public Scene CachingScene
         {
@@ -115,6 +118,7 @@ namespace BDUtil.Clone
 
             if (postfab == null) postfab = Cloned.InstantiateInactiveCloneWithRoot(prefab)?.gameObject;
             SceneManager.MoveGameObjectToScene(postfab, SceneManager.GetActiveScene());
+            if (!PreAcquireMessage.IsEmpty()) postfab.SendMessage(PreAcquireMessage, SendMessageOptions.DontRequireReceiver);
             if (activate) postfab.SetActive(true);
             return postfab;
         }
@@ -124,10 +128,18 @@ namespace BDUtil.Clone
 
         public void Release(GameObject postfab)
         {
-            Cloned tag = postfab.GetComponent<Cloned>().OrThrow();
+            Cloned tag = postfab.GetComponent<Cloned>();
+            if (tag == null)
+            {
+                if (!PreDestroyMessage.IsEmpty()) postfab.SendMessage(PreDestroyMessage, SendMessageOptions.DontRequireReceiver);
+                Destroy(postfab);
+                return;
+            }
+
             if (CachingScene.rootCount >= CacheSceneLimit || PerCacheLimit <= 0)
             {
                 tag.Root = null;
+                if (!PreDestroyMessage.IsEmpty()) postfab.SendMessage(PreDestroyMessage, SendMessageOptions.DontRequireReceiver);
                 Destroy(postfab);
                 return;
             }
@@ -136,10 +148,12 @@ namespace BDUtil.Clone
             if (cache == null) cache = caches.Collection[tag.Root] = new();
             if (cache.Count >= PerCacheLimit)
             {
+                if (!PreDestroyMessage.IsEmpty()) postfab.SendMessage(PreDestroyMessage, SendMessageOptions.DontRequireReceiver);
                 tag.Root = null;
                 Destroy(postfab);
                 return;
             }
+            if (!PreReleaseMessage.IsEmpty()) postfab.SendMessage(PreDestroyMessage, SendMessageOptions.DontRequireReceiver);
             postfab.SetActive(false);
             SceneManager.MoveGameObjectToScene(postfab, CachingScene);
             cache.Add(postfab);

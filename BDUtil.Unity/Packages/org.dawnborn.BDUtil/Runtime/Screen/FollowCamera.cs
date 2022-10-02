@@ -1,18 +1,60 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using BDUtil;
 using BDUtil.Math;
+using BDUtil.Pubsub;
 using BDUtil.Screen;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace BDRPG.Screen
 {
-    /// Creates a camera with a central dead zone, and then outside of that an acceleration curve that attempts to slide towards the mouse direction.
     [AddComponentMenu("BDUtil/FollowCamera")]
     [RequireComponent(typeof(Camera))]
+    [Tooltip("Follows something -- the mouse, a specific character, etc.")]
     public class FollowCamera : MonoBehaviour
     {
         static readonly Rect unitRect = Rect.MinMaxRect(0f, 0f, 1f, 1f);
+
+        public interface IPointSource
+        {
+            Vector2 GetViewportPoint(Camera camera);
+        }
+        [Serializable]
+        public struct MousePointSource : IPointSource
+        {
+            public Vector2 GetViewportPoint(Camera camera)
+            {
+                // Mouse is over a button; don't move.
+                if (EventSystem.current.IsPointerOverGameObject()) return .5f * Vector2.one;
+                Vector2 pointer = camera.ScreenToViewportPoint(Input.mousePosition);
+                // Mouse is off of the screen; don't move.
+                if (!unitRect.Contains(pointer)) return .5f * Vector2.one;
+                return pointer;
+            }
+        }
+        [Serializable]
+        public struct TransformPointSource : IPointSource
+        {
+            public Transform Transform;
+            public Vector2 GetViewportPoint(Camera camera) => camera.WorldToViewportPoint(Transform.position);
+
+        }
+        [Serializable]
+        public struct WorldPointSource : IPointSource
+        {
+            public Topic<Vector3> PointSource;
+            public Vector2 GetViewportPoint(Camera camera) => camera.WorldToViewportPoint(PointSource.Value);
+        }
+        [Serializable]
+        public struct GameObjectSource : IPointSource
+        {
+            public Topic<GameObject> PointSource;
+            public Vector2 GetViewportPoint(Camera camera) => camera.WorldToViewportPoint(PointSource.Value.transform.position);
+        }
+
+        [Tooltip("What are we following? It's legal to change this during play.")]
+        [SerializeReference, Subtype] public IPointSource PointSource = new MousePointSource();
 
         [Tooltip("Screen-center ratio to ignore movement; (1,1) would disable all, (0,0) none.")]
         public Vector2 DeadZone = .5f * Vector2.one;
@@ -24,37 +66,26 @@ namespace BDRPG.Screen
         public float GroundSpeed = 25;
 
         new Camera camera;
-        EventSystem eventSystem;
         bool suppressed;
-        bool tempSuppressed;
 
-        [SuppressMessage("IDE", "IDE0051")]
-        void OnEnable()
-        {
-            camera = Camera.main;
-            eventSystem = EventSystem.current;
-        }
+        protected void OnEnable() => camera = Camera.main;
 
-        [SuppressMessage("IDE", "IDE0051")]
-        void Update()
+        protected void Update()
         {
             // This COULD be done with raycaster, but IMO not worth it.
             // It's really for debugging anyway.
             if (Input.GetMouseButtonUp(2)) suppressed = !suppressed;
             if (Input.GetMouseButtonUp(0)) suppressed = false;
             if (Input.GetMouseButtonUp(1)) suppressed = false;
-            tempSuppressed = eventSystem?.IsPointerOverGameObject() ?? false;
         }
 
-        [SuppressMessage("IDE", "IDE0051")]
-        void LateUpdate()
+        protected void LateUpdate()
         {
+            if (PointSource == null) return;
             if (suppressed) return;
-            if (tempSuppressed) return;
-            Vector2 mouseViewport = camera.ScreenToViewportPoint(Input.mousePosition);
-            // Mouse is off of the screen; don't move.
-            if (!unitRect.Contains(mouseViewport)) return;
-            Vector2 ratio = mouseViewport - .5f * Vector2.one;
+            Vector2 trackedViewport = PointSource.GetViewportPoint(camera);
+            // Okay, so:
+            Vector2 ratio = trackedViewport - .5f * Vector2.one;
             // We're now x&y in [-.5f,+.5f].
             Vector2 halfDead = DeadZone / 2;
             if (ratio.x.IsInRange(-halfDead.x, +halfDead.x)) ratio.x = 0f;
@@ -70,7 +101,14 @@ namespace BDRPG.Screen
             else ratio.y = sign.y * Curve.Evaluate((abs.y - halfDead.y) / (halfMax.y - halfDead.y));
 
             float speed = Time.deltaTime * GroundSpeed * ratio.magnitude;
-            camera.MoveAlongXY(Input.mousePosition, speed, true);
+            camera.MoveAlongXY(
+                Vector2.Scale(
+                    new(UnityEngine.Screen.width, UnityEngine.Screen.height),
+                    trackedViewport
+                ),
+                speed,
+                true
+            );
         }
     }
 }

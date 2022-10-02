@@ -14,8 +14,8 @@ namespace BDUtil.Library
         public struct Clip : Player.IPlayable
         {
             // Formerly used.
-            [SerializeField, MinMax.Range] Vector2 volume;
-            [SerializeField, MinMax.Range(Max = 10f)] Vector2 delay;
+            [MinMax.Range] public Vector2 volume;
+            [MinMax.Range(Max = 10f)] public Vector2 delay;
             public AudioClip AudioClip;
 
             public float PlayOn(Player player)

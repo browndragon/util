@@ -46,6 +46,23 @@ namespace BDUtil.Fluent
             string label = thiz.GetFalseyLabel();
             if (label == null) throw new InvalidOperationException($"Unexpectedly truthy {thiz}:{string.Format(tmpl ?? "", args)}");
         }
+        /// Okay, it's trivial, but symmetry demands!
+        public static TOut Upcast<TIn, TOut>(this TIn thiz)
+        where TIn : TOut
+        => thiz;
+        /// ClassCastExceptions are fucking useless.
+        public static TOut Downcast<TIn, TOut>(this TIn thiz, TOut _ = default)
+        where TOut : TIn
+        {
+            try { return (TOut)thiz; }
+            catch { throw new InvalidCastException($"Can't upcast actual {thiz?.GetType()?.Name ?? "null"}->{typeof(TOut)}"); }
+        }
+        /// See Also: Downcast.
+        public static TOut Anycast<TOut>(this object thiz, TOut _ = default)
+        {
+            try { return (TOut)thiz; }
+            catch { throw new InvalidCastException($"Can't anycast actual {thiz?.GetType()?.Name ?? "null"}->{typeof(TOut)}"); }
+        }
 
         /// Lets you write "new Timer(1f).Let(out var start, 12).Let(out var end, 14).Foreach(t=>tween(start, end, t))".
         public static T Let<T, T1>(this T thiz, out T1 bindee, in T1 value)
