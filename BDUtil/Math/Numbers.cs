@@ -36,8 +36,14 @@ namespace BDUtil.Math
         => (thiz % y + y) % y;
         public static bool IsInRange(this float thiz, float min, float max)
         => min <= thiz & thiz < max;
+        public static bool IsInRangeInclusive(this float thiz, float min, float max)
+        => min <= thiz & thiz <= max;
         public static float CheckRange(this float thiz, float min, float max, string context = default)
         => thiz.IsInRange(min, max)
+        ? thiz
+        : throw new IndexOutOfRangeException($"{thiz} <> [{min},{max}] {context}");
+        public static float CheckRangeInclusive(this float thiz, float min, float max, string context = default)
+        => thiz.IsInRangeInclusive(min, max)
         ? thiz
         : throw new IndexOutOfRangeException($"{thiz} <> [{min},{max}] {context}");
     }

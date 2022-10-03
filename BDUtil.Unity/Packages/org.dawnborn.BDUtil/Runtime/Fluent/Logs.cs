@@ -1,11 +1,11 @@
-using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
-namespace BDUtil
+namespace BDUtil.Fluent
 {
-    public static class Debugs
+    public static class Logs
     {
-        static Debugs() => Initialize();
+        static Logs() => Initialize();
         public static void Initialize() => LogListener.Initialize();
 
         public static string IDStr(this GameObject thiz)
@@ -14,6 +14,7 @@ namespace BDUtil
         => $"{thiz?.gameObject.IDStr()}[{thiz}]";
         public static string IDStr(this ScriptableObject thiz)
         => $"{thiz?.ToString() ?? "nil"}#{thiz?.GetInstanceID() ?? 0}";
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string IDStr(this UnityEngine.Object thiz)
         => thiz switch
         {
@@ -23,6 +24,13 @@ namespace BDUtil
             ScriptableObject so => so.IDStr(),
             _ => $"{thiz?.ToString() ?? "nil"}#{thiz?.GetInstanceID() ?? 0}",
         };
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T Logging<T>(this T thiz, string message)
+        {
+            Debug.Log(message, thiz as UnityEngine.Object);
+            return thiz;
+        }
 
         /// Bridge between unity & dotnet logging systems.
         public class LogListener : System.Diagnostics.TraceListener

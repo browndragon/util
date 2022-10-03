@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace BDUtil.Math
 {
@@ -19,21 +20,43 @@ namespace BDUtil.Math
 
         [SuppressMessage("IDE", "IDE0044")]
         readonly bool? value;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         tern(bool? data) => value = data;
 
         /// Bools can also be explicitly converted with their `.tern()` extension method.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator tern(bool? that) => new(that);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator tern(int that) => new(that.Valence());
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator tern(float that) => new(that.Valence());
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator bool?(tern thiz) => thiz.value;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator int(tern thiz) => thiz.@switch(+1, 0, -1);
 
-        public bool isTrue => value.HasValue && value.Value;
-        public bool isNull => !value.HasValue;
+        public bool isTrue
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => value.HasValue && value.Value;
+        }
+        public bool isNull
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => !value.HasValue;
+        }
         // True _or_ null. This isn't actually truthy in all contexts, but then neither is it falsey in all contexts...
         // there's no "isFalsey" because the semantics of that are a little brain bendy; using !isTrue is easier to read.
-        public bool isTruthy => !isFalse;
-        public bool isFalse => value.HasValue && !value.Value;
+        public bool isTruthy
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => !isFalse;
+        }
+        public bool isFalse
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => value.HasValue && !value.Value;
+        }
 
         // Short circuit chain ops; the bread & butter...
         // https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/expressions#11133-user-defined-conditional-logical-operators
@@ -47,8 +70,11 @@ namespace BDUtil.Math
         /// `a() || b()&no || c()` will stop if a is yes or tbd (so only executing b on a=no);
         /// since b()&no, it will min b's value to no thus continue on to execute c!
         /// Or see % for an operator which works in either setting.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static tern Min(tern x, tern y) => x <= y ? x : y;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static tern operator &(tern x, tern y) => Min(x, y);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator false(tern x) => x.@switch(false, true, true);
 
         /// Selector/Lenient: x||y => T.true(x) ? x : T.|(x, y)
@@ -60,31 +86,41 @@ namespace BDUtil.Math
         /// `a() && b()|yes && c()` will stop if a is no or tbd (so only executing b on a=yes);
         /// since b()|yes, it will max b's value to yes thus continue on to execute c!
         /// Or see % for an operator which works in either setting.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static tern Max(tern x, tern y) => x >= y ? x : y;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static tern operator |(tern x, tern y) => Max(x, y);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator true(tern x) => x.@switch(true, true, false);
 
         /// Replace operator: x%y=>y's value, having evaluated and discarded x.
         /// This lets you insert side effect expressions concisely.
         /// See also: .Let() ; note that returns thiz (==x), not y!
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static tern Replace(tern _, tern y) => y;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static tern operator %(tern x, tern y) => Replace(x, y);
 
         /// Root non-short-circuiting operator; make it easier to examine a tern.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T @switch<T>(T @true = default, T @null = default, T @false = default)
         => value switch { true => @true, null => @null, false => @false, };
 
         /// Stark Difference: True iff x & y are both done and not equal to each other.
         // In particular, if either is tbd, this is false (or if they differ).
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Stark(tern x, tern y) => x != y && !~x && !~y;
         /// The opposite of Stark, if two terns are "similar".
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Fuzzy(tern x, tern y) => !Stark(x, y);
         // Stark operator: True iff x & y are done and different from each other.
         // In particular, if either is tbd, this is false (or if they differ).
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ^(tern x, tern y) => Stark(x, y);
         // If only we had a `~=` fuzzy match operator...
 
         /// Optimistic cast: no->false, tbd,yes->true.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator +(tern x) => x.isTruthy;
         /// Incompletion operator: Determine if a thing is null.
         /// Think like a destructor: it's "null" afterwards [at least in unity :->].
@@ -92,24 +128,38 @@ namespace BDUtil.Math
         // This is also chosen so that if there *were* a fuzzy match operator,
         // `null~=false` would acceptably mesh with ~null&&~false; not that it has to,
         // but it's nice that it could...
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ~(tern x) => x.isNull;
         /// Pessimistic operator: Cast to a bool st no,tbd->false; yes->true.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator -(tern x) => x.isTrue;
         /// Invert operator: Turn true<->false (leaving tbd alone).
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static tern operator !(tern x) => x.@switch(@false, @null, @true);
 
         // We consider true > null > false
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator <(tern x, tern y) => x.CompareTo(y) < 0;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator >(tern x, tern y) => x.CompareTo(y) > 0;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator <=(tern x, tern y) => x.CompareTo(y) <= 0;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator >=(tern x, tern y) => x.CompareTo(y) >= 0;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(tern x, tern y) => x.value == y.value;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(tern x, tern y) => x.value != y.value;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(tern other) => value == other.value;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int CompareTo(tern other) => value.AsPInt().CompareTo(other.value.AsPInt());
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool Equals(object value) => value is tern other && Equals(other);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode() => @switch(1, 0, -1);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override string ToString() => @switch("+", "~", "-");
     }
 
@@ -118,13 +168,16 @@ namespace BDUtil.Math
     public static class ternsExt
     {
         /// Remap a bool? into a tern using an arbitrary truth table, whose default is identity.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static tern tern(
             this bool? thiz, bool? @true = true, bool? @null = null, bool? @false = false
         ) => thiz switch { true => @true, null => @null, false => @false, };
         /// Remap a bool->tern using an arbitrary truth table whose default is identity (success/fail).
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static tern tern(this bool thiz, bool? @true = true, bool? @false = false)
         => thiz ? @true : @false;
         /// The _other_ common bool->tern mapping, success/tbd.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static tern orTBD(this bool thiz)
         => thiz.tern(@false: null);
     }

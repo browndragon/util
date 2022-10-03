@@ -1,24 +1,15 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using BDUtil.Clone;
 using UnityEditor;
-using UnityEditor.Experimental.SceneManagement;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-using Debug = UnityEngine.Debug;
-using Object = UnityEngine.Object;
-
-namespace BDUtil.Serialization.Editor
+namespace BDUtil.Clone.Editor
 {
-    public class PrefabDetector : EditorWindow
+    public class PrefabWindow : EditorWindow
     {
-        [MenuItem("Tools/PrefabDetector")]
+        [MenuItem("Window/BDUtil/Prefab")]
         static void ShowToolbar()
         {
-            EditorWindow.GetWindow<PrefabDetector>("PrefabDetector");
+            GetWindow<PrefabWindow>("PrefabWindow");
         }
 
         private Vector2 scroll;
@@ -27,7 +18,7 @@ namespace BDUtil.Serialization.Editor
             var go = Selection.activeGameObject;
             if (go == null)
             {
-                EditorGUILayout.HelpBox("Select a gameobject to examine.", MessageType.Info);
+                EditorGUILayout.HelpBox("Select a prefab or instance to examine.", MessageType.Info);
                 return;
             }
 
@@ -35,16 +26,17 @@ namespace BDUtil.Serialization.Editor
             scroll = EditorGUILayout.BeginScrollView(scroll);
             {
                 EditorGUILayout.ObjectField("Selection", go, typeof(GameObject), allowSceneObjects: true);
-                EditorGUILayout.LabelField("IDStr", go.IDStr());
+                EditorGUILayout.LabelField("ID", go.GetInstanceID().ToString());
 
                 EditorGUILayout.Space();
-                Cloned cloned = go.GetComponent<Cloned>();
+                Postfab cloned = go.GetComponent<Postfab>();
                 if (cloned != null)
                 {
-                    EditorGUILayout.LabelField("Cloned", EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField("Postfab", EditorStyles.boldLabel);
 
-                    EditorGUILayout.ObjectField("Root", cloned.Root, typeof(GameObject), allowSceneObjects: true);
-                    EditorGUILayout.LabelField("Root.IDStr", cloned.Root?.IDStr() ?? "");
+                    EditorGUILayout.ObjectField("Link", cloned.Link, typeof(GameObject), allowSceneObjects: true);
+                    EditorGUILayout.LabelField("Link.FabType", cloned.FabType.ToString());
+                    EditorGUILayout.LabelField("Link.ID", cloned.Link?.GetInstanceID().ToString() ?? "");
                     EditorGUILayout.Space();
                 }
 

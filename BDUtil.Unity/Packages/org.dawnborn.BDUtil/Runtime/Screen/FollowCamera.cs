@@ -26,7 +26,7 @@ namespace BDRPG.Screen
             public Vector2 GetViewportPoint(Camera camera)
             {
                 // Mouse is over a button; don't move.
-                if (EventSystem.current.IsPointerOverGameObject()) return .5f * Vector2.one;
+                if (EventSystem.current?.IsPointerOverGameObject() ?? false) return .5f * Vector2.one;
                 Vector2 pointer = camera.ScreenToViewportPoint(Input.mousePosition);
                 // Mouse is off of the screen; don't move.
                 if (!unitRect.Contains(pointer)) return .5f * Vector2.one;

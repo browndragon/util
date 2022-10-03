@@ -6,57 +6,53 @@ namespace BDUtil.Library
     [AddComponentMenu("BDUtil/Library/Randomize")]
     public class Randomize : MonoBehaviour
     {
-        [
-            MinMax.Range(
-                Display = MinMax.RangeAttribute.Displays.LogSlider,
-                Min = .1f,
-                Max = 10f
-            )
-        ]
-        public MinMax Scale;
-        [MinMax.Range(Min = -1f, Max = +1f)] public MinMax RotZ;
-        public ColorRange Color;
-        public MinMax Speed;
+        public Vector3 Scale;
+        public float RotZ;
+        public Vector2 InitialV;
+        public Vector2 RelativeV;
+        public HSVA HSVA;
         readonly Disposes.All onDisable = new();
         protected void OnEnable()
         {
-            if (RotZ.IsValid)
+            if (RotZ > 0)
             {
-                float rotation = RotZ.Random;
                 Vector3 orig = transform.eulerAngles;
                 Vector3 euler = orig;
-                euler.z += rotation * 180f;
+                euler.z += Fuzz.Float(RotZ * 180f);
                 euler.z = Mathf.Repeat(euler.z, 360f);
                 transform.eulerAngles = euler;
                 onDisable.Add(() => transform.eulerAngles = orig);
             }
-            if (Scale.IsValid)
+            if (!Scale.HasNaN())
             {
-
                 Vector3 orig = transform.localScale;
                 Vector3 localScale = orig;
-                localScale *= Scale.Random;
+                localScale = Fuzz.Vector3(localScale);
                 transform.localScale = localScale;
                 onDisable.Add(() => transform.localScale = orig);
             }
-            if (Speed.IsValid)
+            if (!InitialV.HasNaN() && !RelativeV.HasNaN())
             {
                 Rigidbody2D rb = GetComponent<Rigidbody2D>();
                 if (rb)
                 {
                     Vector2 orig = rb.velocity;
-                    rb.AddRelativeForce(Speed.Random * Vector2.up, ForceMode2D.Impulse);
+                    rb.AddRelativeForce(InitialV + Fuzz.Vector2(RelativeV), ForceMode2D.Impulse);
                     onDisable.Add(() => rb.velocity = orig);
                 }
             }
-            ColorRange.HSVA hsva = Color;
-            if (hsva.IsValid)
+            if (
+                !float.IsNaN(HSVA.h)
+             && !float.IsNaN(HSVA.s)
+             && !float.IsNaN(HSVA.v)
+             && !float.IsNaN(HSVA.a)
+            )
             {
                 SpriteRenderer sr = GetComponent<SpriteRenderer>();
                 if (sr)
                 {
                     Color orig = sr.color;
-                    sr.color = hsva.Random;
+                    sr.color = (HSVA)orig + Fuzz.HSVA(HSVA);
                     onDisable.Add(() => sr.color = orig);
                 }
             }

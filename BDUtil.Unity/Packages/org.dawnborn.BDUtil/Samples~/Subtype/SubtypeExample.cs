@@ -10,8 +10,7 @@ namespace BDUtil.Serialization
     public class SubtypeExample : MonoBehaviour
     {
         public Timer Duration = .5f;
-        [SerializeReference, Subtype]
-        public Easings.IEase Easer = new Easings.EnumStruct();
+        public Easings.Enum Easer;
         public interface ITarget
         {
             Vector3 Get(Vector3 value);

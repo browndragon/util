@@ -14,7 +14,7 @@ namespace BDUtil.Math
         T Scale(float a, T b);
         /// Returns a * b.
         float Dot(T a, T b);
-        /// NaN-detector.
+        /// NaN-detector. Some people -- think integer -- don't support it!
         bool IsValid(T a);
     }
 

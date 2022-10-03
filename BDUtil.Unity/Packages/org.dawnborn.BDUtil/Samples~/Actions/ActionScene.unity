@@ -359,8 +359,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85ef00e1456c2401bb11f1e52a0d09a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ActionQueue: {fileID: 11400000, guid: d9c108f6b3a81469da2ec5fa0e375f1c, type: 2}
-  Delay: 0.2
+  ActionQueue: {fileID: 11400000, guid: e048641d9a50d42e0b16f7a26cf9c073, type: 2}
+  Delay:
+    Length: 0.25
+    Start: NaN
 --- !u!1 &1184057547
 GameObject:
   m_ObjectHideFlags: 0

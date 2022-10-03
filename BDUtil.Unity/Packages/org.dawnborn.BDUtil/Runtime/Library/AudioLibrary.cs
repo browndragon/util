@@ -7,27 +7,24 @@ namespace BDUtil.Library
 {
 
     [CreateAssetMenu(menuName = "BDUtil/Library/Audio")]
-    public class AudioLibrary : Library<AudioLibrary.Clip>
+    public class AudioLibrary : Library<AudioClip, AudioLibrary.AudioClipParams>
     {
         public float VolumeScale;
         [Serializable]
-        public struct Clip : Player.IPlayable
+        public struct AudioClipParams : Player.IPlayable<AudioClip>
         {
-            // Formerly used.
-            [MinMax.Range] public Vector2 volume;
-            [MinMax.Range(Max = 10f)] public Vector2 delay;
-            public AudioClip AudioClip;
-
-            public float PlayOn(Player player)
+            public Extent Volume;
+            public Extent Delay;
+            public float PlayOn(Player player, AudioClip audioClip)
             {
-                AudioSource source = player.GetComponent<AudioSource>().OrThrow();
-                float delay = ((MinMax)this.delay).Random;
-                if (AudioClip != null)
+                float delay = Delay.RandomPoint();
+                if (audioClip != null)
                 {
-                    source.clip = AudioClip;
+                    AudioSource source = player.GetComponent<AudioSource>().OrThrow();
+                    source.clip = audioClip;
                     float scale = DefaultSafe(((AudioLibrary)player.Library).VolumeScale);
-                    source.volume = scale * ((MinMax)this.volume).Random;
-                    delay += AudioClip.length;
+                    source.volume = scale * Volume.RandomPoint();
+                    delay += audioClip.length;
                     source.Play();
                 }
                 return delay;

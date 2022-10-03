@@ -5,20 +5,19 @@ using UnityEngine;
 namespace BDUtil.Library
 {
     [CreateAssetMenu(menuName = "BDUtil/Library/Prefab")]
-    public class PrefabLibrary : Library<PrefabLibrary.Spawn>
+    public class PrefabLibrary : Library<GameObject, PrefabLibrary.Spawn>
     {
         [Serializable]
-        public struct Spawn : Player.IPlayable
+        public struct Spawn : Player.IPlayable<GameObject>
         {
-            public GameObject Prefab;
-            [MinMax.Range(Max = 10f)] public MinMax Delay;
-            public float PlayOn(Player player)
+            public AnimationCurve Delay;
+            public float PlayOn(Player player, GameObject prefab)
             {
-                GameObject instance = Clone.Pool.main.Acquire(Prefab, false);
+                GameObject instance = Clone.Pool.main.Acquire(prefab, false);
                 instance.transform.position = player.transform.position;
                 instance.transform.rotation = player.transform.rotation;
                 instance.SetActive(true);
-                return Delay.Random;
+                return Delay.RandomValue();
             }
         }
     }

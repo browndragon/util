@@ -31,6 +31,10 @@ namespace BDUtil.Library
         {
             IEnumerable<string> Tags { get; }
             float Odds { get; }
+
+            // Often a UnityEngine.Object...
+            object Object { get; }
+            // Often a struct to configure Object.
             object Data { get; }
         }
         public interface ICategory : IEnumerable
@@ -38,7 +42,7 @@ namespace BDUtil.Library
             bool IsValid { get; }
             float Odds { get; }
             int Count { get; }
-            object this[int i] { get; }
+            (object asset, object data) this[int i] { get; }
             IReadOnlyList<IEntry> Entries { get; }
             int GetRandom();
         }
@@ -69,9 +73,12 @@ namespace BDUtil.Library
         }
     }
     [Tooltip("A generic source of multiple assets (sprites, audio, treasure??) with rules to pick between them.")]
-    public class Library<T> : Library
+    public class Library<TObj, TData> : Library
     {
-        public Entry[] Entries;
+        [SerializeField] Entry DragAndDropDefault;
+        [SerializeField] TObj[] DragAndDropTargets;
+
+        public List<Entry> Entries = new();
         readonly Dictionary<string, List<Entry>> TagEntries = new();
 
         [Serializable]
@@ -84,7 +91,9 @@ namespace BDUtil.Library
             [SuppressMessage("IDE", "IDE0044")]
             [SerializeField] float odds;
             public float Odds => DefaultSafe(odds);
-            public T Data;
+            public TObj Object;
+            object IEntry.Object => Object;
+            public TData Data;
             object IEntry.Data => Data;
         }
         public readonly struct Category : ICategory
@@ -110,9 +119,9 @@ namespace BDUtil.Library
                 return -1;
             }
             public int Count => Entries.Count;
-            public T this[int i] => Entries[i].Data;
-            object ICategory.this[int i] => this[i];
-            public IEnumerator<T> GetEnumerator()
+            public (TObj, TData) this[int i] => (Entries[i].Object, Entries[i].Data);
+            (object asset, object data) ICategory.this[int i] => this[i];
+            public IEnumerator<(TObj, TData)> GetEnumerator()
             {
                 for (int i = 0; i < Count; ++i) yield return this[i];
             }
@@ -120,7 +129,30 @@ namespace BDUtil.Library
         }
 
         protected void OnEnable() => Recalculate();
-        protected void OnValidate() => Recalculate();
+        protected void OnValidate()
+        {
+            if (DragAndDropTargets != null)
+            {
+                foreach (TObj obj in DragAndDropTargets)
+                {
+                    if (obj == null) continue;
+                    bool contained = false;
+                    foreach (Entry entry in Entries)
+                    {
+                        if (entry.Object != null && entry.Object.Equals(obj))
+                        {
+                            contained = true;
+                            break;
+                        }
+                    }
+                    if (contained) continue;
+                    Entry @new = DragAndDropDefault;
+                    @new.Object = obj;
+                    Entries.Add(@new);
+                }
+            }
+            Recalculate();
+        }
 
         public Category GetCategory(string tag)
         => new(TagOdds.GetValueOrDefault(tag), TagEntries.GetValueOrDefault(tag));

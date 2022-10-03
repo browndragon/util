@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using BDUtil.Fluent;
 using UnityEngine;
 
 namespace BDUtil.Serialization
@@ -18,9 +19,9 @@ namespace BDUtil.Serialization
 
         static Store()
         {
-            Debugs.Initialize();
+            Logs.Initialize();
             if (Inwards == null || Outwards == null)
-            {
+            {  // Too early to use unity debugging?!
                 System.Diagnostics.Trace.WriteLine($"Null converters {typeof(T)}<->{typeof(TIn)}; won't display");
             }
         }

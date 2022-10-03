@@ -22,8 +22,8 @@ namespace BDUtil.Clone
             OnDestroyInvalid = 1 << 1,
             OnDestroyValid = 1 << 2,
         }
-        public LogEvents LogNormal = LogEvents.Awake;
-        public LogEvents LogPrefabStage = LogEvents.Awake;
+        public LogEvents LogInstance = LogEvents.Awake;
+        public LogEvents LogOthers = Enums<LogEvents>.Everything;
 
         public string SceneName => $"{name}.Scene";
         public string PreAcquireMessage = "PreAcquire";
@@ -60,54 +60,28 @@ namespace BDUtil.Clone
             extant.Collection.Clear();
         }
 
-        internal void OnNewCloneAwake(Cloned newClone)
+        void Log(LogEvents @event, Postfab postfab)
         {
-            if (!Application.IsPlaying(newClone))
-            {
-                if (LogPrefabStage.HasFlag(LogEvents.Awake)) Debug.Log($"Clone.PrefabStage.Awake: {newClone.IDStr()}.Root={newClone.Root.IDStr()}");
-                return;
-            }
-            if (LogNormal.HasFlag(LogEvents.Awake)) Debug.Log($"Clone.Awake: {newClone.IDStr()}.Root={newClone.Root.IDStr()}");
-            newClone.Root.OrThrow();
+            if (!(postfab.IsPostfabInstance && LogInstance.HasFlag(@event) || !postfab.IsPostfabInstance && LogOthers.HasFlag(@event))) return;
+            if (@event == LogEvents.OnDestroyInvalid) Debug.LogWarning($"{postfab.FabType}.{@event}: {postfab.IDStr()}.Link={postfab.Link.IDStr()}!");
+            else Debug.Log($"{postfab.FabType}.{@event}: {postfab.IDStr()}.Link={postfab.Link.IDStr()}");
+        }
+
+        internal void OnNewCloneAwake(Postfab newClone)
+        {
             extant.Collection[newClone.gameObject.GetInstanceID()] = newClone.gameObject;
         }
-        internal void OnNewCloneDestroyed(Cloned newClone)
+        internal void OnNewCloneDestroyed(Postfab newClone)
         {
-            if (newClone == null) return;
-
-            bool isValidRelease = newClone.Root == null || !newClone.gameObject.scene.IsValid();
-            bool isPrefabStage = Application.IsPlaying(newClone);
-            LogEvents perStage = isPrefabStage ? LogPrefabStage : LogNormal;
-
             extant.Collection.Remove(newClone.gameObject.GetInstanceID());
 
-            if (isValidRelease)
-            {
-                if (!perStage.HasFlag(LogEvents.OnDestroyValid)) return;
-                Debug.Log(
-                    $"Clone{(isPrefabStage ? ".PrefabStage" : "")}.OnDestroy.Valid: {newClone.IDStr()}.Root={newClone.Root.IDStr()}"
-                );
-                return;
-            }
-            if (!perStage.HasFlag(LogEvents.OnDestroyInvalid)) return;
-            Debug.LogWarning(
-                $"Clone{(isPrefabStage ? ".PrefabStage" : "")}.OnDestroy.INVALID: {newClone.IDStr()}.Root={newClone.Root.IDStr()} should be Should Clone.main.Release()ed, not GameObject.Destroy()ed!"
-            );
-        }
-
-        public GameObject GetPrefab(GameObject postfab)
-        {
-            if (postfab == null) return null;
-            if (!postfab.scene.IsValid()) return postfab;
-            Cloned clone = postfab.GetComponent<Cloned>();
-            if (clone == null) return null;
-            if (clone.Root == null) return null;
-            return clone.Root;
+            bool isValidRelease = (!newClone.IsPostfabInstance || !newClone.gameObject.scene.IsValid()) && !newClone.IsPrefabAsset;
+            Log(isValidRelease ? LogEvents.OnDestroyValid : LogEvents.OnDestroyInvalid, newClone);
         }
 
         public GameObject Acquire(GameObject prefab, bool activate = true)
         {
-            prefab = GetPrefab(prefab);
+            if (prefab == null) throw new ArgumentNullException(nameof(prefab));
             List<GameObject> cache = caches.Collection.GetValueOrDefault(prefab);
             GameObject postfab = null;
             if (cache != null)
@@ -115,8 +89,7 @@ namespace BDUtil.Clone
                 while (cache.Count > 0) if (null != (postfab = cache.PopBack())) break;
                 if (cache.Count == 0) caches.Collection.Remove(prefab);
             }
-
-            if (postfab == null) postfab = Cloned.InstantiateInactiveCloneWithRoot(prefab)?.gameObject;
+            if (postfab == null) postfab = Postfab.InstantiateInactiveCloneWithRoot(prefab)?.gameObject;
             SceneManager.MoveGameObjectToScene(postfab, SceneManager.GetActiveScene());
             if (!PreAcquireMessage.IsEmpty()) postfab.SendMessage(PreAcquireMessage, SendMessageOptions.DontRequireReceiver);
             if (activate) postfab.SetActive(true);
@@ -128,35 +101,41 @@ namespace BDUtil.Clone
 
         public void Release(GameObject postfab)
         {
-            Cloned tag = postfab.GetComponent<Cloned>();
+            if (postfab == null) throw new ArgumentNullException(nameof(postfab));
+            Postfab tag = postfab.GetComponent<Postfab>();
             if (tag == null)
-            {
+            {  // No tag at all; mundane destroy.
                 if (!PreDestroyMessage.IsEmpty()) postfab.SendMessage(PreDestroyMessage, SendMessageOptions.DontRequireReceiver);
                 Destroy(postfab);
                 return;
             }
-
             if (CachingScene.rootCount >= CacheSceneLimit || PerCacheLimit <= 0)
             {
-                tag.Root = null;
+                /// We don't care what you are, but you must die; we're over-size.
                 if (!PreDestroyMessage.IsEmpty()) postfab.SendMessage(PreDestroyMessage, SendMessageOptions.DontRequireReceiver);
-                Destroy(postfab);
+                tag.SafeDestroy();
                 return;
             }
-
-            List<GameObject> cache = caches.Collection.GetValueOrDefault(tag.Root);
-            if (cache == null) cache = caches.Collection[tag.Root] = new();
+            if (!tag.IsPostfabInstance)
+            {
+                // Non-postfabs don't cache, so let's go home. Note: we denature postfabs before destroying them, so that this is reentrant.
+                // this happens if you destroy oncolliderexit, since exiting the collider re-triggers the destroy...
+                return;
+            }
+            List<GameObject> cache = caches.Collection.GetValueOrDefault(tag.Link);
+            if (cache == null) cache = caches.Collection[tag.Link] = new();
             if (cache.Count >= PerCacheLimit)
             {
                 if (!PreDestroyMessage.IsEmpty()) postfab.SendMessage(PreDestroyMessage, SendMessageOptions.DontRequireReceiver);
-                tag.Root = null;
-                Destroy(postfab);
+                tag.SafeDestroy();
                 return;
             }
-            if (!PreReleaseMessage.IsEmpty()) postfab.SendMessage(PreDestroyMessage, SendMessageOptions.DontRequireReceiver);
+            // Finally, we're caching. Ahh.
+            if (!PreReleaseMessage.IsEmpty()) postfab.SendMessage(PreReleaseMessage, SendMessageOptions.DontRequireReceiver);
             postfab.SetActive(false);
             SceneManager.MoveGameObjectToScene(postfab, CachingScene);
             cache.Add(postfab);
+
         }
     }
 }

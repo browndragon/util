@@ -1358,11 +1358,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1552775072}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f446f6861a24f4718a2f2d1be5e7b54c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PointSource:
+    rid: 6742291129937428480
   DeadZone: {x: 0.5, y: 0.5}
   MaxZone: {x: 0.875, y: 0.875}
   Curve:
@@ -1390,7 +1392,11 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   GroundSpeed: 25
-  KeepFocusInScene: 1
+  references:
+    version: 2
+    RefIds:
+    - rid: 6742291129937428480
+      type: {class: FollowCamera/MousePointSource, ns: BDRPG.Screen, asm: org.dawnborn.bdutil.Runtime}
 --- !u!1 &1558306677
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using BDUtil.Math;
 using BDUtil.Pubsub;
 using BDUtil.Serialization;
@@ -12,7 +13,12 @@ namespace BDUtil.Library
 
         public interface IPlayable
         {
-            float PlayOn(Player player);
+            float PlayOn(Player player, object asset);
+        }
+        public interface IPlayable<T> : IPlayable
+        {
+            float PlayOn(Player player, T asset);
+            float IPlayable.PlayOn(Player player, object asset) => PlayOn(player, (T)asset);
         }
         public enum Strategies
         {
@@ -47,8 +53,8 @@ namespace BDUtil.Library
                 Strategies.RoundRobin => (index + 1).PosMod(category.Count),
                 _ => throw new NotImplementedException($"Unrecognized {Strategy}"),
             };
-            object entry = category[index.CheckRange(0, category.Count)];
-            Delay = ((IPlayable)entry).PlayOn(this);
+            (object asset, object entry) = category[index.CheckRange(0, category.Count)];
+            Delay = ((IPlayable)entry).PlayOn(this, asset);
             ResetDelay();
             if (Automation_ == Automation.AfterStart) Automation_ = Automation.Continuous;
         }
@@ -76,6 +82,14 @@ namespace BDUtil.Library
             }
             PlayCurrentCategory();
         }
+
+        void OnState.IEnter.OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        => PlayByCategory(Library.GetTagStringFromHash(stateInfo, false));
+
+        void OnState.IExit.OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        => PlayByCategory(Library.GetTagStringFromHash(stateInfo, true));
+
+        #region Animator extensions
 
         public void SetAnimatorParamTrue(string param)
         => GetComponent<Animator>().SetBool(param, true);
@@ -106,11 +120,6 @@ namespace BDUtil.Library
             Animator animator = GetComponent<Animator>();
             animator.SetFloat(param, 0f);
         }
-
-        void OnState.IEnter.OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
-        => PlayByCategory(Library.GetTagStringFromHash(stateInfo, false));
-
-        void OnState.IExit.OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
-        => PlayByCategory(Library.GetTagStringFromHash(stateInfo, true));
+        #endregion  // Animator extensions
     }
 }

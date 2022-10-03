@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace BDUtil.Math
@@ -12,18 +13,22 @@ namespace BDUtil.Math
         public readonly int @int;
         [FieldOffset(0)]
         public readonly float @float;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Bitcast(int @int)
         {
             this = default;
             this.@int = @int;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Bitcast(float @float)
         {
             this = default;
             this.@float = @float;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Int(float f) => new Bitcast(f).@int;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Float(int i) => new Bitcast(i).@float;
     }
 }
