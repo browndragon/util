@@ -1,52 +1,47 @@
 using System;
 using BDUtil.Fluent;
 using BDUtil.Math;
+using BDUtil.Screen;
 using UnityEngine;
 
 namespace BDUtil.Library
 {
 
     [CreateAssetMenu(menuName = "BDUtil/Library/Transform")]
-    public class TransformLibrary : Library<TransformLibrary.Local, TransformLibrary.Easing>
+    public class TransformLibrary : PlayerLibrary<TransformLibrary.Transform>
     {
         [Serializable]
-        public class Local
+        public class Transform : Player.IPlayable
         {
-            public Vector3 Position;
-            public Vector3 EulerAngles;
-            public Vector3 Scale;
-        }
-        [Serializable]
-        public class Easing : Player.IPlayable<Local>
-        {
-            public Extent FuzzDuration = new(.5f, 1f);
-            [Serializable]
-            public struct FuzzVector
+            public Extent FuzzDuration = new(.125f, .5f);
+            public Easings.Enum Ease;
+            public Transforms.Masks Mask;
+            public Transforms.Local Local;
+            public Transforms.Local Fuzz = new()
             {
-                public Vector3 Fuzz;
-                public Easings.Enum Ease;
-                public static implicit operator FuzzVector(Vector3 vector)
-                => new() { Fuzz = vector };
-            }
-            public FuzzVector Position = new Vector3(.1f, .1f, 0f);
-            public FuzzVector EulerAngles = Vector3.zero;
-            public FuzzVector Scale = .1f * Vector3.one;
+                Position = .1f * Vector3.one,
+                EulerAngles = Vector3.zero,
+                Scale = .1f * Vector3.one,
+            };
 
-            public float PlayOn(Player player, Local rawTarget)
+            public float PlayOn(Player player)
             {
-                float duration = FuzzDuration.RandomPoint();
+                float duration = Math.Fuzz.RandomPoint(FuzzDuration.ScaledBy(player.Chaos)) / player.Speed;
                 player.StartCoroutine(new Timer(duration)
-                    .Let(out var startPos, player.transform.localPosition)
-                    .Let(out var startRot, player.transform.eulerAngles)
-                    .Let(out var startScale, player.transform.localScale)
-                    .Let(out var targetPos, startPos + Fuzz.Vector3(Position.Fuzz))
-                    .Let(out var targetRot, startRot + Fuzz.Vector3(EulerAngles.Fuzz))
-                    .Let(out var targetScale, startScale + Fuzz.Vector3(Scale.Fuzz))
+                    .Let(out var start, player.transform.GetLocalSnapshot())
+                    .Let(out var target, new Transforms.Local()
+                    {
+                        Position = start.Position + Math.Fuzz.Vector3(player.Chaos * Fuzz.Position),
+                        EulerAngles = start.EulerAngles + Math.Fuzz.Vector3(player.Chaos * Fuzz.EulerAngles),
+                        // This isn't 0-centered, so to avoid WILD swings, we have to pick a random number that _is_ zero-centered...
+                        Scale = start.Scale + Math.Fuzz.Vector3(player.Chaos * (Fuzz.Scale - Vector3.one))
+                    })
                     .Foreach(t =>
                     {
-                        player.transform.localPosition = Vector3.Lerp(startPos, targetPos, Position.Ease.Invoke(t));
-                        player.transform.eulerAngles = Vector3.Lerp(startRot, targetRot, EulerAngles.Ease.Invoke(t));
-                        player.transform.localPosition = Vector3.Lerp(startScale, targetScale, Scale.Ease.Invoke(t));
+                        var eased = Ease.Invoke(t);
+                        Transforms.Local lerped = Transforms.Local.Lerp(start, target, eased);
+                        lerped = player.transform.GetLocalSnapshot(Mask, lerped);
+                        player.transform.SetFromLocalSnapshot(lerped);
                     }));
                 return duration;
             }

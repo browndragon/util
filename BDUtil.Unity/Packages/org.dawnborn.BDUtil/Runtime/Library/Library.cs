@@ -16,25 +16,29 @@ namespace BDUtil.Library
         protected readonly Dictionary<string, float> TagOdds = new();
         protected readonly Dictionary<int, string> Hashes = new();
 
+        [Tooltip("Animator support: how to make tags & animator states agree on hashes")]
         public enum HashSource
         {
             Short = default,
             FullPath,
+            [Tooltip("Hash the state tag, not the state name")]
             Tag,
-            [Tooltip("That is, all entries go to '' and all exits to '-'")]
-            EntryAndExit,
+            [Tooltip("That is, _all_ entries go to '' and all exits to '-'")]
+            EntryAndExitOnly,
             None,
         }
         public HashSource HashSource_;
 
         public interface IEntry
         {
+            /// Collections this entry should be placed under. For instance, if you have an AudioLibrary Footsteps,
+            /// you might want tags for "onStone", "onWood", "onMud", etc. The default is always `""`.
+            /// Additionally, tags are automatically hashed (using HashSource_) so that mechanim state enter events
+            /// (which will match hashes with the tag of the same name)
             IEnumerable<string> Tags { get; }
+            // How likely it is that this object be the one selected.
             float Odds { get; }
-
-            // Often a UnityEngine.Object...
-            object Object { get; }
-            // Often a struct to configure Object.
+            // The payload, which might include "wrapping" information.
             object Data { get; }
         }
         public interface ICategory : IEnumerable
@@ -42,7 +46,7 @@ namespace BDUtil.Library
             bool IsValid { get; }
             float Odds { get; }
             int Count { get; }
-            (object asset, object data) this[int i] { get; }
+            object this[int i] { get; }
             IReadOnlyList<IEntry> Entries { get; }
             int GetRandom();
         }
@@ -57,7 +61,7 @@ namespace BDUtil.Library
             switch (HashSource_)
             {
                 case HashSource.None: return null;
-                case HashSource.EntryAndExit: return isExit ? "" : "-";
+                case HashSource.EntryAndExitOnly: return isExit ? "" : "-";
                 case HashSource.FullPath:
                     tag = GetTagStringFromHash(hash *= stateInfo.fullPathHash);
                     break;
@@ -73,13 +77,17 @@ namespace BDUtil.Library
         }
     }
     [Tooltip("A generic source of multiple assets (sprites, audio, treasure??) with rules to pick between them.")]
-    public class Library<TObj, TData> : Library
+    public abstract class Library<TObj, TData> : Library
     {
-        [SerializeField] Entry DragAndDropDefault;
-        [SerializeField] TObj[] DragAndDropTargets;
-
+        [Tooltip("If this is a UnityEngine.Object, you can drag assets here to create entries")]
+        [SerializeField] protected TObj[] DragAndDropTargets;
+        [Tooltip("The template to use for new DragAndDropTargets")]
+        [SerializeField] protected Entry DragAndDropDefault;
         public List<Entry> Entries = new();
         readonly Dictionary<string, List<Entry>> TagEntries = new();
+
+        protected abstract bool IsEntryForObject(in TData data, TObj obj);
+        protected abstract Entry NewEntry(Entry template, TObj fromObj);
 
         [Serializable]
         public struct Entry : IEntry
@@ -91,8 +99,6 @@ namespace BDUtil.Library
             [SuppressMessage("IDE", "IDE0044")]
             [SerializeField] float odds;
             public float Odds => DefaultSafe(odds);
-            public TObj Object;
-            object IEntry.Object => Object;
             public TData Data;
             object IEntry.Data => Data;
         }
@@ -119,9 +125,9 @@ namespace BDUtil.Library
                 return -1;
             }
             public int Count => Entries.Count;
-            public (TObj, TData) this[int i] => (Entries[i].Object, Entries[i].Data);
-            (object asset, object data) ICategory.this[int i] => this[i];
-            public IEnumerator<(TObj, TData)> GetEnumerator()
+            public TData this[int i] => Entries[i].Data;
+            object ICategory.this[int i] => this[i];
+            public IEnumerator<TData> GetEnumerator()
             {
                 for (int i = 0; i < Count; ++i) yield return this[i];
             }
@@ -136,22 +142,18 @@ namespace BDUtil.Library
                 foreach (TObj obj in DragAndDropTargets)
                 {
                     if (obj == null) continue;
-                    bool contained = false;
-                    foreach (Entry entry in Entries)
-                    {
-                        if (entry.Object != null && entry.Object.Equals(obj))
-                        {
-                            contained = true;
-                            break;
-                        }
-                    }
-                    if (contained) continue;
-                    Entry @new = DragAndDropDefault;
-                    @new.Object = obj;
+                    if (HasEntryForObject(obj)) continue;
+                    Entry @new = NewEntry(DragAndDropDefault, obj);
                     Entries.Add(@new);
                 }
+                DragAndDropTargets = null;
             }
             Recalculate();
+        }
+        protected virtual bool HasEntryForObject(TObj obj)
+        {
+            foreach (Entry entry in Entries) if (IsEntryForObject(entry.Data, obj)) return true;
+            return false;
         }
 
         public Category GetCategory(string tag)
@@ -187,5 +189,33 @@ namespace BDUtil.Library
                 Hashes.Add(Animator.StringToHash(tag), tag);
             }
         }
+    }
+    public abstract class Library<TData> : Library<Void, TData>
+    { }
+
+    public interface IPlayerLibrary
+    {
+        float Chaos { get; set; }
+        float Power { get; set; }
+        float Speed { get; set; }
+
+    }
+    public interface IPlayerLibrary<TObj, TData>
+    where TData : Player.IPlayable
+    {
+    }
+    public abstract class PlayerLibrary<TObj, TData> : Library<TObj, TData>, IPlayerLibrary<TObj, TData>
+    where TData : Player.IPlayable
+    {
+        [field: SerializeField, Tooltip("How much randomness?")] public float Chaos { get; set; } = 1f;
+        [field: SerializeField, Tooltip("How much volume?")] public float Power { get; set; } = 1f;
+        [field: SerializeField, Tooltip("How much playback adjustment?")] public float Speed { get; set; } = 1f;
+    }
+    public class PlayerLibrary<TData> : PlayerLibrary<Void, TData>
+    where TData : Player.IPlayable
+    {
+        protected override bool HasEntryForObject(Void obj) => false;
+        protected override bool IsEntryForObject(in TData entry, Void obj) => false;
+        protected override Entry NewEntry(Entry template, Void fromObj) => template;
     }
 }

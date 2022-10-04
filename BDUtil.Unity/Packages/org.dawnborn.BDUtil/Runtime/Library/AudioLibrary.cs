@@ -9,23 +9,33 @@ namespace BDUtil.Library
     [CreateAssetMenu(menuName = "BDUtil/Library/Audio")]
     public class AudioLibrary : Library<AudioClip, AudioLibrary.AudioClipParams>
     {
-        public float VolumeScale;
-        [Serializable]
-        public struct AudioClipParams : Player.IPlayable<AudioClip>
+        protected override bool IsEntryForObject(in AudioClipParams entry, AudioClip obj)
+        => entry.AudioClip == obj;
+
+        protected override Entry NewEntry(Entry template, AudioClip fromObj)
         {
-            public Extent Volume;
+            AudioClipParams @params = template.Data;
+            @params.AudioClip = fromObj;
+            template.Data = @params;
+            return template;
+        }
+
+        [Serializable]
+        public struct AudioClipParams : Player.IPlayable
+        {
             public Extent Delay;
-            public float PlayOn(Player player, AudioClip audioClip)
+            public Extent Volume;
+            public Extent Pitch;
+            public AudioClip AudioClip;
+            public float PlayOn(Player player)
             {
-                float delay = Delay.RandomPoint();
-                if (audioClip != null)
+                float delay = Delay.ScaledBy(player.Chaos).RandomPoint() / player.Speed;
+                if (AudioClip != null)
                 {
                     AudioSource source = player.GetComponent<AudioSource>().OrThrow();
-                    source.clip = audioClip;
-                    float scale = DefaultSafe(((AudioLibrary)player.Library).VolumeScale);
-                    source.volume = scale * Volume.RandomPoint();
-                    delay += audioClip.length;
-                    source.Play();
+                    source.pitch = Pitch.ScaledBy(player.Chaos, player.Speed).RandomPoint();
+                    source.PlayOneShot(AudioClip, player.Power + Volume.ScaledBy(player.Chaos).RandomPoint());
+                    delay += AudioClip.length;
                 }
                 return delay;
             }

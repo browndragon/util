@@ -90,7 +90,7 @@ namespace BDUtil.Clone
         /// Knocks the prefab unconscious, instantiates it with link if we have access to the prefab utility,
         /// tags the child, and returns it (and re-awakens the prefab if that's relevant).
         /// Caller has to awaken it!
-        internal static Postfab InstantiateInactiveCloneWithRoot(GameObject prefab)
+        internal static Postfab InstantiateInactiveCloneWithRoot(GameObject prefab, GameObject parent, FabTypes fabType)
         {
             bool wasActive = prefab.activeSelf;
             GameObject postfab = null;
@@ -106,20 +106,23 @@ namespace BDUtil.Clone
             }
             finally { if (wasActive) prefab.SetActive(true); }
             if (postfab == null) return null;
-            Postfab pretag = prefab.GetComponent<Postfab>();
             Postfab tag = postfab.GetComponent<Postfab>() ?? postfab.AddComponent<Postfab>();
-            tag.FabType = (pretag?.FabType ?? FabTypes.Unknown) switch
-            {
-                FabTypes.Unknown => FabTypes.Unknown,  // Runtime clone. Weird but fine.
-                FabTypes.ActuallyAPrefab => FabTypes.Postfab,
-                FabTypes.Demoted => FabTypes.Unknown,
-                FabTypes.PostfabPostmortem => throw new ArgumentException($"Postfab {tag?.IDStr()} cloned from postmortem instance {prefab?.IDStr()} wtf"),
-                var x => FabTypes.Unknown.Logging($"Unexpected prefab(={prefab.IDStr()}) state {x} linking postfab(={postfab.IDStr()}"),
-            };
-            tag.Link = prefab;
-            tag.Asset = pretag?.Asset;
+            tag.FabType = fabType;
+            tag.Link = parent;
+            tag.Asset = prefab;
             return tag;
         }
+        internal FabTypes ChildFabType
+        {
+            get => FabType switch
+            {
+                FabTypes.ActuallyAPrefab => FabTypes.Postfab,
+                FabTypes.Demoted => FabTypes.Unknown,  // Fine, just turns of precaching.
+                FabTypes.Unknown => FabTypes.Unknown,  // Runtime clone. Weird but fine.
+                _ => FabTypes.Unknown,
+            };
+        }
+
         // Given a Cloned tag (ie, an instance), determines its clone root using local & editor (if available) information.
         // This is "correct", and so see the Cloned.OnValidate where it's used.
         internal static void CopyPrefabUtilityIntoInstance(Postfab cloned)

@@ -13,7 +13,7 @@ namespace BDUtil.Math
         public static float GetPowFuzz(float pow)
         {
             if (!float.IsFinite(pow)) return 0;
-            if (pow == 0) pow = 1;
+            if (pow == 0) return Value;
             float fuzz = Value;
             float sign = Mathf.Sign(fuzz);
             return sign * Mathf.Pow(sign * fuzz, pow);

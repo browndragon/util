@@ -70,7 +70,6 @@ namespace BDUtil.Fluent
             try { return (TOut)thiz; }
             catch { throw new InvalidCastException($"Can't upcast actual {thiz?.GetType()?.Name ?? "null"}->{typeof(TOut)}"); }
         }
-        /// See Also: Downcast.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TOut Anycast<TOut>(this object thiz, TOut _ = default)
         {

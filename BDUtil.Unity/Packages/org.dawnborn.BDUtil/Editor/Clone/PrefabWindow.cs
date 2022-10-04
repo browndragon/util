@@ -7,7 +7,7 @@ namespace BDUtil.Clone.Editor
     public class PrefabWindow : EditorWindow
     {
         [MenuItem("Window/BDUtil/Prefab")]
-        static void ShowToolbar()
+        static protected void ShowToolbar()
         {
             GetWindow<PrefabWindow>("PrefabWindow");
         }

@@ -88,5 +88,24 @@ namespace BDUtil.Math
         );
         public static void Encapsulate(ref this BoundsInt thiz, Vector3Int other)
         => thiz.Encapsulate(new BoundsInt(other, Vector3Int.zero));
+
+        public static Extent ScaledBy(in this Extent thiz, float scale, float moveCenter = 0f)
+        {
+            float center = thiz.center + moveCenter;
+            float half = thiz.size * scale / 2f;
+            return Extent.MinMax(center - half, center + half);
+        }
+        public static Rect ScaledBy(in this Rect thiz, float scale, Vector2 moveCenter = default)
+        {
+            Vector2 center = thiz.center + moveCenter;
+            Vector2 half = thiz.size * scale / 2f;
+            return new(center - half, 2 * half);
+        }
+        public static Bounds ScaledBy(in this Bounds thiz, float scale, Vector3 moveCenter = default)
+        {
+            Vector3 center = thiz.center + moveCenter;
+            Vector3 half = thiz.size * scale / 2f;
+            return new(center - half, 2 * half);
+        }
     }
 }

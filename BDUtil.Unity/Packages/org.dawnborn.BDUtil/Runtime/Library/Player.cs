@@ -1,5 +1,5 @@
 using System;
-using System.Collections;
+using BDUtil.Fluent;
 using BDUtil.Math;
 using BDUtil.Pubsub;
 using BDUtil.Serialization;
@@ -7,39 +7,72 @@ using UnityEngine;
 
 namespace BDUtil.Library
 {
+    [Tooltip("Selects between the IPlayables in a library and activates them.")]
+    [AddComponentMenu("BDUtil/Library/Player")]
     public class Player : MonoBehaviour, OnState.IEnter, OnState.IExit
     {
         [SerializeField] protected Invokable.Layout buttons;
+        [Tooltip("The playable library which this will use.")]
+        [SerializeField] protected Library Library;
+        public IPlayerLibrary PlayerLibrary => Library.Anycast<IPlayerLibrary>();
+
+        [Tooltip("The 1-centered scale of randomness to for playables (0 none)")]
+        [SerializeField] protected float chaos = 1f;
+        public float Chaos
+        {
+            get => chaos * PlayerLibrary.Chaos;
+            set => chaos = PlayerLibrary.Chaos == 0 ? value : value / PlayerLibrary.Chaos;
+        }
+        [Tooltip("The 1-centered scale of power (volume only?) for playables (0 none)")]
+        [SerializeField] protected float power = 1f;
+        public float Power
+        {
+            get => power * PlayerLibrary.Power;
+            set => power = PlayerLibrary.Power == 0 ? value : value / PlayerLibrary.Power;
+        }
+        [Tooltip("The 1-centered scale of speed for playables (0 none)")]
+        [SerializeField]
+        protected float speed = 1f;
+        public float Speed
+        {
+            get => speed * PlayerLibrary.Speed;
+            set => speed = PlayerLibrary.Speed == 0 ? value : value / PlayerLibrary.Speed;
+        }
 
         public interface IPlayable
         {
-            float PlayOn(Player player, object asset);
+            /// Plays the given asset on the player, returning its duration.
+            float PlayOn(Player player);
         }
-        public interface IPlayable<T> : IPlayable
-        {
-            float PlayOn(Player player, T asset);
-            float IPlayable.PlayOn(Player player, object asset) => PlayOn(player, (T)asset);
-        }
-        public enum Strategies
-        {
-            Random = default,
-            RoundRobin
-        }
+
+        [Tooltip("If false, attempts to play while we're already playing are rejected. You can always Force to override.")]
+        public bool CanInterrupt = true;
+
+        // Multiple on amount of randomness on produced elements, assuming they support it?
+        [Tooltip("The library will be queried for this tag ('' is the default!)")]
+        public string Category = "";
         public enum Automation
         {
             None = default,
             Continuous,
             AfterStart,
+            OnceOnStart,
+        }
+        [Tooltip("Whether this should start playing, continue playing after started, etc. See also ")]
+        public Automation Automation_;
+        public enum Strategies
+        {
+            [Tooltip("Pick an item from the current category by odds")]
+            Random = default,
+            [Tooltip("Play the 'next' value in the current category")]
+            RoundRobin,
+            [Tooltip("Plays the given Category/Index value; you'll need to externally adjust.")]
+            UseIndexValue,
         }
         public Strategies Strategy;
-        public bool CanInterrupt = true;
-        /// Secretly: Library<out IPlayable>, but we can't say that.
-        public Library Library;
-        // Initial/ongoing?
-        public string Category = "";
-        public Automation Automation_;
-        // For round robin, lets you specify a start offset.
-        public int index = -1;
+        [Tooltip("")]
+        public int Index = -1;
+        [Tooltip("How long the previous playable indicated it lasted")]
         public Timer Delay = 0f;
         public void PlayByCategoryForce(string tag, bool forceInterrupt)
         {
@@ -47,14 +80,15 @@ namespace BDUtil.Library
             if (Delay.Tick.IsLive && !CanInterrupt && !forceInterrupt) return;
             Library.ICategory category = Library.GetICategory(tag);
             if (category == null) return;
-            index = Strategy switch
+            Index = Strategy switch
             {
                 Strategies.Random => category.GetRandom(),
-                Strategies.RoundRobin => (index + 1).PosMod(category.Count),
-                _ => throw new NotImplementedException($"Unrecognized {Strategy}"),
+                Strategies.RoundRobin => (Index + 1).PosMod(category.Count),
+                Strategies.UseIndexValue => Index,
+                _ => throw Strategy.BadValue(),
             };
-            (object asset, object entry) = category[index.CheckRange(0, category.Count)];
-            Delay = ((IPlayable)entry).PlayOn(this, asset);
+            object playable = category[Index.CheckRange(0, category.Count)];
+            Delay = playable.Anycast<IPlayable>().PlayOn(this);
             ResetDelay();
             if (Automation_ == Automation.AfterStart) Automation_ = Automation.Continuous;
         }
@@ -70,7 +104,16 @@ namespace BDUtil.Library
         public void PlayCurrentCategory() => PlayByCategory(Category);
         protected void Start()
         {
-            if (Automation_ == Automation.Continuous) ResetDelay();
+            switch (Automation_)
+            {
+                case Automation.OnceOnStart:
+                    PlayCurrentCategory();
+                    Automation_ = Automation.OnceOnStart;
+                    break;
+                case Automation.Continuous:
+                    ResetDelay();
+                    break;
+            }
         }
         protected void Update()
         {

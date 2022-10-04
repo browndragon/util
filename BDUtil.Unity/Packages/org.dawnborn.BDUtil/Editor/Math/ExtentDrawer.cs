@@ -19,7 +19,7 @@ namespace BDUtil.Math.Editor
             scratchGC[0] = new("Pos");
             scratchGC[1] = new("Size");
             scratchData[0] = posProp.floatValue;
-            scratchData[1] = posProp.floatValue;
+            scratchData[1] = sizeProp.floatValue;
             EditorGUI.MultiFloatField(position, label, scratchGC, scratchData);
             posProp.floatValue = scratchData[0];
             sizeProp.floatValue = scratchData[1];

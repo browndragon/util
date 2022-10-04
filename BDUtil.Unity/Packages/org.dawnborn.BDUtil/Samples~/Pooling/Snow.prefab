@@ -13,8 +13,9 @@ GameObject:
   - component: {fileID: 1321638923735474937}
   - component: {fileID: 1321638923735474942}
   - component: {fileID: 6367449193964111794}
-  - component: {fileID: -493560369867536155}
   - component: {fileID: -846021399701700057}
+  - component: {fileID: -1037753786847657921}
+  - component: {fileID: 1342488331159625853}
   m_Layer: 0
   m_Name: Snow
   m_TagString: Untagged
@@ -138,31 +139,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1005b6684b5084084a08e2389d01e6c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <Root>k__BackingField: {fileID: 0}
---- !u!114 &-493560369867536155
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1321638923735474941}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cac93fff63fab48169d4e04203ec6715, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Scale:
-    Min: 0.5988342
-    Max: 1.3556032
-  RotZ:
-    Min: -0.24534686
-    Max: 0.15228425
-  Color:
-    Min: {r: 0, g: 1, b: 0.66666675, a: 1}
-    Max: {r: 0.5, g: 0, b: 1, a: 1}
-  Speed:
-    Min: 0
-    Max: 0
+  <FabType>k__BackingField: 2
+  <Link>k__BackingField: {fileID: 0}
+  <Asset>k__BackingField: {fileID: 1321638923735474941}
 --- !u!114 &-846021399701700057
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -178,3 +157,45 @@ MonoBehaviour:
   Veloc: 24
   PlaneNormal: {x: 0, y: 0, z: -1}
   PlaneOriginDistance: 0
+--- !u!114 &-1037753786847657921
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1321638923735474941}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c438aafb2bfd43f6bb052387e4d6d7c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Strategy: 0
+  CanInterrupt: 1
+  Library: {fileID: 11400000, guid: b74cc0559ea1a4eb0906ee19c1f59ae8, type: 2}
+  Category: 
+  Automation_: 0
+  index: -1
+  Delay:
+    Length: 0
+    Start: NaN
+--- !u!114 &1342488331159625853
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1321638923735474941}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c438aafb2bfd43f6bb052387e4d6d7c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Strategy: 0
+  CanInterrupt: 1
+  Library: {fileID: 11400000, guid: 62a567dfc0f3840f79f6cf0cd9ee0487, type: 2}
+  Category: 
+  Automation_: 3
+  index: -1
+  Delay:
+    Length: 0
+    Start: NaN

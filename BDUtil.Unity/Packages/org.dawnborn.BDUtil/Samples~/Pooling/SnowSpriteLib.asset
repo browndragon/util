@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65f59777886594308acab016347e34c9, type: 3}
+  m_Name: SnowSpriteLib
+  m_EditorClassIdentifier: 
+  HashSource_: 0
+  DragAndDropTargets: []
+  DragAndDropDefault:
+    tags: []
+    odds: 1
+    Data:
+      FuzzDuration:
+        position: 2
+        size: 3
+      Mask: 30
+      Target:
+        Sprite: {fileID: 0}
+        Color: {r: 0, g: 0.083333254, b: 1, a: 1}
+        FlipX: 0
+        FlipY: 0
+      Ease: 0
+      Fuzz:
+        FuzzColor:
+          h: 0.1
+          s: 0.1
+          v: 0.1
+          a: 0.1
+        FuzzFlipX: 0.5
+        FuzzFlipY: 0.5
+  Entries: []

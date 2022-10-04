@@ -1,5 +1,10 @@
+using System;
+
 namespace BDUtil
 {
     /// A type with no representable elements.
-    public enum Void { }
+    public sealed class Void
+    {
+        private Void() => throw new NotImplementedException();
+    }
 }

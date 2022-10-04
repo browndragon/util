@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using BDUtil.Fluent;
 using BDUtil.Raw;
+using BDUtil.Screen;
 using BDUtil.Serialization;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -89,7 +90,11 @@ namespace BDUtil.Clone
                 while (cache.Count > 0) if (null != (postfab = cache.PopBack())) break;
                 if (cache.Count == 0) caches.Collection.Remove(prefab);
             }
-            if (postfab == null) postfab = Postfab.InstantiateInactiveCloneWithRoot(prefab)?.gameObject;
+            Postfab pretag = prefab.GetComponent<Postfab>();
+            if (postfab == null) postfab = Postfab.InstantiateInactiveCloneWithRoot(
+                pretag?.Asset ?? prefab, prefab, pretag?.ChildFabType ?? Postfab.FabTypes.Unknown
+            )?.gameObject;
+            // TODO: should we actually be doing this? It's probably pretty expensive...
             SceneManager.MoveGameObjectToScene(postfab, SceneManager.GetActiveScene());
             if (!PreAcquireMessage.IsEmpty()) postfab.SendMessage(PreAcquireMessage, SendMessageOptions.DontRequireReceiver);
             if (activate) postfab.SetActive(true);
@@ -98,6 +103,32 @@ namespace BDUtil.Clone
         public T Acquire<T>(T prefab, bool activate = true)
         where T : Component
         => Acquire(prefab.gameObject, activate).GetComponent<T>();
+
+        // Okay, weird but bear with me.
+        // You have a prefab of a level chunk consisting of postfab.ActuallyAPrefabs.
+        // You want to instantiate it using caching.
+        // This method does that: you feed it the prefab, it iterates the top level children of the prefab,
+        // it gets the postfab.Asset sitting behind each one, it instantiates it.
+        // Each one's top level object gets called with the PreAcquireMessage with the match from the model, so you can apply modifications
+        // to the prefab and have them copied to the postfab (even with caching) if your script catches that message.
+        // Transforms are done for you automatically, though.
+        // RelativeTo lets you adjust the position of the newly created object -- remember, they'll be dumped at top level! --
+        public void AcquireViaAssetsOfChildren(Transform prefab, List<GameObject> clones, Transforms.Local relativeTo = default, bool awake = true)
+        {
+            foreach (Component c in prefab.gameObject.GetComponents<Component>())
+            {
+                if (c is not Transform) throw new ArgumentException($"Can't break open {prefab?.IDStr()}; it has at least {c} which won't get copied");
+            }
+            foreach (Transform child in prefab.GetChildren())
+            {
+                GameObject clone = Acquire(child.gameObject, false);
+                Transforms.Local snapshot = child.GetLocalSnapshot();
+                snapshot.AdjustBy(relativeTo);
+                clone.transform.SetFromLocalSnapshot(snapshot);
+                if (awake) clone.SetActive(true);
+                clones?.Add(clone);
+            }
+        }
 
         public void Release(GameObject postfab)
         {
@@ -135,7 +166,6 @@ namespace BDUtil.Clone
             postfab.SetActive(false);
             SceneManager.MoveGameObjectToScene(postfab, CachingScene);
             cache.Add(postfab);
-
         }
     }
 }
