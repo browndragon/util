@@ -147,7 +147,6 @@ namespace BDUtil.Clone
             {
                 // If we're playing, the PrefabUtility's answers are insane.
                 // So don't change anything; it wouldn't _really_ matter because anything added now will get tossed when we stop playing.
-                Debug.Log($"Can't copy prefab {cloned.IDStr()}; playing");
                 return;
             }
             // Same idea; if the prefab stage is open, the data we get is kind of crazy.
