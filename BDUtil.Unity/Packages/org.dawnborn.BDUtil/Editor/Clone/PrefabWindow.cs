@@ -34,9 +34,11 @@ namespace BDUtil.Clone.Editor
                 {
                     EditorGUILayout.LabelField("Postfab", EditorStyles.boldLabel);
 
-                    EditorGUILayout.ObjectField("Link", cloned.Link, typeof(GameObject), allowSceneObjects: true);
                     EditorGUILayout.LabelField("Link.FabType", cloned.FabType.ToString());
+                    EditorGUILayout.ObjectField("Link", cloned.Link, typeof(GameObject), allowSceneObjects: true);
                     EditorGUILayout.LabelField("Link.ID", cloned.Link?.GetInstanceID().ToString() ?? "");
+                    EditorGUILayout.ObjectField("Asset", cloned.Asset, typeof(GameObject), allowSceneObjects: true);
+                    EditorGUILayout.LabelField("Asset.ID", cloned.Asset?.GetInstanceID().ToString() ?? "");
                     EditorGUILayout.Space();
                 }
 

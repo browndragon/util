@@ -58,7 +58,7 @@ namespace BDUtil.Clone
             Demoted,
         }
         /// The relationship between this object and its prefab (if any).
-        [field: SerializeField, ReadOnly] public FabTypes FabType { get; private set; }
+        [field: SerializeField] public FabTypes FabType { get; private set; }
         /// PrefabAssets might or might not have a link (if they do, they're a variant of it); variants will.
         /// They _will_ have an Asset, and it will be themselves.
         public bool IsPrefabAsset => FabType == FabTypes.ActuallyAPrefab;
@@ -71,13 +71,13 @@ namespace BDUtil.Clone
         /// For an "actuallyaprefab"; for a variant it will be the base, for the base, will be null.
         /// For a "postfab", it will be the same as asset: the actuallyaprefab.
         /// For others, it's whatever instantiated them...
-        [field: SerializeField, ReadOnly] public GameObject Link { get; private set; }
+        [field: SerializeField] public GameObject Link { get; private set; }
         /// Recursively unfolds Link to find a root asset (or null).
         /// So in the above case where the Link was the child, it would keep following links until it found an Asset link (or null if none).
         /// For an "actuallyaprefab", it's itself.
         /// For a "postfab", it's the same as link: the actuallyaprefab.
         /// For others, it's null (even if there is an asset on disk).
-        [field: SerializeField, ReadOnly] public GameObject Asset { get; private set; }
+        [field: SerializeField] public GameObject Asset { get; private set; }
         // Editor only! So this can set the root appropriately for objects already in scene... We Hope.
         internal void OnValidate() => CopyPrefabUtilityIntoInstance(this);
         internal void Awake() => Pool.main.OnNewCloneAwake(this);
@@ -147,6 +147,7 @@ namespace BDUtil.Clone
             {
                 // If we're playing, the PrefabUtility's answers are insane.
                 // So don't change anything; it wouldn't _really_ matter because anything added now will get tossed when we stop playing.
+                Debug.Log($"Can't copy prefab {cloned.IDStr()}; playing");
                 return;
             }
             // Same idea; if the prefab stage is open, the data we get is kind of crazy.
@@ -155,6 +156,14 @@ namespace BDUtil.Clone
             {
                 // It would be ideal to limit this to just the bad instance, but you can't:
                 // this is called onvalidate ("before awake") and the prefabstageutility throws an exception.
+                return;
+            }
+            if (!PrefabUtility.IsPartOfAnyPrefab(cloned.gameObject))
+            {
+                // Either it's not a prefab -- naughty, having the Postfab component -- or despite EditorApplication up there,
+                // it's LYING and we're actually at runtime.
+                // Which... god, shoot me.
+                Debug.Log($"{cloned.IDStr()} isn't a prefab but wants tracking; can't, might destroy the fabric of spacetime");
                 return;
             }
             GameObject hadLink = cloned.Link, hadAsset = cloned.Asset;
@@ -168,13 +177,15 @@ namespace BDUtil.Clone
             {
                 if (cloned.transform.parent == null)
                 {  // A prefab asset with no parents: a prefab afaiac.
+                    Debug.Log($"{PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(cloned)} contains {cloned.IDStr()}");
                     cloned.FabType = FabTypes.ActuallyAPrefab;
                     // Special rule, we need to set ourselves as the asset type.
                     cloned.Asset = cloned.gameObject.OrThrow();
+                    return;
                 }
                 // Oh sure, we _were_ an "actually a prefab", but not parent in prefab means not really a prefab.
                 // Baleeted.
-                else cloned.FabType = FabTypes.Demoted;
+                cloned.FabType = FabTypes.Demoted;
                 return;
             }
             if (PrefabUtility.IsPartOfNonAssetPrefabInstance(cloned.gameObject))

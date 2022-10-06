@@ -123,7 +123,6 @@ namespace BDUtil.Screen
         /// Consider using GetLocalSnapshot to figure out which fields you _don't want to set_ first...
         public static void SetFromLocalSnapshot(this Transform thiz, Local target)
         {
-            Debug.Log($"Setting {target.Scale} on {thiz.localScale}/{thiz.lossyScale}", thiz);
             thiz.localPosition = target.Position;
             thiz.localEulerAngles = target.EulerAngles;
             thiz.localScale = target.Scale;

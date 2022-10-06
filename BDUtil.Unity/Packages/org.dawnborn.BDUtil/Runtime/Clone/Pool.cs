@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 
 namespace BDUtil.Clone
 {
-    /// Config & display for cloned instances
+    /// Config & display for cloned instances.
     public class Pool : StaticAsset<Pool>
     {
         public int CacheSceneLimit = 100;
@@ -74,7 +74,13 @@ namespace BDUtil.Clone
         {
             extant.Collection.Remove(newClone.gameObject.GetInstanceID());
 
-            bool isValidRelease = (!newClone.IsPostfabInstance || !newClone.gameObject.scene.IsValid()) && !newClone.IsPrefabAsset;
+            bool isValidRelease = newClone.FabType switch
+            {
+                Postfab.FabTypes.Unknown => true,
+                Postfab.FabTypes.PostfabPostmortem => true,
+                Postfab.FabTypes.Postfab => !newClone.gameObject.scene.IsValid(),
+                _ => false,
+            };
             Log(isValidRelease ? LogEvents.OnDestroyValid : LogEvents.OnDestroyInvalid, newClone);
         }
 
@@ -140,7 +146,6 @@ namespace BDUtil.Clone
 
         public void Release(GameObject postfab)
         {
-            Debug.Log($"Attempt release {postfab}", postfab);
             if (postfab == null) throw new ArgumentNullException(nameof(postfab));
             Postfab tag = postfab.GetComponent<Postfab>();
             if (tag == null)
@@ -150,19 +155,24 @@ namespace BDUtil.Clone
                 Destroy(postfab);
                 return;
             }
+            switch (tag.FabType)
+            {
+                case Postfab.FabTypes.Postfab: break;
+                case Postfab.FabTypes.PostfabPostmortem: return;  // Some kind of reentrant... Just let it go. It's dead, jim.
+                case Postfab.FabTypes.ActuallyAPrefab:  // Fallthrough
+                case Postfab.FabTypes.Demoted:
+                    throw new NotSupportedException($"{tag.IDStr()} is nondestructible!!!");
+                case Postfab.FabTypes.Unknown:
+                    Debug.Log($"Not a _real_ postfab {tag.IDStr()} of {tag.Link}/{tag.Asset}", postfab);
+                    // Non-postfabs don't cache, so let's go home. Note: we denature postfabs before destroying them, so that this is reentrant.
+                    // this happens if you destroy oncolliderexit, since exiting the collider re-triggers the destroy...
+                    if (!PreDestroyMessage.IsEmpty()) postfab.SendMessage(PreDestroyMessage, SendMessageOptions.DontRequireReceiver);
+                    Destroy(tag.gameObject);
+                    return;
+            }
             if (CachingScene.rootCount >= CacheSceneLimit || PerCacheLimit <= 0)
             {
-                Debug.Log($"Too many, destroying {postfab}", postfab);
                 /// We don't care what you are, but you must die; we're over-size.
-                if (!PreDestroyMessage.IsEmpty()) postfab.SendMessage(PreDestroyMessage, SendMessageOptions.DontRequireReceiver);
-                tag.SafeDestroy();
-                return;
-            }
-            if (!tag.IsPostfabInstance)
-            {
-                Debug.Log($"Not a _real_ postfab {postfab}", postfab);
-                // Non-postfabs don't cache, so let's go home. Note: we denature postfabs before destroying them, so that this is reentrant.
-                // this happens if you destroy oncolliderexit, since exiting the collider re-triggers the destroy...
                 if (!PreDestroyMessage.IsEmpty()) postfab.SendMessage(PreDestroyMessage, SendMessageOptions.DontRequireReceiver);
                 tag.SafeDestroy();
                 return;
@@ -171,12 +181,10 @@ namespace BDUtil.Clone
             if (cache == null) cache = caches.Collection[tag.Link] = new();
             if (cache.Count >= PerCacheLimit)
             {
-                Debug.Log($"Too many in shared cache {postfab}", postfab);
                 if (!PreDestroyMessage.IsEmpty()) postfab.SendMessage(PreDestroyMessage, SendMessageOptions.DontRequireReceiver);
                 tag.SafeDestroy();
                 return;
             }
-            Debug.Log($"Keeping pooled copy {postfab}", postfab);
             // Finally, we're caching. Ahh.
             tag.PreRelease();
             postfab.SetActive(false);

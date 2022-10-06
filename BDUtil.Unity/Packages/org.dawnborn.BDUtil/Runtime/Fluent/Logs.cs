@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using BDUtil.Clone;
 using UnityEngine;
 
 namespace BDUtil.Fluent
@@ -10,6 +11,8 @@ namespace BDUtil.Fluent
 
         public static string IDStr(this GameObject thiz)
         => $"{thiz?.ToString() ?? "nil"}#{thiz?.GetInstanceID() ?? 0}";
+        public static string IDStr(this Postfab thiz)
+        => $"{thiz?.ToString() ?? "nil"}#{thiz?.GetInstanceID() ?? 0}[{thiz?.FabType ?? Postfab.FabTypes.Unknown}]";
         public static string IDStr(this Component thiz)
         => $"{thiz?.gameObject.IDStr()}[{thiz}]";
         public static string IDStr(this ScriptableObject thiz)
