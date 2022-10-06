@@ -7,6 +7,7 @@ namespace BDUtil
 {
     [Tooltip("Proxies unity monobehaviour events into listenable actions. See TickTopic to turn them into normal topics. See Coroutines to implicitly run on them.")]
     [SuppressMessage("IDE", "IDE0051")]
+    [AddComponentMenu("")]  // Suppresses this from the AddComponentMenu dialogue 'entirely'.
     public class Lifecycle : MonoBehaviour
     {
         [SuppressMessage("IDE", "IDE1006")]
