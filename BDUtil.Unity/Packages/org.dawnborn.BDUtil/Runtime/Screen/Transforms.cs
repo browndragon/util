@@ -66,15 +66,9 @@ namespace BDUtil.Screen
                 Scale = Vector3.Lerp(Scale, b.Scale, t)
             };
             // Makes this "local" more global by stacking it under the other one.
-            public void Contextualize(in Local other)
-            => this = FromMatrix(other.AsMatrix * AsMatrix);
+            public void ContextualizeUnder(in Local parent)
+            => this = FromMatrix(parent.AsMatrix * AsMatrix);
 
-            public void TermwiseSum(in Local other)
-            {
-                Position += other.Position;
-                EulerAngles += other.EulerAngles;
-                Scale += other.Scale;
-            }
 
             // Takes a snapshot, applying whatever overrides you specifying using a previous snapshot & a masking layer.
             public void Override(Overrides overrideField, in Local overrides)
@@ -129,9 +123,10 @@ namespace BDUtil.Screen
         /// Consider using GetLocalSnapshot to figure out which fields you _don't want to set_ first...
         public static void SetFromLocalSnapshot(this Transform thiz, Local target)
         {
-            thiz.localScale = target.Scale;
-            thiz.localEulerAngles = target.EulerAngles;
+            Debug.Log($"Setting {target.Scale} on {thiz.localScale}/{thiz.lossyScale}", thiz);
             thiz.localPosition = target.Position;
+            thiz.localEulerAngles = target.EulerAngles;
+            thiz.localScale = target.Scale;
         }
         public struct TransformChildren : Lists.IMicroList<Transform>
         {

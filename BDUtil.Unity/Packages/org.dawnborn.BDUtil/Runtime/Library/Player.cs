@@ -41,26 +41,19 @@ namespace BDUtil.Library
             set => speed = Library.Speed == 0 ? value : value / Library.Speed;
         }
 
-        public SpriteRenderer spriteRenderer { get; private set; }
-        public AudioSource audioSource { get; private set; }
+        new public Camera camera { get; private set; }
+        new public SpriteRenderer renderer { get; private set; }
+        new public AudioSource audio { get; private set; }
         Postfab postfab;
 
         bool HasPlayed;
         protected void OnEnable()
         {
             HasPlayed = false;
-            spriteRenderer = GetComponent<SpriteRenderer>();
-            audioSource = GetComponent<AudioSource>();
+            camera = Camera.main;
+            renderer = GetComponent<SpriteRenderer>();
+            audio = GetComponent<AudioSource>();
             postfab = GetComponent<Postfab>();
-        }
-        protected void OnDisable()
-        {
-            if (postfab == null || postfab.Link == null) return;
-            SpriteRenderer wasRenderer = postfab.Link.GetComponent<SpriteRenderer>();
-            if (spriteRenderer && wasRenderer) spriteRenderer.SetFromLocalSnapshot(wasRenderer.GetLocalSnapshot());
-            AudioSource wasAudioSource = postfab.Link.GetComponent<AudioSource>();
-            if (audioSource && wasAudioSource) audioSource.SetFromLocalSnapshot(wasAudioSource.GetLocalSnapshot());
-            transform.SetFromLocalSnapshot(postfab.Link.transform.GetLocalSnapshot());
         }
 
         [Tooltip("If false, attempts to play while we're already playing are rejected. You can always Force to override.")]

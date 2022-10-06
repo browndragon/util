@@ -27,8 +27,6 @@ namespace BDUtil.Clone
         public LogEvents LogOthers = Enums<LogEvents>.Everything;
 
         public string SceneName => $"{name}.Scene";
-        public string PreAcquireMessage = "PreAcquire";
-        public string PreReleaseMessage = "PreRelease";
         public string PreDestroyMessage = "PreDestroy";
         Scene cachingScene;
         public Scene CachingScene
@@ -91,12 +89,20 @@ namespace BDUtil.Clone
                 if (cache.Count == 0) caches.Collection.Remove(prefab);
             }
             Postfab pretag = prefab.GetComponent<Postfab>();
-            if (postfab == null) postfab = Postfab.InstantiateInactiveCloneWithRoot(
-                pretag?.Asset ?? prefab, prefab, pretag?.ChildFabType ?? Postfab.FabTypes.Unknown
-            )?.gameObject;
+            Postfab posttag;
+
+            if (postfab == null)
+            {
+                posttag = Postfab.InstantiateInactiveCloneWithRoot(
+                    pretag?.Asset ?? prefab, prefab, pretag?.ChildFabType ?? Postfab.FabTypes.Unknown
+                );
+                postfab = posttag.gameObject;
+            }
+            else posttag = postfab.GetComponent<Postfab>().OrThrow();
+
             // TODO: should we actually be doing this? It's probably pretty expensive...
             SceneManager.MoveGameObjectToScene(postfab, SceneManager.GetActiveScene());
-            if (!PreAcquireMessage.IsEmpty()) postfab.SendMessage(PreAcquireMessage, SendMessageOptions.DontRequireReceiver);
+            posttag.PreAcquire();
             if (activate) postfab.SetActive(true);
             return postfab;
         }
@@ -121,9 +127,11 @@ namespace BDUtil.Clone
             }
             foreach (Transform child in prefab.GetChildren())
             {
-                GameObject clone = Acquire(child.gameObject, false);
+                Postfab targetPostfab = child.GetComponent<Postfab>();
+                GameObject model = targetPostfab?.Asset ?? child.gameObject;
+                GameObject clone = Acquire(model, false);
                 Transforms.Local snapshot = child.GetLocalSnapshot();
-                snapshot.Contextualize(relativeTo);
+                snapshot.ContextualizeUnder(relativeTo);
                 clone.transform.SetFromLocalSnapshot(snapshot);
                 if (awake) clone.SetActive(true);
                 clones?.Add(clone);
@@ -132,16 +140,19 @@ namespace BDUtil.Clone
 
         public void Release(GameObject postfab)
         {
+            Debug.Log($"Attempt release {postfab}", postfab);
             if (postfab == null) throw new ArgumentNullException(nameof(postfab));
             Postfab tag = postfab.GetComponent<Postfab>();
             if (tag == null)
             {  // No tag at all; mundane destroy.
+                Debug.Log($"No tag {postfab}", postfab);
                 if (!PreDestroyMessage.IsEmpty()) postfab.SendMessage(PreDestroyMessage, SendMessageOptions.DontRequireReceiver);
                 Destroy(postfab);
                 return;
             }
             if (CachingScene.rootCount >= CacheSceneLimit || PerCacheLimit <= 0)
             {
+                Debug.Log($"Too many, destroying {postfab}", postfab);
                 /// We don't care what you are, but you must die; we're over-size.
                 if (!PreDestroyMessage.IsEmpty()) postfab.SendMessage(PreDestroyMessage, SendMessageOptions.DontRequireReceiver);
                 tag.SafeDestroy();
@@ -149,20 +160,25 @@ namespace BDUtil.Clone
             }
             if (!tag.IsPostfabInstance)
             {
+                Debug.Log($"Not a _real_ postfab {postfab}", postfab);
                 // Non-postfabs don't cache, so let's go home. Note: we denature postfabs before destroying them, so that this is reentrant.
                 // this happens if you destroy oncolliderexit, since exiting the collider re-triggers the destroy...
+                if (!PreDestroyMessage.IsEmpty()) postfab.SendMessage(PreDestroyMessage, SendMessageOptions.DontRequireReceiver);
+                tag.SafeDestroy();
                 return;
             }
             List<GameObject> cache = caches.Collection.GetValueOrDefault(tag.Link);
             if (cache == null) cache = caches.Collection[tag.Link] = new();
             if (cache.Count >= PerCacheLimit)
             {
+                Debug.Log($"Too many in shared cache {postfab}", postfab);
                 if (!PreDestroyMessage.IsEmpty()) postfab.SendMessage(PreDestroyMessage, SendMessageOptions.DontRequireReceiver);
                 tag.SafeDestroy();
                 return;
             }
+            Debug.Log($"Keeping pooled copy {postfab}", postfab);
             // Finally, we're caching. Ahh.
-            if (!PreReleaseMessage.IsEmpty()) postfab.SendMessage(PreReleaseMessage, SendMessageOptions.DontRequireReceiver);
+            tag.PreRelease();
             postfab.SetActive(false);
             SceneManager.MoveGameObjectToScene(postfab, CachingScene);
             cache.Add(postfab);

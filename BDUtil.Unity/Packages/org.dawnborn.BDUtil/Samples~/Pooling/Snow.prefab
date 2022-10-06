@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: 6367449193964111794}
   - component: {fileID: -846021399701700057}
   - component: {fileID: -1037753786847657921}
-  - component: {fileID: 1342488331159625853}
   m_Layer: 0
   m_Name: Snow
   m_TagString: Untagged
@@ -173,30 +172,6 @@ MonoBehaviour:
   chaos: 1
   power: 1
   speed: 1
-  CanInterrupt: 1
-  Category: 
-  Strategy: 0
-  Inertia: 3
-  Index: -1
-  Delay:
-    Length: 0
-    Start: NaN
---- !u!114 &1342488331159625853
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1321638923735474941}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6c438aafb2bfd43f6bb052387e4d6d7c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Library: {fileID: 11400000, guid: 62a567dfc0f3840f79f6cf0cd9ee0487, type: 2}
-  chaos: 1
-  power: 1
-  speed: Infinity
   CanInterrupt: 1
   Category: 
   Strategy: 0

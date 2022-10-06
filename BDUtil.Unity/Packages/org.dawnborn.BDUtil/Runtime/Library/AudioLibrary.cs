@@ -22,9 +22,9 @@ namespace BDUtil.Library
         => ((animate.FuzzTarget.Pivot.AudioClip?.length ?? 0f) + player.Random.RandomValue(animate.Delay)) / player.Speed;
 
         protected override AudioSources.Snapshot Get(Player player)
-        => player.audioSource.GetLocalSnapshot();
+        => player.audio.GetLocalSnapshot();
 
         protected override void Set(Player player, AudioSources.Snapshot local)
-        => player.audioSource.SetFromLocalSnapshot(local);
+        => player.audio.SetFromLocalSnapshot(local);
     }
 }

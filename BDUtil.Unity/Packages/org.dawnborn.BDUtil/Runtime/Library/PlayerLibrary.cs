@@ -41,7 +41,6 @@ namespace BDUtil.Library
                     var current = Get(player);
                     var lerped = start.Lerp(target, eased);
                     current.Override(animate.FuzzTarget.TargetOverrides, lerped);
-                    Debug.Log($"At {start}=>{target} @{t}={eased} setting {current} on {player}", player);
                     Set(player, current);
                 }));
             return duration;

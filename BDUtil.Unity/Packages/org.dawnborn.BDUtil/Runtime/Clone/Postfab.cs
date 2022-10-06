@@ -4,6 +4,7 @@ namespace BDUtil.Clone
 {
     using System;
     using BDUtil.Fluent;
+    using BDUtil.Screen;
     using BDUtil.Serialization;
 #if UNITY_EDITOR
     using UnityEditor;
@@ -85,6 +86,20 @@ namespace BDUtil.Clone
         {
             if (FabType == FabTypes.Postfab) FabType = FabTypes.PostfabPostmortem;
             Destroy(gameObject);
+        }
+        internal void PreAcquire()
+        {
+            if (FabType != FabTypes.Postfab) return;
+            transform.SetFromLocalSnapshot(Link.transform.GetLocalSnapshot());
+            SpriteRenderer sr = GetComponent<SpriteRenderer>();
+            SpriteRenderer lsr = Link.GetComponent<SpriteRenderer>();
+            if (sr != null && lsr != null) sr.SetFromLocalSnapshot(lsr.GetLocalSnapshot());
+            AudioSource @as = GetComponent<AudioSource>();
+            AudioSource las = Link.GetComponent<AudioSource>();
+            if (@as != null && las != null) @as.SetFromLocalSnapshot(las.GetLocalSnapshot());
+        }
+        internal void PreRelease()
+        {
         }
 
         /// Knocks the prefab unconscious, instantiates it with link if we have access to the prefab utility,

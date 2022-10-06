@@ -9,29 +9,32 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 86154503e4f294f1baa562097211e922, type: 3}
-  m_Name: TransformLib
+  m_Script: {fileID: 11500000, guid: cc29e4035e2034efab82662a22e412d7, type: 3}
+  m_Name: BoxLib
   m_EditorClassIdentifier: 
   Chaos: 1
   Power: 1
   Speed: 1
   HashSource_: 0
+  DragAndDropTargets: []
   Entries:
   - tags: []
-    odds: 1
+    odds: 0
     Data:
       Delay:
         Pivot: 0
         Scale: 0
-      Easing: 0
-      FuzzTarget:
+      Prefab: {fileID: 5989485087663694003, guid: a3f2d6393ea274241bb9537ca0934b43, type: 3}
+      Strategy: 2
+      RelativeTo: 1
+      Transform:
         PivotOverrides: 0
         Pivot:
           Position: {x: 0, y: 0, z: 0}
           EulerAngles: {x: 0, y: 0, z: 0}
           scale0: {x: 0, y: 0, z: 0}
-        alsoOverride: 480
+        alsoOverride: 487
         Fuzz:
-          PositionFuzz: {x: 0, y: 0, z: 0}
+          PositionFuzz: {x: 0.1, y: 0.1, z: 0}
           EulerAnglesFuzz: {x: 0, y: 0, z: 90}
-          Scale0Fuzz: {x: 0.1, y: 0.1, z: 0.1}
+          Scale0Fuzz: {x: 0.1, y: 0.1, z: 0}

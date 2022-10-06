@@ -12,24 +12,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc29e4035e2034efab82662a22e412d7, type: 3}
   m_Name: Spawns
   m_EditorClassIdentifier: 
+  Chaos: 1
+  Power: 1
+  Speed: 1
   HashSource_: 0
   DragAndDropTargets: []
-  DragAndDropDefault:
-    tags: []
-    odds: 1
-    Data:
-      Delay:
-        Pivot: 0
-        Scale: 0
-      Prefab: {fileID: 0}
   Entries:
   - tags: []
-    odds: 1
+    odds: -1
     Data:
       Delay:
         Pivot: 0.25
         Scale: 1
       Prefab: {fileID: 1321638923735474941, guid: eaf774b5eee8e4e9b9dbaa27a31cbdfc, type: 3}
+      Strategy: 0
+      RelativeTo: 0
+      Transform:
+        PivotOverrides: 0
+        Pivot:
+          Position: {x: 0, y: 0, z: 0}
+          EulerAngles: {x: 0, y: 0, z: 0}
+          scale0: {x: 0, y: 0, z: 0}
+        alsoOverride: 0
+        Fuzz:
+          PositionFuzz: {x: 0, y: 0, z: 0}
+          EulerAnglesFuzz: {x: 0, y: 0, z: 0}
+          Scale0Fuzz: {x: 0, y: 0, z: 0}
   - tags: []
     odds: 1
     Data:
@@ -37,6 +45,16 @@ MonoBehaviour:
         Pivot: 0.125
         Scale: 0.125
       Prefab: {fileID: 2796729260312305393, guid: 8a2c72d9e901a4d48bcd61a6ab76be62, type: 3}
-  <Chaos>k__BackingField: 1
-  <Power>k__BackingField: 1
-  <Speed>k__BackingField: 1
+      Strategy: 0
+      RelativeTo: 0
+      Transform:
+        PivotOverrides: 0
+        Pivot:
+          Position: {x: 0, y: 0, z: 0}
+          EulerAngles: {x: 0, y: 0, z: 0}
+          scale0: {x: 0, y: 0, z: 0}
+        alsoOverride: 231
+        Fuzz:
+          PositionFuzz: {x: 1, y: 1, z: 1}
+          EulerAnglesFuzz: {x: 0, y: 0, z: 90}
+          Scale0Fuzz: {x: 0.1, y: 0.1, z: 0}
