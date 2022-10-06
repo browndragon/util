@@ -87,20 +87,6 @@ namespace BDUtil.Clone
             if (FabType == FabTypes.Postfab) FabType = FabTypes.PostfabPostmortem;
             Destroy(gameObject);
         }
-        internal void PreAcquire()
-        {
-            if (FabType != FabTypes.Postfab) return;
-            transform.SetFromLocalSnapshot(Link.transform.GetLocalSnapshot());
-            SpriteRenderer sr = GetComponent<SpriteRenderer>();
-            SpriteRenderer lsr = Link.GetComponent<SpriteRenderer>();
-            if (sr != null && lsr != null) sr.SetFromLocalSnapshot(lsr.GetLocalSnapshot());
-            AudioSource @as = GetComponent<AudioSource>();
-            AudioSource las = Link.GetComponent<AudioSource>();
-            if (@as != null && las != null) @as.SetFromLocalSnapshot(las.GetLocalSnapshot());
-        }
-        internal void PreRelease()
-        {
-        }
 
         /// Knocks the prefab unconscious, instantiates it with link if we have access to the prefab utility,
         /// tags the child, and returns it (and re-awakens the prefab if that's relevant).

@@ -46,8 +46,8 @@ namespace BDUtil.Screen
 
             public void Apply(Snapshots.IFuzzControls controls, Overrides fuzzFields, in Snapshot start, ref Snapshot target)
             {
-                target.Volume += fuzzFields.HasFlag(Overrides.Volume) ? controls.Power + controls.Random.Range(-Volume, Volume) : 0f;
-                target.Pitch += fuzzFields.HasFlag(Overrides.Pitch) ? controls.Speed + controls.Random.Range(-Pitch, Pitch) : 0f;
+                target.Volume += fuzzFields.HasFlag(Overrides.Volume) ? controls.Power - 1f + controls.Random.Range(-Volume, Volume) : 0f;
+                target.Pitch += fuzzFields.HasFlag(Overrides.Pitch) ? controls.Speed - 1f + controls.Random.Range(-Pitch, Pitch) : 0f;
             }
         }
         // Takes a snapshot, applying whatever overrides you specifying using a previous snapshot & a masking layer.

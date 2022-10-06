@@ -108,7 +108,6 @@ namespace BDUtil.Clone
 
             // TODO: should we actually be doing this? It's probably pretty expensive...
             SceneManager.MoveGameObjectToScene(postfab, SceneManager.GetActiveScene());
-            posttag.PreAcquire();
             if (activate) postfab.SetActive(true);
             return postfab;
         }
@@ -185,8 +184,6 @@ namespace BDUtil.Clone
                 tag.SafeDestroy();
                 return;
             }
-            // Finally, we're caching. Ahh.
-            tag.PreRelease();
             postfab.SetActive(false);
             SceneManager.MoveGameObjectToScene(postfab, CachingScene);
             cache.Add(postfab);

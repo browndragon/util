@@ -18,9 +18,11 @@ namespace BDUtil.Library
             template.Sprite = fromObj;
             return template;
         }
-        protected override SpriteRenderers.Snapshot Get(ILibraryPlayer player)
+        protected override SpriteRenderers.Snapshot Get(Snapshots.IFuzzControls player)
         => player.renderer.GetLocalSnapshot();
-        protected override void Set(ILibraryPlayer player, SpriteRenderers.Snapshot local)
+        protected override SpriteRenderers.Snapshot GetInitial(Snapshots.IFuzzControls player)
+        => player.rendererSnapshot;
+        protected override void Set(Snapshots.IFuzzControls player, SpriteRenderers.Snapshot local)
         => player.renderer.SetFromLocalSnapshot(local);
     }
 }

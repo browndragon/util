@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using BDUtil.Math;
 using BDUtil.Serialization;
 using UnityEngine;
@@ -20,6 +21,16 @@ namespace BDUtil.Screen
             Randoms.UnitRandom Random { get; }
             float Power { get; }
             float Speed { get; }
+
+            Camera camera { get; }
+            Transform transform { get; }
+            Transforms.Local transformSnapshot { get; }
+            SpriteRenderer renderer { get; }
+            SpriteRenderers.Snapshot rendererSnapshot { get; }
+            AudioSource audio { get; }
+            AudioSources.Snapshot audioSnapshot { get; }
+            Coroutine StartCoroutine(IEnumerator enumerator);
+
         }
         public interface IFuzz { }
         public interface IFuzz<TSnapshot, TMask> : IFuzz

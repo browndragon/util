@@ -10,9 +10,11 @@ namespace BDUtil.Library
     [CreateAssetMenu(menuName = "BDUtil/Library/Transform")]
     public class TransformLibrary : PlayerLibrary<Transforms.Local, Transforms.Overrides, Transforms.Fuzz>
     {
-        protected override Transforms.Local Get(ILibraryPlayer player)
+        protected override Transforms.Local GetInitial(Snapshots.IFuzzControls player)
+        => player.transformSnapshot;
+        protected override Transforms.Local Get(Snapshots.IFuzzControls player)
         => player.transform.GetLocalSnapshot();
-        protected override void Set(ILibraryPlayer player, Transforms.Local local)
+        protected override void Set(Snapshots.IFuzzControls player, Transforms.Local local)
         => player.transform.SetFromLocalSnapshot(local);
     }
 }

@@ -18,13 +18,14 @@ namespace BDUtil.Library
             template.AudioClip = fromObj;
             return template;
         }
-        protected override float TotalDuration(ILibraryPlayer player, Snapshots.Animate<AudioSources.Snapshot, AudioSources.Overrides, AudioSources.Fuzz> animate)
+        protected override float TotalDuration(Snapshots.IFuzzControls player, Snapshots.Animate<AudioSources.Snapshot, AudioSources.Overrides, AudioSources.Fuzz> animate)
         => ((animate.FuzzTarget.Pivot.AudioClip?.length ?? 0f) + player.Random.RandomValue(animate.Delay)) / player.Speed;
 
-        protected override AudioSources.Snapshot Get(ILibraryPlayer player)
+        protected override AudioSources.Snapshot Get(Snapshots.IFuzzControls player)
         => player.audio.GetLocalSnapshot();
-
-        protected override void Set(ILibraryPlayer player, AudioSources.Snapshot local)
+        protected override AudioSources.Snapshot GetInitial(Snapshots.IFuzzControls player)
+        => player.audioSnapshot;
+        protected override void Set(Snapshots.IFuzzControls player, AudioSources.Snapshot local)
         => player.audio.SetFromLocalSnapshot(local);
     }
 }

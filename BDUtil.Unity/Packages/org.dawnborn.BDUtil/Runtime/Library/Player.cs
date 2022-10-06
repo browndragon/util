@@ -1,6 +1,4 @@
-using System;
 using BDUtil.Clone;
-using BDUtil.Fluent;
 using BDUtil.Math;
 using BDUtil.Pubsub;
 using BDUtil.Screen;
@@ -11,7 +9,7 @@ namespace BDUtil.Library
 {
     [Tooltip("Selects between the IPlayables in a library and activates them.")]
     [AddComponentMenu("BDUtil/Library/Player")]
-    public class Player : MonoBehaviour, OnState.IEnter, OnState.IExit, ILibraryPlayer
+    public class Player : MonoBehaviour, OnState.IEnter, OnState.IExit, Snapshots.IFuzzControls
     {
         [SerializeField] protected Invokable.Layout buttons;
         [Tooltip("The playable library which this will use.")]
@@ -42,7 +40,9 @@ namespace BDUtil.Library
         new public Camera camera { get; private set; }
         new public SpriteRenderer renderer { get; private set; }
         new public AudioSource audio { get; private set; }
-        Postfab postfab;
+        public Transforms.Local transformSnapshot { get; private set; }
+        public SpriteRenderers.Snapshot rendererSnapshot { get; private set; }
+        public AudioSources.Snapshot audioSnapshot { get; private set; }
 
         bool HasPlayed;
         protected void OnEnable()
@@ -51,7 +51,15 @@ namespace BDUtil.Library
             camera = Camera.main;
             renderer = GetComponent<SpriteRenderer>();
             audio = GetComponent<AudioSource>();
-            postfab = GetComponent<Postfab>();
+            transformSnapshot = transform?.GetLocalSnapshot() ?? default;
+            rendererSnapshot = renderer?.GetLocalSnapshot() ?? default;
+            audioSnapshot = audio?.GetLocalSnapshot() ?? default;
+        }
+        protected void OnDisable()
+        {
+            transform.SetFromLocalSnapshot(transformSnapshot);
+            renderer?.SetFromLocalSnapshot(rendererSnapshot);
+            audio?.SetFromLocalSnapshot(audioSnapshot);
         }
 
         [Tooltip("If false, attempts to play while we're already playing are rejected. You can always Force to override.")]

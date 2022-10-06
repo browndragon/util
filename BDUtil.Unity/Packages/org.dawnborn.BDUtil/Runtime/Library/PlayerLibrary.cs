@@ -25,15 +25,16 @@ namespace BDUtil.Library
             return template;
         }
         protected abstract TSnapshot NewEntry(TSnapshot snapshot, TObj fromObj);
-        protected virtual float TotalDuration(ILibraryPlayer player, Snapshots.Animate<TSnapshot, TOverrides, TFuzz> animate)
+        protected virtual float TotalDuration(Snapshots.IFuzzControls player, Snapshots.Animate<TSnapshot, TOverrides, TFuzz> animate)
         => player.Random.RandomValue(animate.Delay) / player.Speed;
-        protected abstract TSnapshot Get(ILibraryPlayer player);
-        protected abstract void Set(ILibraryPlayer player, TSnapshot local);
-        protected override float Play(ILibraryPlayer player, Snapshots.Animate<TSnapshot, TOverrides, TFuzz> animate)
+        protected abstract TSnapshot GetInitial(Snapshots.IFuzzControls player);
+        protected abstract TSnapshot Get(Snapshots.IFuzzControls player);
+        protected abstract void Set(Snapshots.IFuzzControls player, TSnapshot local);
+        protected override float Play(Snapshots.IFuzzControls player, Snapshots.Animate<TSnapshot, TOverrides, TFuzz> animate)
         {
             float duration = TotalDuration(player, animate);
             var start = Get(player);
-            var target = animate.FuzzTarget.GetTarget(player, start);
+            var target = animate.FuzzTarget.GetTarget(player, GetInitial(player));
             player.StartCoroutine(new Timer(duration)
                 .Foreach(t =>
                 {

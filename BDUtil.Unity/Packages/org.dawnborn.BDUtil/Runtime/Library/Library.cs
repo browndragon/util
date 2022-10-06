@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using BDUtil.Fluent;
 using BDUtil.Raw;
+using BDUtil.Screen;
 using UnityEngine;
 
 namespace BDUtil.Library
@@ -81,7 +82,7 @@ namespace BDUtil.Library
             return tag;
         }
         // Not always supported; play the given entry from this library on the player, returning its duration.
-        public abstract float Play(ILibraryPlayer player, IEntry entry);
+        public abstract float Play(Snapshots.IFuzzControls player, IEntry entry);
     }
     [Tooltip("A generic source of multiple assets (sprites, audio, treasure??) with rules to pick between them.")]
     public abstract class Library<TObj, TData> : Library
@@ -95,8 +96,8 @@ namespace BDUtil.Library
         protected abstract Entry NewEntry(Entry template, TObj fromObj);
 
         // Not always supported; play the given entry from this library on the player, returning its duration.
-        public override float Play(ILibraryPlayer player, IEntry entry) => Play(player, ((Entry)entry).Data);
-        protected abstract float Play(ILibraryPlayer player, TData entry);
+        public override float Play(Snapshots.IFuzzControls player, IEntry entry) => Play(player, ((Entry)entry).Data);
+        protected abstract float Play(Snapshots.IFuzzControls player, TData entry);
 
         [Serializable]
         public struct Entry : IEntry
