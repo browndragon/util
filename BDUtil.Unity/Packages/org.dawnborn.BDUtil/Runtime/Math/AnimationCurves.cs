@@ -134,11 +134,26 @@ namespace BDUtil.Math
             }
             thiz.postWrapMode = that.postWrapMode;
         }
+        public static AnimationCurve Concatenated0101(AnimationCurve a, AnimationCurve b)
+        {
+            AnimationCurve c = new(a.keys);
+            c.Concatenate(b);
+            c.Transform(new(0, 0, 1, 1));
+            return c;
+        }
         public static void AddInterpolated(this AnimationCurve thiz, Func<float, float> func, float start = 0f, float step = 1 / 16f, float length = 1f)
         {
             for (float i = 0f; i < length; i += step) thiz.AddKey(start + i, func(i / length));
             thiz.AddKey(start + length, func(1f));
         }
+        public static AnimationCurve Interpolated0101(Func<float, float> func, float step = 1 / 16f)
+        {
+            AnimationCurve a = new();
+            a.AddInterpolated(func, 0, step, 1);
+            a.Transform(new(0, 0, 1, 1));
+            return a;
+        }
+
         #endregion  // Flip/Squish AnimationCurve
     }
 }
