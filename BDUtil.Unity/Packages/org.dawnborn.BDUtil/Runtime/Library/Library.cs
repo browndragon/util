@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using BDUtil.Fluent;
@@ -47,13 +46,13 @@ namespace BDUtil.Library
             // The payload, which might include "wrapping" information.
             object Data { get; }
         }
-        public interface ICategory : IEnumerable
+        public interface ICategory
         {
             bool IsValid { get; }
+            /// The sum of the odds in Entries.
             float Odds { get; }
-            int Count { get; }
-            object this[int i] { get; }
             IReadOnlyList<IEntry> Entries { get; }
+            /// Gets the index of an entry in Entries weighted by their individual odds.
             int GetRandom();
         }
 
@@ -82,7 +81,7 @@ namespace BDUtil.Library
             return tag;
         }
         // Not always supported; play the given entry from this library on the player, returning its duration.
-        public abstract float Play(Player player, IEntry entry);
+        public abstract float Play(ILibraryPlayer player, IEntry entry);
     }
     [Tooltip("A generic source of multiple assets (sprites, audio, treasure??) with rules to pick between them.")]
     public abstract class Library<TObj, TData> : Library
@@ -96,8 +95,8 @@ namespace BDUtil.Library
         protected abstract Entry NewEntry(Entry template, TObj fromObj);
 
         // Not always supported; play the given entry from this library on the player, returning its duration.
-        public override float Play(Player player, IEntry entry) => Play(player, ((Entry)entry).Data);
-        protected abstract float Play(Player player, TData entry);
+        public override float Play(ILibraryPlayer player, IEntry entry) => Play(player, ((Entry)entry).Data);
+        protected abstract float Play(ILibraryPlayer player, TData entry);
 
         [Serializable]
         public struct Entry : IEntry
@@ -134,14 +133,6 @@ namespace BDUtil.Library
                 }
                 return -1;
             }
-            public int Count => Entries.Count;
-            public TData this[int i] => Entries[i].Data;
-            object ICategory.this[int i] => this[i];
-            public IEnumerator<TData> GetEnumerator()
-            {
-                for (int i = 0; i < Count; ++i) yield return this[i];
-            }
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
         protected void OnEnable() => Recalculate();

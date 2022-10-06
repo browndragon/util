@@ -8,6 +8,14 @@ namespace BDUtil.Math
     {
         public static float GetUnityRandomValue() => UnityEngine.Random.value;
         public static readonly Randoms.UnitRandom main = GetUnityRandomValue;
+        // STRONGLY suggested that the output distro is still in [0,1)!!!
+        public static Randoms.UnitRandom Distribution(this Randoms.UnitRandom thiz, AnimationCurve curve) => () => thiz.RandomValue(curve);
+        // STRONGLY suggested that the output distro is still in [0,1)!!!
+        public static Randoms.UnitRandom Distribution(this Randoms.UnitRandom thiz, AnimationCurves.Scaled curve) => () => thiz.RandomValue(curve);
+        static UnityRandoms()
+        {
+            Randoms.@default = main;
+        }
 
         public static float RandomValue(this Randoms.UnitRandom thiz, AnimationCurve curve)
         => curve.length <= 0

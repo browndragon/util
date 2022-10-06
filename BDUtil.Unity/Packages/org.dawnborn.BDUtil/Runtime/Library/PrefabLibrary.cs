@@ -41,7 +41,7 @@ namespace BDUtil.Library
             public RelativeTos RelativeTo;
             public Snapshots.FuzzTarget<Transforms.Local, Transforms.Overrides, Transforms.Fuzz> Transform;
         }
-        protected override float Play(Player player, Spawn spawn)
+        protected override float Play(ILibraryPlayer player, Spawn spawn)
         {
             GameObject instance;
             Transforms.Local relativeTo = spawn.RelativeTo switch

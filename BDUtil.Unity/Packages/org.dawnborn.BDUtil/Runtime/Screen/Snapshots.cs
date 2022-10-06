@@ -17,9 +17,9 @@ namespace BDUtil.Screen
         }
         public interface IFuzzControls
         {
-            public Randoms.UnitRandom Random { get; }
-            public float Power { get; }
-            public float Speed { get; }
+            Randoms.UnitRandom Random { get; }
+            float Power { get; }
+            float Speed { get; }
         }
         public interface IFuzz { }
         public interface IFuzz<TSnapshot, TMask> : IFuzz

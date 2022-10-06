@@ -11,7 +11,7 @@ namespace BDUtil.Library
 {
     [Tooltip("Selects between the IPlayables in a library and activates them.")]
     [AddComponentMenu("BDUtil/Library/Player")]
-    public class Player : MonoBehaviour, OnState.IEnter, OnState.IExit, Snapshots.IFuzzControls
+    public class Player : MonoBehaviour, OnState.IEnter, OnState.IExit, ILibraryPlayer
     {
         [SerializeField] protected Invokable.Layout buttons;
         [Tooltip("The playable library which this will use.")]
@@ -20,10 +20,8 @@ namespace BDUtil.Library
 
         [Tooltip("The 1-centered scale of randomness to for playables (0 none, .5 half, 2 twice, etc)")]
         [SerializeField] protected float chaos = 1f;
-        // Returns a random number centered on .5, which can be used as a random generator elsewhere.
-        public float GetChaosRandom() => UnityRandoms.main.Range(.5f - chaos / 2f, .5f + chaos / 2f);
         Randoms.UnitRandom random;
-        public Randoms.UnitRandom Random => random ??= GetChaosRandom;
+        public Randoms.UnitRandom Random => random ??= random.DistributionPow01(chaos * Library.Chaos);
 
         [Tooltip("The 1-centered scale of power (volume only?) for playables (0 none)")]
         [SerializeField] protected float power = 1f;
@@ -94,7 +92,7 @@ namespace BDUtil.Library
             Library.ICategory category = Library.GetICategory(tag);
             if (category == null) return;
             Index = PickIndex(category);
-            Delay = Library.Play(this, category.Entries[Index.CheckRange(0, category.Count)]);
+            Delay = Library.Play(this, category.Entries[Index.CheckRange(0, category.Entries.Count)]);
             Delay.Reset();
             HasPlayed = true;
         }
@@ -103,8 +101,8 @@ namespace BDUtil.Library
         => Strategy switch
         {
             Strategies.Random => category.GetRandom(),
-            Strategies.RoundRobin => (Index + 1).PosMod(category.Count),
-            Strategies.UseIndexValue => Index.PosMod(category.Count),
+            Strategies.RoundRobin => (Index + 1).PosMod(category.Entries.Count),
+            Strategies.UseIndexValue => Index.PosMod(category.Entries.Count),
             _ => throw Strategy.BadValue(),
         };
 

@@ -25,11 +25,11 @@ namespace BDUtil.Library
             return template;
         }
         protected abstract TSnapshot NewEntry(TSnapshot snapshot, TObj fromObj);
-        protected virtual float TotalDuration(Player player, Snapshots.Animate<TSnapshot, TOverrides, TFuzz> animate)
+        protected virtual float TotalDuration(ILibraryPlayer player, Snapshots.Animate<TSnapshot, TOverrides, TFuzz> animate)
         => player.Random.RandomValue(animate.Delay) / player.Speed;
-        protected abstract TSnapshot Get(Player player);
-        protected abstract void Set(Player player, TSnapshot local);
-        protected override float Play(Player player, Snapshots.Animate<TSnapshot, TOverrides, TFuzz> animate)
+        protected abstract TSnapshot Get(ILibraryPlayer player);
+        protected abstract void Set(ILibraryPlayer player, TSnapshot local);
+        protected override float Play(ILibraryPlayer player, Snapshots.Animate<TSnapshot, TOverrides, TFuzz> animate)
         {
             float duration = TotalDuration(player, animate);
             var start = Get(player);
