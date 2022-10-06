@@ -126,8 +126,9 @@ namespace BDUtil
                 // Try the Converter<base st TIn:base,TOut>.Default too!
                 Type @base = tin.BaseType;
                 Default = (IConverter<TIn, TOut>)Converter.GetConverter(@base, tout);
-                if (Default == null) System.Diagnostics.Trace.WriteLine($"Can't construct converter {tin}=>{tout}: {e}");
+                if (Default == null && WriteTraces) System.Diagnostics.Trace.WriteLine($"Can't construct converter {tin}=>{tout}: {e}");
             }
         }
+        const bool WriteTraces = false;
     }
 }

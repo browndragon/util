@@ -12,41 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86154503e4f294f1baa562097211e922, type: 3}
   m_Name: TransformLib
   m_EditorClassIdentifier: 
+  Chaos: 1
+  Power: 1
+  Speed: 1
   HashSource_: 0
-  DragAndDropDefault:
-    tags: []
-    odds: 1
-    Data:
-      FuzzDuration:
-        position: 0.125
-        size: 0.125
-      Ease: 0
-      Mask: 0
-      Local:
-        Position: {x: 0, y: 0, z: 0}
-        EulerAngles: {x: 0, y: 0, z: 0}
-        scale0: {x: 0, y: 0, z: 0}
-      Fuzz:
-        Position: {x: 0.1, y: 0.1, z: 0.1}
-        EulerAngles: {x: 0, y: 0, z: 0}
-        scale0: {x: -0.9, y: -0.9, z: -0.9}
   Entries:
   - tags: []
     odds: 1
     Data:
-      FuzzDuration:
-        position: 0.125
-        size: 0.125
-      Ease: 0
-      Mask: 0
-      Local:
-        Position: {x: 0, y: 0, z: 0}
-        EulerAngles: {x: 0, y: 0, z: 0}
-        scale0: {x: 0, y: 0, z: 0}
-      Fuzz:
-        Position: {x: 0.1, y: 0.1, z: 0.1}
-        EulerAngles: {x: 0, y: 0, z: 90}
-        scale0: {x: 0.1, y: 0.1, z: 0.1}
-  <Chaos>k__BackingField: 1
-  <Power>k__BackingField: 1
-  <Speed>k__BackingField: 1
+      Delay:
+        Pivot: 0
+        Scale: 0
+      Easing: 0
+      FuzzTarget:
+        PivotOverrides: 0
+        Pivot:
+          Position: {x: 0, y: 0, z: 0}
+          EulerAngles: {x: 0, y: 0, z: 0}
+          scale0: {x: 0, y: 0, z: 0}
+        alsoOverride: 480
+        Fuzz:
+          PositionFuzz: {x: 0, y: 0, z: 0}
+          EulerAnglesFuzz: {x: 0, y: 0, z: 90}
+          Scale0Fuzz: {x: 0.1, y: 0.1, z: 0.1}

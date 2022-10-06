@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace BDUtil
 {
@@ -39,8 +40,15 @@ namespace BDUtil
         }
         public static IReadOnlyList<U> Entries => declaredOrder;
         /// That is, length in integer space between the min & max element.
-        public static long Span => (long)(1 + MaxL - MinL);
-        public static bool HasValue(U u) => IsFlags ? GetValue(GetInvalidFlags(u)) == 0L : Enum.IsDefined(typeof(U), u);
+        public static long Span
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => (long)(1 + MaxL - MinL);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool HasValue(U u)
+        => IsFlags ? GetValue(GetInvalidFlags(u)) == 0L : Enum.IsDefined(typeof(U), u);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static U GetInvalidFlags(U u)
         {
             long l = GetValue(u);
@@ -50,14 +58,18 @@ namespace BDUtil
             }
             return FromValue(l);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long GetValue(U u) => Convert.ToInt64(u);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static U FromValue(long i) => (U)Enum.ToObject(typeof(U), i);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long GetOffset(U u)
         {
             long v = GetValue(u);
             if (v > MaxL) return -1;
             return v - MinL;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static U FromOffset(long i)
         => i >= 0
         ? FromValue(i + MinL)
@@ -67,12 +79,23 @@ namespace BDUtil
     {
         /// Create a new exception declaring this is not a named enum value.
         /// Usual use is final case in a ` x switch {..., _=>throw x.BadValue() };
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NotImplementedException BadValue<E>(this E thiz)
         where E : Enum
         => new($"Unhandled {thiz} <> {thiz.GetType()}");
         /// Throw BadValue if the value is not named; usable on assignment or something.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static E OrThrow<E>(this E thiz)
         where E : Enum
         => Enums<E>.HasValue(thiz) ? thiz : throw thiz.BadValue();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool HasAllFlags<E>(this E thiz, E flags)
+        where E : Enum
+        => thiz.HasFlag(flags);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool HasAnyFlags<E>(this E thiz, E flags)
+        where E : Enum
+        => 0 != (Enums<E>.GetValue(thiz) & Enums<E>.GetValue(flags));
     }
 }

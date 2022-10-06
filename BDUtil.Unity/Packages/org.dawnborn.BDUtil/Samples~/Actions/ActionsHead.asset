@@ -15,7 +15,7 @@ MonoBehaviour:
   Action:
     m_PersistentCalls:
       m_Calls: []
-  Deque: {fileID: 11400000, guid: cc974105428644a8f845c75460030bb2, type: 2}
+  deque: {fileID: 11400000, guid: cc974105428644a8f845c75460030bb2, type: 2}
   PopEnd: 1
   Comparer:
     serialized: BDUtil.Pubsub.ActionsHead+DelegateCmp, org.dawnborn.bdutil.Runtime,

@@ -8,7 +8,7 @@ namespace BDUtil.Library
     [CreateAssetMenu(menuName = "BDUtil/Library/Prefab")]
     public class PrefabLibrary : Library<GameObject, PrefabLibrary.Spawn>
     {
-        protected override bool IsEntryForObject(in PrefabLibrary.Spawn entry, GameObject obj)
+        protected override bool IsEntryForObject(in Spawn entry, GameObject obj)
         => entry.Prefab == obj;
 
         protected override Entry NewEntry(Entry template, GameObject fromObj)
@@ -20,24 +20,19 @@ namespace BDUtil.Library
         }
 
         [Serializable]
-        public struct Spawn : Player.IPlayable
+        public struct Spawn
         {
-            public Extent Delay;
+            public Randoms.Fuzzed<float> Delay;
             public GameObject Prefab;
-            public float PlayOn(Player player)
-            {
-                GameObject instance = Clone.Pool.main.Acquire(Prefab, false);
-                instance.transform.position = player.transform.position;
-                instance.transform.rotation = player.transform.rotation;
-                foreach (Player innerplayer in instance.GetComponents<Player>())
-                {
-                    innerplayer.Chaos = player.Chaos;
-                    innerplayer.Power = player.Power;
-                    innerplayer.Speed = player.Speed;
-                }
-                instance.SetActive(true);
-                return Delay.ScaledBy(player.Chaos).RandomPoint() / player.Speed;
-            }
         }
+        protected override float Play(Player player, Spawn spawn)
+        {
+            GameObject instance = Clone.Pool.main.Acquire(spawn.Prefab, false);
+            instance.transform.position = player.transform.position;
+            instance.transform.rotation = player.transform.rotation;
+            instance.SetActive(true);
+            return player.Random.RandomValue(spawn.Delay) / player.Speed;
+        }
+
     }
 }

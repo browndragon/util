@@ -242,8 +242,7 @@ MonoBehaviour:
   Duration:
     Length: 0.5
     Start: -Infinity
-  Easer:
-    rid: 6355734163437387779
+  Easer: 0
   Target:
     serialized: BDUtil.Serialization.SubtypeExample+MouseY, Assembly-CSharp, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
@@ -252,10 +251,6 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 6355734163437387779
-      type: {class: Easings/EnumStruct, ns: BDUtil.Math, asm: BDUtil}
-      data:
-        Enum: 0
     - rid: 6355734163437387780
       type: {class: SubtypeExample/LogConst, ns: BDUtil.Serialization, asm: Assembly-CSharp}
       data:
@@ -368,16 +363,13 @@ MonoBehaviour:
   Duration:
     Length: 0.5
     Start: -Infinity
-  Easer:
-    rid: -2
+  Easer: 0
   Target:
     serialized: 
   Loggers: []
   references:
     version: 2
-    RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
+    RefIds: []
 --- !u!1 &879130704
 GameObject:
   m_ObjectHideFlags: 0
@@ -505,27 +497,22 @@ MonoBehaviour:
   Duration:
     Length: 0.5
     Start: -Infinity
-  Easer:
-    rid: 4670118501096095749
+  Easer: 0
   Target:
     serialized: BDUtil.Serialization.SubtypeExample+MouseX, Assembly-CSharp, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
   Loggers:
-  - rid: 6355734163437387776
-  - rid: 6355734163437387777
+  - rid: 6742291199450152961
+  - rid: 6742291199450152963
   references:
     version: 2
     RefIds:
-    - rid: 4670118501096095749
-      type: {class: Easings/EnumStruct, ns: BDUtil.Math, asm: BDUtil}
-      data:
-        Enum: 15
-    - rid: 6355734163437387776
+    - rid: 6742291199450152961
       type: {class: SubtypeExample/LogConst, ns: BDUtil.Serialization, asm: Assembly-CSharp}
       data:
-        Const: first
-    - rid: 6355734163437387777
+        Const: 1
+    - rid: 6742291199450152963
       type: {class: SubtypeExample/LogAffix, ns: BDUtil.Serialization, asm: Assembly-CSharp}
       data:
-        Pre: pre1
-        Post: post1
+        Pre: 2
+        Post: 3

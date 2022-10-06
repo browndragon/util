@@ -1,7 +1,9 @@
 using System;
+using BDUtil.Clone;
 using BDUtil.Fluent;
 using BDUtil.Math;
 using BDUtil.Pubsub;
+using BDUtil.Screen;
 using BDUtil.Serialization;
 using UnityEngine;
 
@@ -9,40 +11,56 @@ namespace BDUtil.Library
 {
     [Tooltip("Selects between the IPlayables in a library and activates them.")]
     [AddComponentMenu("BDUtil/Library/Player")]
-    public class Player : MonoBehaviour, OnState.IEnter, OnState.IExit
+    public class Player : MonoBehaviour, OnState.IEnter, OnState.IExit, Snapshots.IFuzzControls
     {
         [SerializeField] protected Invokable.Layout buttons;
         [Tooltip("The playable library which this will use.")]
-        [SerializeField] protected Library Library;
-        public IPlayerLibrary PlayerLibrary => Library.Anycast<IPlayerLibrary>();
+        // this would be an "IPlayerLibrary" but you can't use interfaces in the Inspector.
+        [SerializeField] public Library Library;
 
-        [Tooltip("The 1-centered scale of randomness to for playables (0 none)")]
+        [Tooltip("The 1-centered scale of randomness to for playables (0 none, .5 half, 2 twice, etc)")]
         [SerializeField] protected float chaos = 1f;
-        public float Chaos
-        {
-            get => chaos * PlayerLibrary.Chaos;
-            set => chaos = PlayerLibrary.Chaos == 0 ? value : value / PlayerLibrary.Chaos;
-        }
+        // Returns a random number centered on .5, which can be used as a random generator elsewhere.
+        public float GetChaosRandom() => UnityRandoms.main.Range(.5f - chaos / 2f, .5f + chaos / 2f);
+        Randoms.UnitRandom random;
+        public Randoms.UnitRandom Random => random ??= GetChaosRandom;
+
         [Tooltip("The 1-centered scale of power (volume only?) for playables (0 none)")]
         [SerializeField] protected float power = 1f;
         public float Power
         {
-            get => power * PlayerLibrary.Power;
-            set => power = PlayerLibrary.Power == 0 ? value : value / PlayerLibrary.Power;
+            get => power * Library.Power;
+            set => power = Library.Power == 0 ? value : value / Library.Power;
         }
         [Tooltip("The 1-centered scale of speed for playables (0 none)")]
         [SerializeField]
         protected float speed = 1f;
         public float Speed
         {
-            get => speed * PlayerLibrary.Speed;
-            set => speed = PlayerLibrary.Speed == 0 ? value : value / PlayerLibrary.Speed;
+            get => speed * Library.Speed;
+            set => speed = Library.Speed == 0 ? value : value / Library.Speed;
         }
 
-        public interface IPlayable
+        public SpriteRenderer spriteRenderer { get; private set; }
+        public AudioSource audioSource { get; private set; }
+        Postfab postfab;
+
+        bool HasPlayed;
+        protected void OnEnable()
         {
-            /// Plays the given asset on the player, returning its duration.
-            float PlayOn(Player player);
+            HasPlayed = false;
+            spriteRenderer = GetComponent<SpriteRenderer>();
+            audioSource = GetComponent<AudioSource>();
+            postfab = GetComponent<Postfab>();
+        }
+        protected void OnDisable()
+        {
+            if (postfab == null || postfab.Link == null) return;
+            SpriteRenderer wasRenderer = postfab.Link.GetComponent<SpriteRenderer>();
+            if (spriteRenderer && wasRenderer) spriteRenderer.SetFromLocalSnapshot(wasRenderer.GetLocalSnapshot());
+            AudioSource wasAudioSource = postfab.Link.GetComponent<AudioSource>();
+            if (audioSource && wasAudioSource) audioSource.SetFromLocalSnapshot(wasAudioSource.GetLocalSnapshot());
+            transform.SetFromLocalSnapshot(postfab.Link.transform.GetLocalSnapshot());
         }
 
         [Tooltip("If false, attempts to play while we're already playing are rejected. You can always Force to override.")]
@@ -51,15 +69,6 @@ namespace BDUtil.Library
         // Multiple on amount of randomness on produced elements, assuming they support it?
         [Tooltip("The library will be queried for this tag ('' is the default!)")]
         public string Category = "";
-        public enum Automation
-        {
-            None = default,
-            Continuous,
-            AfterStart,
-            OnceOnStart,
-        }
-        [Tooltip("Whether this should start playing, continue playing after started, etc. See also ")]
-        public Automation Automation_;
         public enum Strategies
         {
             [Tooltip("Pick an item from the current category by odds")]
@@ -70,7 +79,18 @@ namespace BDUtil.Library
             UseIndexValue,
         }
         public Strategies Strategy;
-        [Tooltip("")]
+        public enum Inertias
+        {
+            None = default,
+            BeginInMotion,
+            RemainInMotion,
+            [Tooltip("Plays _once_ after each OnEnable")]
+            OnEnable,
+        }
+        [Tooltip("Under which circumstances should this autoplay?")]
+        public Inertias Inertia;
+
+        [Tooltip("Which index entry within a category was last played (or if UseIndexValue, next played)")]
         public int Index = -1;
         [Tooltip("How long the previous playable indicated it lasted")]
         public Timer Delay = 0f;
@@ -80,50 +100,40 @@ namespace BDUtil.Library
             if (Delay.Tick.IsLive && !CanInterrupt && !forceInterrupt) return;
             Library.ICategory category = Library.GetICategory(tag);
             if (category == null) return;
-            Index = Strategy switch
-            {
-                Strategies.Random => category.GetRandom(),
-                Strategies.RoundRobin => (Index + 1).PosMod(category.Count),
-                Strategies.UseIndexValue => Index,
-                _ => throw Strategy.BadValue(),
-            };
-            object playable = category[Index.CheckRange(0, category.Count)];
-            Delay = playable.Anycast<IPlayable>().PlayOn(this);
-            ResetDelay();
-            if (Automation_ == Automation.AfterStart) Automation_ = Automation.Continuous;
-        }
-        void ResetDelay()
-        {
-            int startWas = Bitcast.Int(Delay.Start);
+            Index = PickIndex(category);
+            Delay = Library.Play(this, category.Entries[Index.CheckRange(0, category.Count)]);
             Delay.Reset();
-            int startIs = Bitcast.Int(Delay.Start);
-            if (startIs == startWas) throw new NotSupportedException($"After a reset, {Delay} has same start {startWas} vs {startIs}");
+            HasPlayed = true;
         }
+
+        private int PickIndex(Library.ICategory category)
+        => Strategy switch
+        {
+            Strategies.Random => category.GetRandom(),
+            Strategies.RoundRobin => (Index + 1).PosMod(category.Count),
+            Strategies.UseIndexValue => Index.PosMod(category.Count),
+            _ => throw Strategy.BadValue(),
+        };
+
         public void PlayByCategory(string tag) => PlayByCategoryForce(tag, false);
         [Invokable]
         public void PlayCurrentCategory() => PlayByCategory(Category);
-        protected void Start()
-        {
-            switch (Automation_)
-            {
-                case Automation.OnceOnStart:
-                    PlayCurrentCategory();
-                    Automation_ = Automation.OnceOnStart;
-                    break;
-                case Automation.Continuous:
-                    ResetDelay();
-                    break;
-            }
-        }
         protected void Update()
         {
             if (Delay.Tick.IsLive) return;
-            switch (Automation_)
+            switch (Inertia)
             {
-                case Automation.Continuous: break;
+                case Inertias.OnEnable:
+                    if (HasPlayed) return;
+                    goto case Inertias.BeginInMotion;
+                case Inertias.RemainInMotion:
+                    if (!HasPlayed) return;
+                    goto case Inertias.BeginInMotion;
+                case Inertias.BeginInMotion:
+                    PlayCurrentCategory();
+                    break;
                 default: return;
             }
-            PlayCurrentCategory();
         }
 
         void OnState.IEnter.OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)

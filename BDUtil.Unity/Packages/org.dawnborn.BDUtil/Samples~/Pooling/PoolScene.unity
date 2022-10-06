@@ -448,12 +448,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c438aafb2bfd43f6bb052387e4d6d7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Strategy: 0
-  CanInterrupt: 1
   Library: {fileID: 11400000, guid: fe0ec5380b7284725870f2104d54c1d8, type: 2}
+  chaos: 1
+  power: 1
+  speed: 1
+  CanInterrupt: 1
   Category: 
-  Automation_: 1
-  index: -1
+  Strategy: 0
+  Inertia: 1
+  Index: -1
+  Delay:
+    Length: 0
+    Start: NaN
 --- !u!114 &1548719914
 MonoBehaviour:
   m_ObjectHideFlags: 0

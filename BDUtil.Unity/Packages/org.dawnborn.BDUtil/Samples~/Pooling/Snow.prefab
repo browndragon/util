@@ -169,12 +169,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c438aafb2bfd43f6bb052387e4d6d7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Strategy: 0
-  CanInterrupt: 1
   Library: {fileID: 11400000, guid: b74cc0559ea1a4eb0906ee19c1f59ae8, type: 2}
+  chaos: 1
+  power: 1
+  speed: 1
+  CanInterrupt: 1
   Category: 
-  Automation_: 0
-  index: -1
+  Strategy: 0
+  Inertia: 3
+  Index: -1
   Delay:
     Length: 0
     Start: NaN
@@ -190,12 +193,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c438aafb2bfd43f6bb052387e4d6d7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Strategy: 0
-  CanInterrupt: 1
   Library: {fileID: 11400000, guid: 62a567dfc0f3840f79f6cf0cd9ee0487, type: 2}
+  chaos: 1
+  power: 1
+  speed: Infinity
+  CanInterrupt: 1
   Category: 
-  Automation_: 3
-  index: -1
+  Strategy: 0
+  Inertia: 3
+  Index: -1
   Delay:
     Length: 0
     Start: NaN

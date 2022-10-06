@@ -23,7 +23,7 @@ namespace BDUtil.Math
         public bool IsStarted => float.IsFinite(Passed);
         public bool IsLive => Passed.IsInRange(0, Length);
         public static implicit operator bool(in Tick t) => t.IsLive;
-        public float FullRatio => Passed / Length;
+        public float FullRatio => Length > 0 ? Passed / Length : float.PositiveInfinity;
         public float Ratio => Mathf.Min(1f, FullRatio);
         public static implicit operator float(in Tick t) => t.FullRatio;
 

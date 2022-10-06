@@ -7,6 +7,18 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -1037753786847657921, guid: eaf774b5eee8e4e9b9dbaa27a31cbdfc, type: 3}
+      propertyPath: speed
+      value: Infinity
+      objectReference: {fileID: 0}
+    - target: {fileID: -1037753786847657921, guid: eaf774b5eee8e4e9b9dbaa27a31cbdfc, type: 3}
+      propertyPath: Library
+      value: 
+      objectReference: {fileID: 11400000, guid: e56effb3baf5440dbaffcffcb8aeb7e2, type: 2}
+    - target: {fileID: -1037753786847657921, guid: eaf774b5eee8e4e9b9dbaa27a31cbdfc, type: 3}
+      propertyPath: Automation_
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: -493560369867536155, guid: eaf774b5eee8e4e9b9dbaa27a31cbdfc, type: 3}
       propertyPath: Color.Max.b
       value: 0.8166666
@@ -78,6 +90,14 @@ PrefabInstance:
     - target: {fileID: 1321638923735474943, guid: eaf774b5eee8e4e9b9dbaa27a31cbdfc, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1342488331159625853, guid: eaf774b5eee8e4e9b9dbaa27a31cbdfc, type: 3}
+      propertyPath: speed
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1342488331159625853, guid: eaf774b5eee8e4e9b9dbaa27a31cbdfc, type: 3}
+      propertyPath: Automation_
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6367449193964111794, guid: eaf774b5eee8e4e9b9dbaa27a31cbdfc, type: 3}
       propertyPath: <Link>k__BackingField

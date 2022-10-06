@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using BDUtil.Raw;
+using BDUtil.Serialization;
 using UnityEngine;
 
 namespace BDUtil.Pubsub
@@ -11,8 +13,29 @@ namespace BDUtil.Pubsub
     /// Somebody else has to repeatedly call Pop (potentially in response to watching a queue?)
     public abstract class HeadTopic<T> : Topic<T>, IValueTopic<T>
     {
-        [Tooltip("Data source to adapt")]
-        public CollectionTopic<Observable.Deque<T>> Deque;
+        [Tooltip("Data source to adapt over. If absent, one will be created at runtime.")]
+        [SerializeField, Expandable] protected CollectionTopic<Observable.Deque<T>> deque;
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            cached = Comparer.CreateInstance();
+        }
+        protected override void OnDisable() { base.OnDisable(); }
+        public CollectionTopic<Observable.Deque<T>> Deque
+        {
+            get
+            {
+                if (deque == null) deque = MakeNewTopic();
+                return deque;
+            }
+        }
+        CollectionTopic<Observable.Deque<T>> MakeNewTopic()
+        {
+            Type bestType = Bind.Bindings<Bind.ImplAttribute>.Default.GetBestType(typeof(CollectionTopic<Observable.Deque<T>>));
+            if (bestType == null) throw new NotSupportedException($"Can't instantiate {typeof(CollectionTopic<Observable.Deque<T>>)}");
+            CollectionTopic<Observable.Deque<T>> topic = (CollectionTopic<Observable.Deque<T>>)ScriptableObject.CreateInstance(bestType);
+            return topic;
+        }
 
         [Tooltip("Front: Like a queue; Back: Like a stack")]
         public Deques.Ends PopEnd = Deques.Ends.Front;
@@ -30,17 +53,6 @@ namespace BDUtil.Pubsub
         }
         public void SetValue(T value) => Push(value);
 
-        readonly Disposes.All unsubscribe = new();
-        protected override void OnEnable()
-        {
-            base.OnEnable();
-            cached = Comparer.CreateInstance();
-        }
-        protected override void OnDisable()
-        {
-            unsubscribe.Dispose();
-            base.OnDisable();
-        }
         public void Push(T @object)
         {
             if (cached != null) Deque.Collection.BinaryInsert(@object, cached);

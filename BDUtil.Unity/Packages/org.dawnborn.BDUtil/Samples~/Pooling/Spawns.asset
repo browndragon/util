@@ -13,99 +13,30 @@ MonoBehaviour:
   m_Name: Spawns
   m_EditorClassIdentifier: 
   HashSource_: 0
+  DragAndDropTargets: []
   DragAndDropDefault:
     tags: []
     odds: 1
     Data:
       Delay:
-        curve:
-          serializedVersion: 2
-          m_Curve:
-          - serializedVersion: 3
-            time: 0
-            value: 0
-            inSlope: 0
-            outSlope: 0
-            tangentMode: 0
-            weightedMode: 0
-            inWeight: 0
-            outWeight: 0
-          - serializedVersion: 3
-            time: 1
-            value: 1
-            inSlope: 2
-            outSlope: 2
-            tangentMode: 0
-            weightedMode: 0
-            inWeight: 0
-            outWeight: 0
-          m_PreInfinity: 2
-          m_PostInfinity: 2
-          m_RotationOrder: 4
-        offset: {x: 0, y: 0.125}
-        scale: {x: 0, y: 3}
-    Object: {fileID: 0}
-  DragAndDropTargets: []
+        Pivot: 0
+        Scale: 0
+      Prefab: {fileID: 0}
   Entries:
   - tags: []
     odds: 1
     Data:
       Delay:
-        curve:
-          serializedVersion: 2
-          m_Curve:
-          - serializedVersion: 3
-            time: 0
-            value: 0
-            inSlope: 0
-            outSlope: 0
-            tangentMode: 0
-            weightedMode: 0
-            inWeight: 0
-            outWeight: 0
-          - serializedVersion: 3
-            time: 1
-            value: 1
-            inSlope: 2
-            outSlope: 2
-            tangentMode: 0
-            weightedMode: 0
-            inWeight: 0
-            outWeight: 0
-          m_PreInfinity: 2
-          m_PostInfinity: 2
-          m_RotationOrder: 4
-        offset: {x: 0, y: 0.125}
-        scale: {x: 0, y: 3}
-    Object: {fileID: 1321638923735474941, guid: eaf774b5eee8e4e9b9dbaa27a31cbdfc, type: 3}
+        Pivot: 0.25
+        Scale: 1
+      Prefab: {fileID: 1321638923735474941, guid: eaf774b5eee8e4e9b9dbaa27a31cbdfc, type: 3}
   - tags: []
     odds: 1
     Data:
       Delay:
-        curve:
-          serializedVersion: 2
-          m_Curve:
-          - serializedVersion: 3
-            time: 0
-            value: 0
-            inSlope: 0
-            outSlope: 0
-            tangentMode: 0
-            weightedMode: 0
-            inWeight: 0
-            outWeight: 0
-          - serializedVersion: 3
-            time: 1
-            value: 1
-            inSlope: 2
-            outSlope: 2
-            tangentMode: 0
-            weightedMode: 0
-            inWeight: 0
-            outWeight: 0
-          m_PreInfinity: 2
-          m_PostInfinity: 2
-          m_RotationOrder: 4
-        offset: {x: 0, y: 0.125}
-        scale: {x: 0, y: 3}
-    Object: {fileID: 2796729260312305393, guid: 8a2c72d9e901a4d48bcd61a6ab76be62, type: 3}
+        Pivot: 0.125
+        Scale: 0.125
+      Prefab: {fileID: 2796729260312305393, guid: 8a2c72d9e901a4d48bcd61a6ab76be62, type: 3}
+  <Chaos>k__BackingField: 1
+  <Power>k__BackingField: 1
+  <Speed>k__BackingField: 1

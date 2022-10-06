@@ -73,6 +73,10 @@ namespace BDUtil.Math
         public static implicit operator HSVA(Color c) => RGBToHSV(c);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator Color(HSVA hsva) => Color.HSVToRGB(hsva.h, hsva.s, hsva.v).WithA(hsva.a);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator HSVA(Vector4 v) => new(v.x, v.y, v.z, v.w);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator Vector4(HSVA hsva) => new(hsva.h, hsva.s, hsva.v, hsva.a);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(HSVA other)
@@ -92,6 +96,10 @@ namespace BDUtil.Math
         // Subtracts HSVA /b/ from HSVA /a/. Each component is subtracted separately.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static HSVA operator -(HSVA a, HSVA b) { return new HSVA(a.h - b.h, a.s - b.s, a.v - b.v, a.a - b.a); }
+
+        // Negates HSVA /a/.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static HSVA operator -(HSVA a) { return new HSVA(-a.h, -a.s, -a.v, -a.a); }
 
         // Multiplies two HSVAs together. Each component is multiplied separately.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

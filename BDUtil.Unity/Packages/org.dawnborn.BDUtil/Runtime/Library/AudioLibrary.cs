@@ -1,44 +1,30 @@
 using System;
 using BDUtil.Fluent;
 using BDUtil.Math;
+using BDUtil.Screen;
 using UnityEngine;
 
 namespace BDUtil.Library
 {
 
     [CreateAssetMenu(menuName = "BDUtil/Library/Audio")]
-    public class AudioLibrary : Library<AudioClip, AudioLibrary.AudioClipParams>
+    public class AudioLibrary : PlayerLibrary<AudioClip, AudioSources.Snapshot, AudioSources.Overrides, AudioSources.Fuzz>
     {
-        protected override bool IsEntryForObject(in AudioClipParams entry, AudioClip obj)
+        protected override bool IsEntryForObject(in AudioSources.Snapshot entry, AudioClip obj)
         => entry.AudioClip == obj;
 
-        protected override Entry NewEntry(Entry template, AudioClip fromObj)
+        protected override AudioSources.Snapshot NewEntry(AudioSources.Snapshot template, AudioClip fromObj)
         {
-            AudioClipParams @params = template.Data;
-            @params.AudioClip = fromObj;
-            template.Data = @params;
+            template.AudioClip = fromObj;
             return template;
         }
+        protected override float TotalDuration(Player player, Snapshots.Animate<AudioSources.Snapshot, AudioSources.Overrides, AudioSources.Fuzz> animate)
+        => ((animate.FuzzTarget.Pivot.AudioClip?.length ?? 0f) + player.Random.RandomValue(animate.Delay)) / player.Speed;
 
-        [Serializable]
-        public struct AudioClipParams : Player.IPlayable
-        {
-            public Extent Delay;
-            public Extent Volume;
-            public Extent Pitch;
-            public AudioClip AudioClip;
-            public float PlayOn(Player player)
-            {
-                float delay = Delay.ScaledBy(player.Chaos).RandomPoint() / player.Speed;
-                if (AudioClip != null)
-                {
-                    AudioSource source = player.GetComponent<AudioSource>().OrThrow();
-                    source.pitch = Pitch.ScaledBy(player.Chaos, player.Speed).RandomPoint();
-                    source.PlayOneShot(AudioClip, player.Power + Volume.ScaledBy(player.Chaos).RandomPoint());
-                    delay += AudioClip.length;
-                }
-                return delay;
-            }
-        }
+        protected override AudioSources.Snapshot Get(Player player)
+        => player.audioSource.GetLocalSnapshot();
+
+        protected override void Set(Player player, AudioSources.Snapshot local)
+        => player.audioSource.SetFromLocalSnapshot(local);
     }
 }

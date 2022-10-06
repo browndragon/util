@@ -123,7 +123,7 @@ namespace BDUtil.Clone
             {
                 GameObject clone = Acquire(child.gameObject, false);
                 Transforms.Local snapshot = child.GetLocalSnapshot();
-                snapshot.AdjustBy(relativeTo);
+                snapshot.Contextualize(relativeTo);
                 clone.transform.SetFromLocalSnapshot(snapshot);
                 if (awake) clone.SetActive(true);
                 clones?.Add(clone);

@@ -12,6 +12,7 @@ namespace BDUtil.Pubsub
     public class Val<T> : IDisposable
     {
         // Don't be fooled; if this is the wrong parent type, we won't use it.
+        // TODO:
         // A custom editor will help ensure you only use valid types though.
         [SerializeField, Expandable] ObjectTopic topic;
         public T DefaultValue;

@@ -8,14 +8,10 @@ namespace BDUtil.Math
     /// Particularly, see BDEase.Unity/.../UnityArith.cs, where VectorX & color are supported.
     public interface IArith<T> : IArith
     {
-        /// Returns a+b
-        T Add(T a, T b);
-        /// Returns a*b
-        T Scale(float a, T b);
-        /// Returns a * b.
-        float Dot(T a, T b);
-        /// NaN-detector. Some people -- think integer -- don't support it!
-        bool IsValid(T a);
+        int Axes { get; }
+        /// Cheaper way to get Dot(Axes[i], a)
+        float GetAxis(in T a, int i);
+        void SetAxis(ref T a, int i, float f);
     }
 
     /// Extension methods, constants, and type registration.
@@ -30,11 +26,13 @@ namespace BDUtil.Math
         public const float TAU = 2 * PI;
         public const float HALF_PI = PI / 2f;
 
+        public static float Round(float a) => (float)System.Math.Round(a);
         public static float Sqrt(float a) => (float)System.Math.Sqrt(a);
         public static float Clamp(float a, float min, float max) => System.Math.Min(System.Math.Max(a, min), max);
         public static float Clamp01(float a) => Clamp(a, 0f, 1f);
         public static float Repeat(float a, float length) => Clamp((float)(a - System.Math.Floor(a / length) * length), 0.0f, length);
 
+        public static float Sign(float x) => System.Math.Sign(x);
         public static float Pow(float x, float y) => (float)System.Math.Pow(x, y);
         public static float Cos(float x) => (float)System.Math.Cos(x);
         public static float Sin(float x) => (float)System.Math.Sin(x);
@@ -42,6 +40,48 @@ namespace BDUtil.Math
         #endregion
 
         #region Arithmetic in terms of existing arithmetic.
+        public static float Dot<T>(this IArith<T> thiz, T a, T b)
+        {
+            float dot = 0f;
+            for (int i = 0; i < thiz.Axes; ++i) dot += thiz.GetAxis(a, i) * thiz.GetAxis(b, i);
+            return dot;
+        }
+        public static T Add<T>(this IArith<T> thiz, T a, T b)
+        {
+            T summed = default;
+            for (int i = 0; i < thiz.Axes; ++i)
+            {
+                thiz.SetAxis(ref summed, i, thiz.GetAxis(a, i) + thiz.GetAxis(b, i));
+            }
+            return summed;
+        }
+
+        public static T Scale<T>(this IArith<T> thiz, float scale, T a)
+        {
+            T scaled = default;
+            for (int i = 0; i < thiz.Axes; ++i)
+            {
+                thiz.SetAxis(ref scaled, i, scale * thiz.GetAxis(a, i));
+            }
+            return scaled;
+        }
+        public static T Scale<T>(this IArith<T> thiz, T a, T b)
+        {
+            T scaled = default;
+            for (int i = 0; i < thiz.Axes; ++i)
+            {
+                thiz.SetAxis(ref scaled, i, thiz.GetAxis(a, i) * thiz.GetAxis(b, i));
+            }
+            return scaled;
+        }
+        public static bool IsValid<T>(this IArith<T> thiz, T a)
+        {
+            for (int i = 0; i < thiz.Axes; ++i)
+            {
+                if (float.IsNaN(thiz.GetAxis(a, i))) return false;
+            }
+            return true;
+        }
         public static float Length2<T>(this IArith<T> thiz, T a) => thiz.Dot(a, a);
         public static float Length<T>(this IArith<T> thiz, T a) => Sqrt(thiz.Length2(a));
         public static T Clamp<T>(this IArith<T> thiz, T a, float length)
@@ -80,55 +120,22 @@ namespace BDUtil.Math
         public static IArith<T> Default { get; private set; } = Bindings<ImplAttribute>.Default.GetBestInstance<IArith<T>>()
             .OrThrow("Couldn't find `IArith<T=[{0}]>`; remember to register one!", typeof(T));
 
-        T IArith<T>.Add(T a, T b) => Default.Add(a, b);
-        float IArith<T>.Dot(T a, T b) => Default.Dot(a, b);
-        T IArith<T>.Scale(float a, T b) => Default.Scale(a, b);
-        bool IArith<T>.IsValid(T a) => Default.IsValid(a);
+        int IArith<T>.Axes => Default.Axes;
+        float IArith<T>.GetAxis(in T a, int i) => Default.GetAxis(a, i);
+        void IArith<T>.SetAxis(ref T a, int i, float value) => Default.SetAxis(ref a, i, value);
     }
     [Impl]
     public struct IntArith : IArith<int>
     {
-        int IArith<int>.Add(int a, int b) => a + b;
-        float IArith<int>.Dot(int a, int b) => a * b;
-        int IArith<int>.Scale(float a, int b) => (int)(a * b);
-        bool IArith<int>.IsValid(int a) => false;
+        int IArith<int>.Axes => 1;
+        float IArith<int>.GetAxis(in int a, int _) => a;
+        void IArith<int>.SetAxis(ref int a, int _, float value) => a = (int)value;
     }
     [Impl]
     public struct FloatArith : IArith<float>
     {
-        float IArith<float>.Add(float a, float b) => a + b;
-        float IArith<float>.Dot(float a, float b) => a * b;
-        float IArith<float>.Scale(float a, float b) => a * b;
-        bool IArith<float>.IsValid(float a) => !float.IsNaN(a);
-    }
-
-    /// Provides circular arithmetic (for angle measures).
-    public struct CircleArith : IArith<float>
-    {
-        public readonly float Half;
-        public readonly float Full;
-        public CircleArith(float half, float full)
-        {
-            Half = half;
-            Full = full;
-        }
-        /// Represents left & right handed rotations of up to PI (making a circle of TAU).
-        public static readonly CircleArith PI = new(Arith.PI, Arith.TAU);
-        /// Represents right-handed rotations only, 0->TAU.
-        public static readonly CircleArith TAU = new(0f, Arith.TAU);
-        /// Represents left & right handed rotations of up to 180 (making a circle of 360).
-        public static readonly CircleArith DEGREE = new(180f, 360f);
-        /// right-handed rotations only, 0->TAU.
-        public static readonly CircleArith ABS_DEGREE = new(0f, 360f);
-
-        /// Given a "wound up circle" that goes past +/-Tau, returns the equivalent angle.
-        public float Shortest(float a) => Arith.Repeat(Arith.Repeat(a + Half, Full) - Half, Full);
-
-        float IArith<float>.Add(float a, float b) => Shortest(a + b);
-        /// This is only physically meaningful as an area or something.
-        /// But: it's required for length to work correctly!
-        float IArith<float>.Dot(float a, float b) => Shortest(a) * Shortest(b);
-        float IArith<float>.Scale(float a, float b) => Shortest(a * b);
-        bool IArith<float>.IsValid(float a) => !float.IsNaN(a);
+        int IArith<float>.Axes => 1;
+        float IArith<float>.GetAxis(in float a, int _) => a;
+        void IArith<float>.SetAxis(ref float a, int _, float value) => a = (float)value;
     }
 }

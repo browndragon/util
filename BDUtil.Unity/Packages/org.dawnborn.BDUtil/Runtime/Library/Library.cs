@@ -15,6 +15,12 @@ namespace BDUtil.Library
         protected internal static float DefaultSafe(float v, float min = 0f) => v == default ? 1f : v < min ? min : v;
         protected readonly Dictionary<string, float> TagOdds = new();
         protected readonly Dictionary<int, string> Hashes = new();
+        [Tooltip("Multiply randomness factor on generated content")]
+        public float Chaos = 1f;
+        [Tooltip("Multiply power factor on generated content - how loud, etc")]
+        public float Power = 1f;
+        [Tooltip("Multiply power factor on generated content - how long, etc")]
+        public float Speed = 1f;
 
         [Tooltip("Animator support: how to make tags & animator states agree on hashes")]
         public enum HashSource
@@ -75,19 +81,23 @@ namespace BDUtil.Library
             };
             return tag;
         }
+        // Not always supported; play the given entry from this library on the player, returning its duration.
+        public abstract float Play(Player player, IEntry entry);
     }
     [Tooltip("A generic source of multiple assets (sprites, audio, treasure??) with rules to pick between them.")]
     public abstract class Library<TObj, TData> : Library
     {
         [Tooltip("If this is a UnityEngine.Object, you can drag assets here to create entries")]
         [SerializeField] protected TObj[] DragAndDropTargets;
-        [Tooltip("The template to use for new DragAndDropTargets")]
-        [SerializeField] protected Entry DragAndDropDefault;
         public List<Entry> Entries = new();
         readonly Dictionary<string, List<Entry>> TagEntries = new();
 
         protected abstract bool IsEntryForObject(in TData data, TObj obj);
         protected abstract Entry NewEntry(Entry template, TObj fromObj);
+
+        // Not always supported; play the given entry from this library on the player, returning its duration.
+        public override float Play(Player player, IEntry entry) => Play(player, ((Entry)entry).Data);
+        protected abstract float Play(Player player, TData entry);
 
         [Serializable]
         public struct Entry : IEntry
@@ -143,7 +153,8 @@ namespace BDUtil.Library
                 {
                     if (obj == null) continue;
                     if (HasEntryForObject(obj)) continue;
-                    Entry @new = NewEntry(DragAndDropDefault, obj);
+                    Entry @new = Entries.Count > 0 ? Entries[^1] : default;
+                    @new = NewEntry(@new, obj);
                     Entries.Add(@new);
                 }
                 DragAndDropTargets = null;
@@ -190,32 +201,11 @@ namespace BDUtil.Library
             }
         }
     }
+    // Convenience.
     public abstract class Library<TData> : Library<Void, TData>
-    { }
-
-    public interface IPlayerLibrary
     {
-        float Chaos { get; set; }
-        float Power { get; set; }
-        float Speed { get; set; }
-
-    }
-    public interface IPlayerLibrary<TObj, TData>
-    where TData : Player.IPlayable
-    {
-    }
-    public abstract class PlayerLibrary<TObj, TData> : Library<TObj, TData>, IPlayerLibrary<TObj, TData>
-    where TData : Player.IPlayable
-    {
-        [field: SerializeField, Tooltip("How much randomness?")] public float Chaos { get; set; } = 1f;
-        [field: SerializeField, Tooltip("How much volume?")] public float Power { get; set; } = 1f;
-        [field: SerializeField, Tooltip("How much playback adjustment?")] public float Speed { get; set; } = 1f;
-    }
-    public class PlayerLibrary<TData> : PlayerLibrary<Void, TData>
-    where TData : Player.IPlayable
-    {
+        protected override bool IsEntryForObject(in TData data, Void obj) => false;
         protected override bool HasEntryForObject(Void obj) => false;
-        protected override bool IsEntryForObject(in TData entry, Void obj) => false;
         protected override Entry NewEntry(Entry template, Void fromObj) => template;
     }
 }
