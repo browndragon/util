@@ -7,13 +7,14 @@ namespace BDUtil.Math
     {
         /// Returns a value in [0,1)...
         public delegate float UnitRandom();
-        public static Random system0 = new(0);
-        public static UnitRandom const_5 = () => .5f;
+        public static readonly Random system0 = new(0);
+        public static readonly UnitRandom const_5 = () => .5f;
+        // Intentionally NOT readonly! Unity remaps this, first chance it gets.
         public static UnitRandom @default = () => (float)system0.NextDouble();
-        // Maps [0,1) through the given ease.
-        public static UnitRandom Distribution(this UnitRandom random, Easings.Enum ease) => () => ease.Invoke(random.Unit());
         // Maps [0,1) through the given arbitrary func.
         public static UnitRandom Distribution(this UnitRandom random, Func<float, float> func) => () => func.Invoke(random.Unit());
+        // Maps [0,1) through the given ease, resulting in a different value distribution.
+        public static UnitRandom Distribution(this UnitRandom random, Easings.Enum ease) => () => ease.Invoke(random.Unit());
         // Maps r in [0,1) into [-1,+1] (so .5->0f), performs the given power (reapplying sign), then maps back to [0,1).
         public static float Pow01(float pow, float r)
         {
@@ -32,7 +33,7 @@ namespace BDUtil.Math
             r /= 2f;
             return r;
         }
-        // Maps random over [0,1) into the "sharpened" version (see Pow01).
+        // Maps random over [0,1) into the "sharpened" version centered at .5f (see Pow01).
         public static UnitRandom DistributionPow01(this UnitRandom thiz, float pow)
         {
             if (float.IsInfinity(pow) || float.IsNaN(pow) || pow == 0) return const_5;
@@ -40,30 +41,26 @@ namespace BDUtil.Math
             if (pow == 1f) return thiz;
             return () => Pow01(pow, thiz.Invoke());
         }
-        // A general target+fuzz algorithm.
-        // Returns a point in the prism `scale` wide centered on `pivot`, with each term
-        // sharpened/blunted by being raised to the sign-respecting `pow`.
+        // Generalized value + allowable fuzz radius around it.
+        // Despite use of term radius, fuzzing uses a cube centered on pivot.
         [Serializable]
-        public struct Fuzzed<T>
+        public struct Fuzzy<T>
         {
-            public Fuzzed(T pivot = default, T scale = default)
+            public Fuzzy(T pivot = default, T fuzz = default)
             {
-                Pivot = pivot; Scale = scale;
+                Pivot = pivot; Fuzz = fuzz;
             }
             public T Pivot;
-            public T Scale;
-            public T HalfScale => Arith<T>.Default.Scale(.5f, Scale);
-            public T Min => Arith<T>.Default.Difference(Pivot, HalfScale);
-            public T Max => Arith<T>.Default.Add(Pivot, HalfScale);
+            public T Fuzz;
         }
-
         // Returns a value in [0, +1).
         // You can give it a wider implementation for more chaos, but if you do you MUST
         // remain centered on .5.
         public static float Unit(this UnitRandom thiz) => (thiz ?? @default).Invoke();
 
         /// Returns a random value in [min, max) with the same underlying distribution as UnitRandom.
-        public static float Range(this UnitRandom thiz, float min, float max) => min + (max - min) * thiz.Unit();
+        public static float Range(this UnitRandom thiz, float min, float max)
+        => max <= min ? min : min + (max - min) * thiz.Unit();
         /// Returns a random value in [min, max) with the same underlying distribution as UnitRandom.
         public static int Range(this UnitRandom thiz, int min, int max) => (int)System.Math.Floor(min + (max - min) * thiz.Unit());
 
@@ -80,17 +77,41 @@ namespace BDUtil.Math
             }
             return accum;
         }
+
+        public static bool RandomTrue(this UnitRandom thiz, float odds = .5f)
+        => thiz.Unit() < odds;
+
         /// Returns a random position in the Extent as per Range(float).
         public static float RandomValue(this UnitRandom thiz, Extent extent)
                 => thiz.Range(extent.min, extent.max);
         /// Returns a random position in the ExtentInt as per Range(int).
         public static int RandomValue(this UnitRandom thiz, ExtentInt extent)
         => thiz.Range(extent.min, extent.max);
-        /// Returns a random position in the Fuzzed as per Range<T>.
-        public static T RandomValue<T>(this UnitRandom thiz, Fuzzed<T> fuzzed)
-        => thiz.Range(fuzzed.Min, fuzzed.Max);
 
         public static T RandomValue<T>(this UnitRandom thiz, IReadOnlyList<T> items)
         => items[thiz.Range(0, items.Count)];
+
+
+        public static float Fuzzed(this UnitRandom thiz, float target, float fuzz, float @base = 0f)
+        {
+            if (float.IsNaN(target)) target = @base;
+            if (float.IsNaN(fuzz)) return target;
+            return thiz.Range(target - fuzz, target + fuzz);
+        }
+        public static T Fuzzed<T>(this UnitRandom thiz, Fuzzy<T> fuzzed, T @base = default)
+        => thiz.Fuzzed(fuzzed.Pivot, fuzzed.Fuzz, @base);
+        public static T Fuzzed<T>(this UnitRandom thiz, T target, T fuzz, T @base = default)
+        {
+            T @return = default;
+            for (int i = 0; i < Arith<T>.Default.Axes; ++i)
+            {
+                float baseI = Arith<T>.Default.GetAxis(@base, i);
+                float targetI = Arith<T>.Default.GetAxis(target, i);
+                float fuzzI = Arith<T>.Default.GetAxis(fuzz, i);
+                float fuzzed = thiz.Fuzzed(baseI, targetI, fuzzI);
+                Arith<T>.Default.SetAxis(ref @return, i, fuzzed);
+            }
+            return @return;
+        }
     }
 }

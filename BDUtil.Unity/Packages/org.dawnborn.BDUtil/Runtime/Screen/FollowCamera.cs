@@ -37,7 +37,11 @@ namespace BDRPG.Screen
         public struct TransformPointSource : IPointSource
         {
             public Transform Transform;
-            public Vector2 GetViewportPoint(Camera camera) => camera.WorldToViewportPoint(Transform.position);
+            public Vector2 GetViewportPoint(Camera camera)
+            {
+                if (Transform == null) return .5f * Vector2.one;
+                return camera.WorldToViewportPoint(Transform.position);
+            }
 
         }
         [Serializable]

@@ -95,16 +95,14 @@ namespace BDUtil.Clone
                 if (cache.Count == 0) caches.Collection.Remove(prefab);
             }
             Postfab pretag = prefab.GetComponent<Postfab>();
-            Postfab posttag;
 
             if (postfab == null)
             {
-                posttag = Postfab.InstantiateInactiveCloneWithRoot(
+                Postfab posttag = Postfab.InstantiateInactiveCloneWithRoot(
                     pretag?.Asset ?? prefab, prefab, pretag?.ChildFabType ?? Postfab.FabTypes.Unknown
                 );
                 postfab = posttag.gameObject;
             }
-            else posttag = postfab.GetComponent<Postfab>().OrThrow();
 
             // TODO: should we actually be doing this? It's probably pretty expensive...
             SceneManager.MoveGameObjectToScene(postfab, SceneManager.GetActiveScene());
@@ -124,7 +122,7 @@ namespace BDUtil.Clone
         // to the prefab and have them copied to the postfab (even with caching) if your script catches that message.
         // Transforms are done for you automatically, though.
         // RelativeTo lets you adjust the position of the newly created object -- remember, they'll be dumped at top level! --
-        public void AcquireViaAssetsOfChildren(Transform prefab, List<GameObject> clones, Transforms.Local relativeTo = default, bool awake = true)
+        public void AcquireViaAssetsOfChildren(Transform prefab, List<GameObject> clones, Transforms.Snapshot relativeTo = default, bool awake = true)
         {
             foreach (Component c in prefab.gameObject.GetComponents<Component>())
             {
@@ -135,7 +133,7 @@ namespace BDUtil.Clone
                 Postfab targetPostfab = child.GetComponent<Postfab>();
                 GameObject model = targetPostfab?.Asset ?? child.gameObject;
                 GameObject clone = Acquire(model, false);
-                Transforms.Local snapshot = child.GetLocalSnapshot();
+                Transforms.Snapshot snapshot = child.GetLocalSnapshot();
                 snapshot.ContextualizeUnder(relativeTo);
                 clone.transform.SetFromLocalSnapshot(snapshot);
                 if (awake) clone.SetActive(true);

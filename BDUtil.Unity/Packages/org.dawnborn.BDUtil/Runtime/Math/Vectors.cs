@@ -13,6 +13,8 @@ namespace BDUtil.Math
         public static bool HasNaN(this Vector4 thiz) => float.IsNaN(thiz.x) || float.IsNaN(thiz.y) || float.IsNaN(thiz.z) || float.IsNaN(thiz.w);
         public static readonly Color NaNC = new(float.NaN, float.NaN, float.NaN, float.NaN);
         public static bool HasNaN(this Color thiz) => float.IsNaN(thiz.r) || float.IsNaN(thiz.g) || float.IsNaN(thiz.b) || float.IsNaN(thiz.a);
+        public static readonly HSVA NaNH = new(float.NaN, float.NaN, float.NaN, float.NaN);
+        public static bool HasNaN(this HSVA thiz) => float.IsNaN(thiz.h) || float.IsNaN(thiz.s) || float.IsNaN(thiz.v) || float.IsNaN(thiz.a);
 
         public static Vector3 AsXYZ(this Vector2 thiz, float z = float.NaN) => new(thiz.x, thiz.y, z);
         public static Vector4 AsXYZW(this Vector3 thiz, float w = float.NaN) => new(thiz.x, thiz.y, thiz.z, w);
@@ -106,6 +108,70 @@ namespace BDUtil.Math
             Vector3 center = thiz.center + moveCenter;
             Vector3 half = thiz.size * scale / 2f;
             return new(center - half, 2 * half);
+        }
+
+        public static void Override(ref this Vector2 thiz, in Vector2 @override)
+        {
+            if (float.IsFinite(@override.x)) thiz.x = @override.x;
+            if (float.IsFinite(@override.y)) thiz.y = @override.y;
+        }
+        public static Vector2 Overridden(in this Vector2 thiz, in Vector2 @override)
+        {
+            Vector2 ret = thiz;
+            ret.Override(@override);
+            return ret;
+        }
+        public static void Override(ref this Vector3 thiz, in Vector3 @override)
+        {
+            if (float.IsFinite(@override.x)) thiz.x = @override.x;
+            if (float.IsFinite(@override.y)) thiz.y = @override.y;
+            if (float.IsFinite(@override.z)) thiz.z = @override.z;
+        }
+        public static Vector3 Overridden(in this Vector3 thiz, in Vector3 @override)
+        {
+            Vector3 ret = thiz;
+            ret.Override(@override);
+            return ret;
+        }
+        public static void Override(ref this Vector4 thiz, in Vector4 @override)
+        {
+            if (float.IsFinite(@override.x)) thiz.x = @override.x;
+            if (float.IsFinite(@override.y)) thiz.y = @override.y;
+            if (float.IsFinite(@override.z)) thiz.z = @override.z;
+            if (float.IsFinite(@override.w)) thiz.w = @override.w;
+        }
+        public static void Override(ref this Quaternion thiz, in Quaternion @override)
+        {
+            if (float.IsFinite(@override.x)) thiz.x = @override.x;
+            if (float.IsFinite(@override.y)) thiz.y = @override.y;
+            if (float.IsFinite(@override.z)) thiz.z = @override.z;
+            if (float.IsFinite(@override.w)) thiz.w = @override.w;
+        }
+        public static void Override(ref this Color thiz, in Color @override)
+        {
+            if (float.IsFinite(@override.r)) thiz.r = @override.r;
+            if (float.IsFinite(@override.g)) thiz.g = @override.g;
+            if (float.IsFinite(@override.b)) thiz.b = @override.b;
+            if (float.IsFinite(@override.a)) thiz.a = @override.a;
+        }
+        public static Color Overridden(in this Color thiz, in Color @override)
+        {
+            Color ret = thiz;
+            ret.Override(@override);
+            return ret;
+        }
+        public static void Override(ref this HSVA thiz, in HSVA @override)
+        {
+            if (float.IsFinite(@override.h)) thiz.h = @override.h;
+            if (float.IsFinite(@override.s)) thiz.s = @override.s;
+            if (float.IsFinite(@override.v)) thiz.v = @override.v;
+            if (float.IsFinite(@override.a)) thiz.a = @override.a;
+        }
+        public static HSVA Overridden(in this HSVA thiz, in HSVA @override)
+        {
+            HSVA ret = thiz;
+            ret.Override(@override);
+            return ret;
         }
     }
 }

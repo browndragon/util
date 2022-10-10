@@ -1,72 +1,89 @@
-using System;
-using System.Collections;
-using BDUtil.Fluent;
+using BDUtil.Editor;
+using BDUtil.Serialization.Editor;
 using UnityEditor;
 using UnityEngine;
 
 namespace BDUtil.Math.Editor
 {
     [CustomPropertyDrawer(typeof(HSVA))]
-    public class HSVADrawer : PropertyDrawer
+    public class HSVADrawer : InspectorUtils.WideDrawer
     {
-        public override float GetPropertyHeight(SerializedProperty property,
-                                                GUIContent label)
-        => EditorGUIUtility.singleLineHeight;
-
-        public override void OnGUI(Rect position,
-                                   SerializedProperty property,
-                                   GUIContent label)
+        protected override float GetWideHeight(SerializedProperty property, GUIContent label)
         {
-            EditorGUI.BeginProperty(position, label, property);
-            HSVA color = default;
-            int i = 0;
-            SerializedProperty pristine = property;
-            property = property.Copy();
-            foreach (SerializedProperty component in property)
-            {
-                if (component.name != Labels[i].text.ToLower()) throw new ArgumentException($"{component.name} isn't {Labels[i].text}!");
-                color[i] = Values[i] = component.floatValue;
-                i += 1;
-            }
-            (i == 4).OrThrow();
-
-            Rect colorRect = position;
-            colorRect.x += EditorGUIUtility.labelWidth;
-            colorRect.width -= EditorGUIUtility.labelWidth;
-            colorRect.width /= 4f;
-            float margin = 4f;
-            colorRect.width -= margin;
-            for (i = 0; i < 3; ++i)
-            {
-                HSVA isolate = new(1f, 0f, 0f, 1f);
-                for (int j = 2; j >= i; --j) isolate[j] = color[j];
-                EditorGUI.DrawRect(colorRect, isolate);
-                colorRect.x += colorRect.width + margin;
-            }
-            EditorGUI.DrawRect(colorRect, color);
-
-
+            return InspectorUtils.GetLineHeight(2);  // 1 for the colorpicker + HSVA-oneline.
+        }
+        protected override float GetNarrowHeight(SerializedProperty property, GUIContent label)
+        {
+            return InspectorUtils.GetLineHeight(5, 1);  // 1 for the colorpicker + HSVA.
+        }
+        protected override void OnWideGUI(
+            Rect position,
+            SerializedProperty property,
+            GUIContent label
+        )
+        {
+            Rect cursor = position;
+            cursor.height = EditorGUIUtility.singleLineHeight;
+            HSVA has = (HSVA)property.GetTargetValue();
             EditorGUI.BeginChangeCheck();
-            EditorGUI.MultiFloatField(position, label, Labels, Values);
+            if (has.HasNaN()) EditorGUI.LabelField(cursor, label, noRGB);
+            else has = EditorGUI.ColorField(cursor, label, has, true, true, false);
             if (EditorGUI.EndChangeCheck())
             {
-                i = 0;
-                foreach (SerializedProperty component in pristine)
-                {
-                    Debug.Log($"Updating {component.name} {component.floatValue}=>{Values[i]}");
-                    component.floatValue = Values[i];
-                    i += 1;
-                }
+                int i = 0;
+                foreach (SerializedProperty ptr in property.Copy()) ptr.floatValue = has[i++];
+            }
+            cursor = InspectorUtils.NextVertical(cursor);
+
+            EditorGUI.indentLevel++;
+
+            Rect colorRect = EditorGUI.IndentedRect(cursor);
+            colorRect.width /= 4;
+            colorRect.width -= InspectorUtils.standardHorizontalSpacing;
+            HSVA background = new(1f, 1f, 1f, 1f);
+            for (int i = 0; i < 4; ++i)
+            {
+                background[i] = has[i];
+                EditorGUI.DrawRect(colorRect, background);
+                colorRect = InspectorUtils.NextHorizontal(colorRect);
             }
 
-            EditorGUI.EndProperty();
+            EditorGUI.MultiPropertyField(cursor, SubLabels, property.FindPropertyRelative("h"), GUIContent.none);
+            EditorGUI.indentLevel--;
         }
-        static readonly GUIContent[] Labels = new GUIContent[] {
+        protected override void OnNarrowGUI(
+            Rect position,
+            SerializedProperty property,
+            GUIContent label
+        )
+        {
+            // Display a labeled color selector & then 4 float boxes with background color.
+            Rect cursor = position;
+            cursor.height = EditorGUIUtility.singleLineHeight;
+            HSVA has = (HSVA)property.GetTargetValue();
+            EditorGUI.BeginChangeCheck();
+            if (has.HasNaN()) EditorGUI.LabelField(cursor, label, noRGB);
+            else has = EditorGUI.ColorField(cursor, label, has, true, true, false);
+            if (EditorGUI.EndChangeCheck())
+            {
+                int i = 0;
+                foreach (SerializedProperty ptr in property.Copy()) ptr.floatValue = has[i++];
+            }
+            cursor = InspectorUtils.NextVertical(cursor);
+            EditorGUI.indentLevel++;
+            foreach (SerializedProperty ptr in property.Copy())
+            {
+                EditorGUI.PropertyField(cursor, ptr);
+                cursor = InspectorUtils.NextVertical(cursor, margin: 0f);
+            }
+            EditorGUI.indentLevel--;
+        }
+        static readonly GUIContent noRGB = new("No color picker: HSV NaN values");
+        static readonly GUIContent[] SubLabels = new GUIContent[4] {
             new("H", "Hue"),
             new("S", "Saturation"),
-            new("V", "Value/Brightness"),
-            new("A", "Alpha/Transparency")
+            new("V", "Value"),
+            new("A", "Alpha")
         };
-        static readonly float[] Values = new float[4];
     }
 }

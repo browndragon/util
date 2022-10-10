@@ -2,31 +2,16 @@ using System;
 using BDUtil.Fluent;
 using BDUtil.Math;
 using UnityEngine;
+using static BDUtil.Math.Randoms;
 
 namespace BDUtil.Screen
 {
     public static class Transforms
     {
-        [Flags]
-        public enum Overrides
-        {
-            None = 0,
-            PosXYZ = PosX | PosY | PosZ,
-            PosX = 1 << 0,
-            PosY = 1 << 1,
-            PosZ = 1 << 2,
-            RotXYZ = RotX | RotY | RotZ,
-            RotX = 1 << 3,
-            RotY = 1 << 4,
-            RotZ = 1 << 5,
-            ScaleXYZ = ScaleX | ScaleY | ScaleZ,
-            ScaleX = 1 << 6,
-            ScaleY = 1 << 7,
-            ScaleZ = 1 << 8,
-        }
         [Serializable]
-        public struct Local : Snapshots.ISnapshot<Local, Overrides>
+        public struct Snapshot : Snapshots.ISnapshot<Snapshot>
         {
+            public static readonly Snapshot NaN = new(Vectors.NaN3, Vectors.NaN3, Vectors.NaN3);
             public Vector3 Position;
             public Vector3 EulerAngles;
             public Quaternion Rotation
@@ -36,84 +21,77 @@ namespace BDUtil.Screen
             }
             [Tooltip("To allow default etc to work: the scale-1, so that identity is 0.")]
             [SerializeField]
-            Vector3 scale0;
+            internal Vector3 scale0;
             public Vector3 Scale
             {
                 get => Vector3.one + scale0;
                 set => scale0 = value - Vector3.one;
             }
-            public Local(Vector3 position, Vector3 euler, Vector3 scale)
+            public Snapshot(Vector3 position, Vector3 euler, Vector3 scale)
             {
                 Position = position;
                 EulerAngles = euler;
                 scale0 = scale - Vector3.one;
             }
-            public Local(Local other) : this(other.Position, other.EulerAngles, other.Scale) { }
-
+            public Snapshot(Snapshot other) : this(other.Position, other.EulerAngles, other.Scale) { }
             public Matrix4x4 AsMatrix => Matrix4x4.TRS(Position, Rotation, Scale);
-            public static Local FromMatrix(in Matrix4x4 trs)
+            public static Snapshot FromMatrix(in Matrix4x4 trs)
             => new()
             {
                 Position = trs.GetPosition(),
                 EulerAngles = trs.rotation.eulerAngles,
                 Scale = trs.lossyScale
             };
-
-            public Local Lerp(in Local b, float t) => new()
+            public Snapshot Lerp(in Snapshot b, float t) => new()
             {
                 Position = Vector3.Lerp(Position, b.Position, t),
                 EulerAngles = Vector3.Lerp(EulerAngles, b.EulerAngles, t),
                 Scale = Vector3.Lerp(Scale, b.Scale, t)
             };
             // Makes this "local" more global by stacking it under the other one.
-            public void ContextualizeUnder(in Local parent)
+            public void ContextualizeUnder(in Snapshot parent)
             => this = FromMatrix(parent.AsMatrix * AsMatrix);
 
-
             // Takes a snapshot, applying whatever overrides you specifying using a previous snapshot & a masking layer.
-            public void Override(Overrides overrideField, in Local overrides)
+            public void Override(in Snapshot overrides)
             {
-                Position = UpdateSnapshot(Position, overrides.Position,
-                    overrideField.HasFlag(Overrides.PosX), overrideField.HasFlag(Overrides.PosY), overrideField.HasFlag(Overrides.PosZ));
-                EulerAngles = UpdateSnapshot(EulerAngles, overrides.EulerAngles,
-                    overrideField.HasFlag(Overrides.RotX), overrideField.HasFlag(Overrides.RotY), overrideField.HasFlag(Overrides.RotZ));
-                Scale = UpdateSnapshot(Scale, overrides.Scale,
-                    overrideField.HasFlag(Overrides.ScaleX), overrideField.HasFlag(Overrides.ScaleY), overrideField.HasFlag(Overrides.ScaleZ));
+                Position.Override(overrides.Position);
+                EulerAngles.Override(overrides.EulerAngles);
+                scale0.Override(overrides.scale0);
             }
-            static Vector3 UpdateSnapshot(Vector3 @base, Vector3 @override, bool overrideX, bool overrideY, bool overrideZ)
-            => new(
-                overrideX ? @override.x : @base.x,
-                overrideY ? @override.y : @base.y,
-                overrideZ ? @override.z : @base.z
-            );
-
             public override string ToString() => $"Local(Pos={Position},Rot={EulerAngles},Scale={Scale})";
         }
         [Serializable]
-        public struct Fuzz : Snapshots.IFuzz<Local, Overrides>
+        public struct Target : Snapshots.ITarget<Snapshot>
         {
-            // It coincidentally happens that every term is a float, and we're okay with just varying their float amount! Wild!
-            public Vector3 PositionFuzz;
-            public Vector3 EulerAnglesFuzz;
-            public Vector3 Scale0Fuzz;
-            float Apply(Randoms.UnitRandom random, bool hasFlag, float @base, float fuzz)
-            => @base + (hasFlag ? random.Range(-fuzz, fuzz) : 0f);
-            Vector3 Apply(Randoms.UnitRandom random, Overrides flags, Vector3 @base, Vector3 fuzz, Overrides x, Overrides y, Overrides z)
-            => new(
-                Apply(random, flags.HasFlag(x), @base.x, fuzz.x),
-                Apply(random, flags.HasFlag(y), @base.y, fuzz.y),
-                Apply(random, flags.HasFlag(z), @base.z, fuzz.z)
+            public static readonly Target NaN = new(
+                new(Vectors.NaN3, Vectors.NaN3),
+                new(Vectors.NaN3, Vectors.NaN3),
+                new(Vectors.NaN3, Vectors.NaN3)
             );
-            public void Apply(Snapshots.IFuzzControls controls, Overrides fuzzFields, in Local start, ref Local target)
+
+            // It coincidentally happens that every term is a float, and we're okay with just varying their float amount! Wild!
+            [Tooltip("NaN pivot terms are taken from start")]
+            public Fuzzy<Vector3> Position;
+            public Fuzzy<Vector3> EulerAngles;
+            public Fuzzy<Vector3> Scale0;
+            public Target(Fuzzy<Vector3> position, Fuzzy<Vector3> eulerAngles, Fuzzy<Vector3> scale0)
             {
-                // TODO: fix all the variables which are wrong
-                target.Position = Apply(controls.Random, fuzzFields, target.Position, PositionFuzz, Overrides.PosX, Overrides.PosY, Overrides.PosZ);
-                target.EulerAngles = Apply(controls.Random, fuzzFields, target.EulerAngles, EulerAnglesFuzz, Overrides.RotX, Overrides.RotY, Overrides.RotZ);
-                target.Scale = Apply(controls.Random, fuzzFields, target.Scale, Scale0Fuzz, Overrides.ScaleX, Overrides.ScaleY, Overrides.ScaleZ);
+                Position = position;
+                EulerAngles = eulerAngles;
+                Scale0 = scale0;
+            }
+            public Snapshot GetTarget(Snapshots.IFuzzControls controls, in Snapshot start)
+            {
+                Snapshot target = start;
+                target.Position = controls.Random.Fuzzed(Position, start.Position);
+                target.EulerAngles = controls.Random.Fuzzed(EulerAngles, start.EulerAngles);
+                target.scale0 = controls.Random.Fuzzed(Scale0, start.scale0);
+                return target;
             }
         }
         // Takes a snapshot, applying whatever overrides you specifying using a previous snapshot & a masking layer.
-        public static Local GetLocalSnapshot(this Transform thiz)
+        public static Snapshot GetLocalSnapshot(this Transform thiz)
         => new()
         {
             Position = thiz.localPosition,
@@ -121,11 +99,11 @@ namespace BDUtil.Screen
             Scale = thiz.localScale,
         };
         /// Consider using GetLocalSnapshot to figure out which fields you _don't want to set_ first...
-        public static void SetFromLocalSnapshot(this Transform thiz, Local target)
+        public static void SetFromLocalSnapshot(this Transform thiz, Snapshot target)
         {
-            thiz.localPosition = target.Position;
-            thiz.localEulerAngles = target.EulerAngles;
-            thiz.localScale = target.Scale;
+            thiz.localPosition = thiz.localPosition.Overridden(target.Position);
+            thiz.localEulerAngles = thiz.localEulerAngles.Overridden(target.EulerAngles);
+            thiz.localScale = thiz.localScale.Overridden(target.Scale);
         }
         public struct TransformChildren : Lists.IMicroList<Transform>
         {

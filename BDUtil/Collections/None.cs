@@ -21,6 +21,9 @@ namespace BDUtil
         bool ICollection.IsSynchronized => false;
         bool IList.IsReadOnly => true;
         bool IList.IsFixedSize => true;
+
+        public bool HasValue => false;
+
         T IReadOnlyList<T>.this[int index] => throw new IndexOutOfRangeException($"{index} <> [0, 0)");
         object IList.this[int index]
         {

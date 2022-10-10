@@ -28,7 +28,6 @@ namespace BDUtil.Math
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Chain operator |(Chain a, Chain b)
         => a.Value != 0 ? a : b;
-        /// Note: not the same as "operator bool", which would only treat positives as true...
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator true(Chain a)
         => a.Value != 0;

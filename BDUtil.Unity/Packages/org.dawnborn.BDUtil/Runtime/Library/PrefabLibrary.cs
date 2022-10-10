@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using BDUtil.Math;
 using BDUtil.Screen;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace BDUtil.Library
 {
@@ -24,7 +23,7 @@ namespace BDUtil.Library
         [Serializable]
         public struct Spawn
         {
-            public Randoms.Fuzzed<float> Delay;
+            public Randoms.Fuzzy<float> Delay;
             public GameObject Prefab;
             public enum Strategies
             {
@@ -39,12 +38,12 @@ namespace BDUtil.Library
                 MouseWorldZ0
             }
             public RelativeTos RelativeTo;
-            public Snapshots.FuzzTarget<Transforms.Local, Transforms.Overrides, Transforms.Fuzz> Transform;
+            public Transforms.Target TransformTarget;
         }
         protected override float Play(Snapshots.IFuzzControls player, Spawn spawn)
         {
             GameObject instance;
-            Transforms.Local relativeTo = spawn.RelativeTo switch
+            Transforms.Snapshot relativeTo = spawn.RelativeTo switch
             {
                 Spawn.RelativeTos.Player => player.transform.GetLocalSnapshot(),
                 Spawn.RelativeTos.MouseWorldZ0 => new()
@@ -58,11 +57,10 @@ namespace BDUtil.Library
             // However, we need to ignore our scale, which is just Not Helpful.
             // This isn't principled, it's just helpful.
             relativeTo.Scale = Vector3.one;
-            relativeTo.Override(spawn.Transform.PivotOverrides, spawn.Transform.Pivot);
-            spawn.Transform.Fuzz.Apply(player, spawn.Transform.TargetOverrides, relativeTo, ref relativeTo);
+            relativeTo = spawn.TransformTarget.GetTarget(player, relativeTo);
 
-            Transforms.Local alreadyHad;
-            Transforms.Local resultingIn;
+            Transforms.Snapshot alreadyHad;
+            Transforms.Snapshot resultingIn;
             switch (spawn.Strategy)
             {
                 case Spawn.Strategies.Instantiate:
@@ -82,7 +80,7 @@ namespace BDUtil.Library
                     Clone.Pool.main.AcquireViaAssetsOfChildren(spawn.Prefab.transform, null, relativeTo, true);
                     break;
             }
-            return player.Random.RandomValue(spawn.Delay) / player.Speed;
+            return player.Random.Fuzzed(spawn.Delay) / player.Speed;
         }
 
     }

@@ -8,14 +8,17 @@ namespace BDUtil.Screen
 {
     public static class Snapshots
     {
+        // Should be serializable.
         public interface ISnapshot { }
-        public interface ISnapshot<TSnapshot, TMask> : ISnapshot
-        where TSnapshot : ISnapshot<TSnapshot, TMask>
-        where TMask : Enum
+        public interface ISnapshot<TSnapshot> : ISnapshot
+        where TSnapshot : ISnapshot<TSnapshot>
         {
             TSnapshot Lerp(in TSnapshot other, float t);
-            void Override(TMask overrideFields, in TSnapshot overrides);
+            /// Applies the non-invalid fields of overrides to me.
+            /// Invalid is in the eye of the beholder.
+            void Override(in TSnapshot overrides);
         }
+
         public interface IFuzzControls
         {
             Randoms.UnitRandom Random { get; }
@@ -24,7 +27,7 @@ namespace BDUtil.Screen
 
             Camera camera { get; }
             Transform transform { get; }
-            Transforms.Local transformSnapshot { get; }
+            Transforms.Snapshot transformSnapshot { get; }
             SpriteRenderer renderer { get; }
             SpriteRenderers.Snapshot rendererSnapshot { get; }
             AudioSource audio { get; }
@@ -32,46 +35,24 @@ namespace BDUtil.Screen
             Coroutine StartCoroutine(IEnumerator enumerator);
 
         }
-        public interface IFuzz { }
-        public interface IFuzz<TSnapshot, TMask> : IFuzz
-        where TSnapshot : ISnapshot<TSnapshot, TMask>
-        where TMask : Enum
+        public interface ITarget { }
+        public interface ITarget<TSnapshot> : ITarget
+        where TSnapshot : ISnapshot<TSnapshot>
         {
-            void Apply(IFuzzControls controls, TMask fuzzFields, in TSnapshot start, ref TSnapshot target);
+            TSnapshot GetTarget(IFuzzControls controls, in TSnapshot start);
         }
 
         [Serializable]
-        public struct FuzzTarget<TSnapshot, TMask, TFuzz>
-        where TSnapshot : ISnapshot<TSnapshot, TMask>
-        where TMask : Enum
-        where TFuzz : IFuzz<TSnapshot, TMask>
+        public struct Animate<TSnapshot, TTarget>
+        where TSnapshot : ISnapshot<TSnapshot>
+        where TTarget : ITarget<TSnapshot>
         {
-            public TMask PivotOverrides;
-            public TSnapshot Pivot;
-            [Tooltip("All `PivotOverrides` can be fuzzed (set the fuzz terms to 0 to avoid); these are also fuzzed & tweened.")]
-            [SerializeField] internal TMask alsoOverride;
-            public TMask TargetOverrides => Enums<TMask>.FromValue(
-                Enums<TMask>.GetValue(PivotOverrides)
-                | Enums<TMask>.GetValue(alsoOverride)
-            );
-            public TFuzz Fuzz;
-            public TSnapshot GetTarget(IFuzzControls controls, in TSnapshot start)
-            {
-                TSnapshot target = start;
-                target.Override(PivotOverrides, Pivot);
-                Fuzz.Apply(controls, TargetOverrides, start, ref target);
-                return target;
-            }
-        }
-        [Serializable]
-        public struct Animate<TSnapshot, TMask, TFuzz>
-        where TSnapshot : ISnapshot<TSnapshot, TMask>
-        where TMask : Enum
-        where TFuzz : IFuzz<TSnapshot, TMask>
-        {
-            public Randoms.Fuzzed<float> Delay;
+            public Vector2 v2Compare;
+            public Vector3 v3Compare;
+            public Vector4 v4Compare;
+            public Randoms.Fuzzy<float> Delay;
             public Easings.Enum Easing;
-            public FuzzTarget<TSnapshot, TMask, TFuzz> FuzzTarget;
+            public TTarget Target;
         }
     }
 }

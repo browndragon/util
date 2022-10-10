@@ -8,18 +8,18 @@ namespace BDUtil.Library
 {
 
     [CreateAssetMenu(menuName = "BDUtil/Library/Audio")]
-    public class AudioLibrary : PlayerLibrary<AudioClip, AudioSources.Snapshot, AudioSources.Overrides, AudioSources.Fuzz>
+    public class AudioLibrary : PlayerLibrary<AudioClip, AudioSources.Snapshot, AudioSources.Target>
     {
-        protected override bool IsEntryForObject(in AudioSources.Snapshot entry, AudioClip obj)
-        => entry.AudioClip == obj;
+        protected override bool IsEntryForTarget(in AudioSources.Target entry, AudioClip obj)
+        => entry.AudioClip.HasValue && entry.AudioClip.Value == obj;
 
-        protected override AudioSources.Snapshot NewEntry(AudioSources.Snapshot template, AudioClip fromObj)
+        protected override AudioSources.Target NewTarget(AudioSources.Target template, AudioClip fromObj)
         {
             template.AudioClip = fromObj;
             return template;
         }
-        protected override float TotalDuration(Snapshots.IFuzzControls player, Snapshots.Animate<AudioSources.Snapshot, AudioSources.Overrides, AudioSources.Fuzz> animate)
-        => ((animate.FuzzTarget.Pivot.AudioClip?.length ?? 0f) + player.Random.RandomValue(animate.Delay)) / player.Speed;
+        protected override float TotalDuration(Snapshots.IFuzzControls player, Snapshots.Animate<AudioSources.Snapshot, AudioSources.Target> animate)
+        => ((animate.Target.AudioClip.GetValueOrDefault()?.length ?? 0f) + player.Random.Fuzzed(animate.Delay)) / player.Speed;
 
         protected override AudioSources.Snapshot Get(Snapshots.IFuzzControls player)
         => player.audio.GetLocalSnapshot();

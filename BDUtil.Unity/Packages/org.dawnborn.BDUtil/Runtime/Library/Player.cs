@@ -1,4 +1,3 @@
-using BDUtil.Clone;
 using BDUtil.Math;
 using BDUtil.Pubsub;
 using BDUtil.Screen;
@@ -40,7 +39,7 @@ namespace BDUtil.Library
         new public Camera camera { get; private set; }
         new public SpriteRenderer renderer { get; private set; }
         new public AudioSource audio { get; private set; }
-        public Transforms.Local transformSnapshot { get; private set; }
+        public Transforms.Snapshot transformSnapshot { get; private set; }
         public SpriteRenderers.Snapshot rendererSnapshot { get; private set; }
         public AudioSources.Snapshot audioSnapshot { get; private set; }
 

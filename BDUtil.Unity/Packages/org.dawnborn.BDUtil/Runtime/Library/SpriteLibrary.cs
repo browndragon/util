@@ -8,14 +8,14 @@ namespace BDUtil.Library
 {
 
     [CreateAssetMenu(menuName = "BDUtil/Library/Sprite")]
-    public class SpriteLibrary : PlayerLibrary<Sprite, SpriteRenderers.Snapshot, SpriteRenderers.Overrides, SpriteRenderers.Fuzz>
+    public class SpriteLibrary : PlayerLibrary<Sprite, SpriteRenderers.Snapshot, SpriteRenderers.Target>
     {
-        protected override bool IsEntryForObject(in SpriteRenderers.Snapshot entry, Sprite obj)
-        => entry.Sprite == obj;
+        protected override bool IsEntryForTarget(in SpriteRenderers.Target entry, Sprite obj)
+        => entry.TargetSprite.HasValue && entry.TargetSprite.Value == obj;
 
-        protected override SpriteRenderers.Snapshot NewEntry(SpriteRenderers.Snapshot template, Sprite fromObj)
+        protected override SpriteRenderers.Target NewTarget(SpriteRenderers.Target template, Sprite fromObj)
         {
-            template.Sprite = fromObj;
+            template.TargetSprite = fromObj;
             return template;
         }
         protected override SpriteRenderers.Snapshot Get(Snapshots.IFuzzControls player)

@@ -7,6 +7,37 @@ using UnityEngine.Events;
 
 namespace BDUtil.Pubsub
 {
+    [Serializable]
+    public class Val : IDisposable
+    {
+        // Don't be fooled; if this is the wrong parent type, we won't use it.
+        // TODO:
+        // A custom editor will help ensure you only use valid types though.
+        [SerializeField, Expandable] Topic topic;
+        [SerializeField, SuppressMessage("IDE", "IDE0044")] UnityEvent Action = new();
+        bool hasSubscribed = false;
+
+        public Topic Topic
+        {
+            get
+            {
+                topic ??= MakeNewTopic();
+                if (!hasSubscribed)
+                {
+                    topic.AddListener(InvokeAction);
+                    hasSubscribed = true;
+                }
+                return topic;
+            }
+        }
+        void InvokeAction() => Action?.Invoke();
+        Topic MakeNewTopic() => ScriptableObject.CreateInstance<Topic>();
+        public void Dispose()
+        {
+            if (hasSubscribed) topic?.RemoveListener(InvokeAction);
+            hasSubscribed = false;
+        }
+    }
     /// Lets a type have a valuetopic slotted in if it needs it, or else function "locally" without it.
     [Serializable]
     public class Val<T> : IDisposable

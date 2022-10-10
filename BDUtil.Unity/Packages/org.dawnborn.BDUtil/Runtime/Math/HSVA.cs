@@ -32,7 +32,14 @@ namespace BDUtil.Math
         // Completely transparent. RGBA is (0, 0, 0, 0).
         public static readonly HSVA clear = Color.clear;
 
-        public float h, s, v, a;
+        [Tooltip("Hue")]
+        public float h;
+        [Tooltip("Saturation")]
+        public float s;
+        [Tooltip("Value")]
+        public float v;
+        [Tooltip("Alpha")]
+        public float a;
 
         // Access the r, g, b,a components using [0], [1], [2], [3] respectively.
         public float this[int index]

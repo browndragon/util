@@ -1,76 +1,64 @@
 using System;
 using BDUtil.Math;
+using BDUtil.Serialization;
 using UnityEngine;
 
 namespace BDUtil.Screen
 {
     public static class SpriteRenderers
     {
-        [Flags]
-        public enum Overrides
-        {
-            None = 0,
-            ColorsOpaque = ColorRH | ColorGS | ColorBV,
-            ColorRH = 1 << 0,
-            ColorGS = 1 << 1,
-            ColorBV = 1 << 2,
-            ColorA = 1 << 3,
-            ColorIsHSV = 1 << 4,
-            FlipX = 1 << 5,
-            FlipY = 1 << 6,
-            Sprite = 1 << 7,
-        }
-        public static Colors.Overrides AsColorOverrides(this Overrides thiz)
-        => Enums<Colors.Overrides>.Everything & Enums<Colors.Overrides>.FromValue(Enums<Overrides>.GetValue(thiz));
-        public static Overrides AsSpriteOverrides(this Colors.Overrides thiz)
-        => Enums<Overrides>.FromValue(Enums<Colors.Overrides>.GetValue(thiz));
-
         [Serializable]
-        public struct Snapshot : Snapshots.ISnapshot<Snapshot, Overrides>
+        public struct Snapshot : Snapshots.ISnapshot<Snapshot>
         {
-            public Sprite Sprite;
-            public Color Color;
-            public bool FlipX;
-            public bool FlipY;
+            public OrNil<Sprite> Sprite;
+            public HSVA Color;
+            public OrNil<bool> FlipX;
+            public OrNil<bool> FlipY;
 
-            public Snapshot Lerp(in Snapshot b, float t)
-            => new()
+            public Snapshot Lerp(in Snapshot braw, float t)
             {
-                Sprite = t <= .5f ? Sprite : b.Sprite,
-                Color = Color.Lerp(Color, b.Color, t),
-                FlipX = t <= .5f ? FlipX : b.FlipX,
-                FlipY = t <= .5f ? FlipY : b.FlipY
-            };
+                Snapshot b = this;
+                b.Override(braw);
+                b.Sprite = t < .5f ? Sprite : b.Sprite;
+                b.Color = HSVA.Lerp(Color, b.Color, t);
+                b.FlipX = t < .5f ? FlipX : b.FlipX;
+                b.FlipY = t < .5f ? FlipY : b.FlipY;
+                return b;
+            }
             // Takes a snapshot, applying whatever overrides you specifying using a previous snapshot & a masking layer.
-            public void Override(Overrides overrideField, in Snapshot overrides)
+            public void Override(in Snapshot overrides)
             {
-                Sprite = overrideField.HasFlag(Overrides.Sprite) ? overrides.Sprite : Sprite;
-                Color.Override(overrideField.AsColorOverrides(), overrides.Color);
-                FlipX = overrideField.HasFlag(Overrides.FlipX) ? overrides.FlipX : FlipX;
-                FlipY = overrideField.HasFlag(Overrides.FlipY) ? overrides.FlipY : FlipY;
+                Sprite = overrides.Sprite.HasValue ? overrides.Sprite.Value : Sprite;
+                Color.Override(overrides.Color);
+                FlipX = overrides.FlipX.HasValue ? overrides.FlipX : FlipX;
+                FlipY = overrides.FlipY.HasValue ? overrides.FlipY : FlipY;
             }
 
-            public override string ToString() => $"Snapshot(Sprite={Sprite},Color={Color}{(FlipX ? ",FlipX" : "")}{(FlipY ? ",FlipY" : "")})";
+            public override string ToString() => $"Snapshot(Sprite={Sprite},Color={Color},FlipX={FlipX.GetNullable()},FlipY={FlipY.GetNullable()})";
         }
         [Serializable]
-        public struct Fuzz : Snapshots.IFuzz<Snapshot, Overrides>
+        public struct Target : Snapshots.ITarget<Snapshot>
         {
-            public HSVA FuzzColor;
-            // 0 setfalse, 1 settrue, anywhere in between odds.
+            [Tooltip("Default: don't override anything. IsT2: set value (including null->no sprite!")]
+            public OrNil<Sprite> TargetSprite;
+            [Tooltip("NaN fields are not overridden.")]
+            public Randoms.Fuzzy<HSVA> TargetColor;
+            // 0 setfalse, 1 settrue, anywhere in between odds, NaN ignore.
             [Range(0, 1)] public float FuzzFlipX;
-            // 0 setfalse, 1 settrue, anywhere in between odds.
+            // 0 setfalse, 1 settrue, anywhere in between odds, NaN ignore.
             [Range(0, 1)] public float FuzzFlipY;
-
-            public void Apply(Snapshots.IFuzzControls fuzzControls, Overrides overrideFields, in Snapshot @base, ref Snapshot target)
+            public Snapshot GetTarget(Snapshots.IFuzzControls fuzzControls, in Snapshot @base)
             {
-                HSVA targetColor = target.Color;
+                Snapshot snapshot = @base;
+                if (TargetSprite.HasValue) snapshot.Sprite = TargetSprite;
+                HSVA targetColor = snapshot.Color.Overridden(TargetColor.Pivot);
                 targetColor.s *= fuzzControls.Power;
                 targetColor.v *= fuzzControls.Power;
                 if (targetColor.a != 1f) targetColor.a *= fuzzControls.Power;
-                target.Color.Override(overrideFields.AsColorOverrides(), targetColor + fuzzControls.Random.Range(-FuzzColor, FuzzColor));
-
-                if (overrideFields.HasFlag(Overrides.FlipX)) target.FlipX ^= UnityEngine.Random.value > FuzzFlipX;
-                if (overrideFields.HasFlag(Overrides.FlipY)) target.FlipY ^= UnityEngine.Random.value > FuzzFlipY;
+                snapshot.Color = fuzzControls.Random.Fuzzed(targetColor, TargetColor.Fuzz);
+                if (float.IsFinite(FuzzFlipX)) snapshot.FlipX = fuzzControls.Random.RandomTrue(FuzzFlipX);
+                if (float.IsFinite(FuzzFlipY)) snapshot.FlipY = fuzzControls.Random.RandomTrue(FuzzFlipY);
+                return snapshot;
             }
         }
         // Takes a snapshot, applying whatever overrides you specifying using a previous snapshot & a masking layer.
@@ -86,10 +74,10 @@ namespace BDUtil.Screen
         /// Consider using GetLocalSnapshot to figure out which fields you _don't want to set_ first...
         public static void SetFromLocalSnapshot(this SpriteRenderer thiz, Snapshot target)
         {
-            thiz.sprite = target.Sprite;
-            thiz.color = target.Color;
-            thiz.flipX = target.FlipX;
-            thiz.flipY = target.FlipY;
+            if (target.Sprite.HasValue) thiz.sprite = target.Sprite.Value;
+            thiz.color = target.Color.Overridden(thiz.color);
+            if (target.FlipX.HasValue) thiz.flipX = target.FlipX.Value;
+            if (target.FlipY.HasValue) thiz.flipY = target.FlipY.Value;
         }
     }
 }

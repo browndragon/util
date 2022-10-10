@@ -112,6 +112,13 @@ namespace BDUtil.Math
             return thiz.Scale(dot / length2, b);
         }
         public static T FirstValid<T>(this IArith<T> thiz, T a, T b) => thiz.IsValid(a) ? a : b;
+
+        public static T One<T>(this IArith<T> thiz, float scale = 1f)
+        {
+            T @return = default;
+            for (int i = 0; i < thiz.Axes; ++i) thiz.SetAxis(ref @return, i, scale);
+            return @return;
+        }
         #endregion
     }
     /// VERY similar to EqualityComparer, provides the generic type dispatch through Arith<T>.Default.
