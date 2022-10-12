@@ -108,7 +108,7 @@ namespace BDUtil.Math
                 float baseI = Arith<T>.Default.GetAxis(@base, i);
                 float targetI = Arith<T>.Default.GetAxis(target, i);
                 float fuzzI = Arith<T>.Default.GetAxis(fuzz, i);
-                float fuzzed = thiz.Fuzzed(baseI, targetI, fuzzI);
+                float fuzzed = thiz.Fuzzed(targetI, fuzzI, baseI);
                 Arith<T>.Default.SetAxis(ref @return, i, fuzzed);
             }
             return @return;

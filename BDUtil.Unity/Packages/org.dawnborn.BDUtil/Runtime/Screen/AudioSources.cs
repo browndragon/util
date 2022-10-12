@@ -70,5 +70,12 @@ namespace BDUtil.Screen
             if (target.Loop.HasValue) thiz.loop = target.Loop.Value;
             if (target.AudioClip.HasValue) thiz.clip = target.AudioClip.Value;
         }
+        public static void AddFromLocalSnapshot(this AudioSource thiz, Snapshot add)
+        {
+            thiz.pitch += add.Pitch - 1f;
+            thiz.volume += add.Volume - 1f;
+            if (add.Loop.HasValue) thiz.loop = add.Loop.Value;
+            if (add.AudioClip.HasValue) thiz.clip = add.AudioClip.Value;
+        }
     }
 }

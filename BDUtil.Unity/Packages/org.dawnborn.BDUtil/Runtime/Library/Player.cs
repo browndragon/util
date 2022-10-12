@@ -50,15 +50,15 @@ namespace BDUtil.Library
             camera = Camera.main;
             renderer = GetComponent<SpriteRenderer>();
             audio = GetComponent<AudioSource>();
-            transformSnapshot = transform?.GetLocalSnapshot() ?? default;
-            rendererSnapshot = renderer?.GetLocalSnapshot() ?? default;
-            audioSnapshot = audio?.GetLocalSnapshot() ?? default;
+            transformSnapshot = transform != null ? transform.GetLocalSnapshot() : default;
+            rendererSnapshot = renderer != null ? renderer.GetLocalSnapshot() : default;
+            audioSnapshot = audio != null ? audio.GetLocalSnapshot() : default;
         }
         protected void OnDisable()
         {
             transform.SetFromLocalSnapshot(transformSnapshot);
-            renderer?.SetFromLocalSnapshot(rendererSnapshot);
-            audio?.SetFromLocalSnapshot(audioSnapshot);
+            if (renderer) renderer.SetFromLocalSnapshot(rendererSnapshot);
+            if (audio) audio.SetFromLocalSnapshot(audioSnapshot);
         }
 
         [Tooltip("If false, attempts to play while we're already playing are rejected. You can always Force to override.")]

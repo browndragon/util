@@ -39,13 +39,19 @@ namespace BDUtil.Screen
         [Serializable]
         public struct Target : Snapshots.ITarget<Snapshot>
         {
-            [Tooltip("Default: don't override anything. IsT2: set value (including null->no sprite!")]
+            public static readonly Target NaN = new()
+            {
+                TargetColor = new(Vectors.NaNH, Vectors.NaNH),
+                FuzzFlipX = float.NaN,
+                FuzzFlipY = float.NaN
+            };
+            [Tooltip("Default: Don't change; if non-nil yes-null, clear sprite.")]
             public OrNil<Sprite> TargetSprite;
-            [Tooltip("NaN fields are not overridden.")]
+            [Tooltip("NaN-based terms are taken from the original; others are set.")]
             public Randoms.Fuzzy<HSVA> TargetColor;
-            // 0 setfalse, 1 settrue, anywhere in between odds, NaN ignore.
+            [Tooltip("Odds of setting flipX true (NaN leave alone)")]
             [Range(0, 1)] public float FuzzFlipX;
-            // 0 setfalse, 1 settrue, anywhere in between odds, NaN ignore.
+            [Tooltip("Odds of setting flipY true (NaN leave alone)")]
             [Range(0, 1)] public float FuzzFlipY;
             public Snapshot GetTarget(Snapshots.IFuzzControls fuzzControls, in Snapshot @base)
             {
@@ -74,10 +80,18 @@ namespace BDUtil.Screen
         /// Consider using GetLocalSnapshot to figure out which fields you _don't want to set_ first...
         public static void SetFromLocalSnapshot(this SpriteRenderer thiz, Snapshot target)
         {
+            Debug.Log($"Setting {thiz.color}=>{target.Color}");
             if (target.Sprite.HasValue) thiz.sprite = target.Sprite.Value;
-            thiz.color = target.Color.Overridden(thiz.color);
+            thiz.color = ((HSVA)thiz.color).Overridden(target.Color);
             if (target.FlipX.HasValue) thiz.flipX = target.FlipX.Value;
             if (target.FlipY.HasValue) thiz.flipY = target.FlipY.Value;
+        }
+        public static void AddFromLocalSnapshot(this SpriteRenderer thiz, Snapshot add)
+        {
+            if (add.Sprite.HasValue) thiz.sprite = add.Sprite.Value;
+            thiz.color = (HSVA)thiz.color + add.Color;
+            if (add.FlipX.HasValue) thiz.flipX = add.FlipX.Value;
+            if (add.FlipY.HasValue) thiz.flipY = add.FlipY.Value;
         }
     }
 }

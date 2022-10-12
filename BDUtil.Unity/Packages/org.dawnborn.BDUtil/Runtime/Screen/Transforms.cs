@@ -11,7 +11,6 @@ namespace BDUtil.Screen
         [Serializable]
         public struct Snapshot : Snapshots.ISnapshot<Snapshot>
         {
-            public static readonly Snapshot NaN = new(Vectors.NaN3, Vectors.NaN3, Vectors.NaN3);
             public Vector3 Position;
             public Vector3 EulerAngles;
             public Quaternion Rotation
@@ -33,24 +32,22 @@ namespace BDUtil.Screen
                 EulerAngles = euler;
                 scale0 = scale - Vector3.one;
             }
-            public Snapshot(Snapshot other) : this(other.Position, other.EulerAngles, other.Scale) { }
-            public Matrix4x4 AsMatrix => Matrix4x4.TRS(Position, Rotation, Scale);
-            public static Snapshot FromMatrix(in Matrix4x4 trs)
-            => new()
+            public Snapshot(Matrix4x4 matrix)
             {
-                Position = trs.GetPosition(),
-                EulerAngles = trs.rotation.eulerAngles,
-                Scale = trs.lossyScale
-            };
+                Position = matrix.GetPosition();
+                EulerAngles = matrix.rotation.eulerAngles;
+                scale0 = matrix.lossyScale - Vector3.one;
+            }
+            public Matrix4x4 Matrix => Matrix4x4.TRS(Position, Rotation, Scale);
+            public static implicit operator Matrix4x4(Snapshot s) => s.Matrix;
+            public static implicit operator Snapshot(Matrix4x4 m) => new(m);
+            public Snapshot(Snapshot other) : this(other.Position, other.EulerAngles, other.Scale) { }
             public Snapshot Lerp(in Snapshot b, float t) => new()
             {
                 Position = Vector3.Lerp(Position, b.Position, t),
                 EulerAngles = Vector3.Lerp(EulerAngles, b.EulerAngles, t),
                 Scale = Vector3.Lerp(Scale, b.Scale, t)
             };
-            // Makes this "local" more global by stacking it under the other one.
-            public void ContextualizeUnder(in Snapshot parent)
-            => this = FromMatrix(parent.AsMatrix * AsMatrix);
 
             // Takes a snapshot, applying whatever overrides you specifying using a previous snapshot & a masking layer.
             public void Override(in Snapshot overrides)
@@ -64,16 +61,12 @@ namespace BDUtil.Screen
         [Serializable]
         public struct Target : Snapshots.ITarget<Snapshot>
         {
-            public static readonly Target NaN = new(
-                new(Vectors.NaN3, Vectors.NaN3),
-                new(Vectors.NaN3, Vectors.NaN3),
-                new(Vectors.NaN3, Vectors.NaN3)
-            );
-
             // It coincidentally happens that every term is a float, and we're okay with just varying their float amount! Wild!
-            [Tooltip("NaN pivot terms are taken from start")]
+            [Tooltip("Adds to current localPosition (or zero if no parents)")]
             public Fuzzy<Vector3> Position;
+            [Tooltip("Rotates current rotation.")]
             public Fuzzy<Vector3> EulerAngles;
+            [Tooltip("Adds to current scale.")]
             public Fuzzy<Vector3> Scale0;
             public Target(Fuzzy<Vector3> position, Fuzzy<Vector3> eulerAngles, Fuzzy<Vector3> scale0)
             {
@@ -82,13 +75,7 @@ namespace BDUtil.Screen
                 Scale0 = scale0;
             }
             public Snapshot GetTarget(Snapshots.IFuzzControls controls, in Snapshot start)
-            {
-                Snapshot target = start;
-                target.Position = controls.Random.Fuzzed(Position, start.Position);
-                target.EulerAngles = controls.Random.Fuzzed(EulerAngles, start.EulerAngles);
-                target.scale0 = controls.Random.Fuzzed(Scale0, start.scale0);
-                return target;
-            }
+            => new Snapshot(controls.Random.Fuzzed(Position), controls.Random.Fuzzed(EulerAngles), Vector3.one + controls.Random.Fuzzed(Scale0)).Matrix * start.Matrix;
         }
         // Takes a snapshot, applying whatever overrides you specifying using a previous snapshot & a masking layer.
         public static Snapshot GetLocalSnapshot(this Transform thiz)
@@ -101,9 +88,15 @@ namespace BDUtil.Screen
         /// Consider using GetLocalSnapshot to figure out which fields you _don't want to set_ first...
         public static void SetFromLocalSnapshot(this Transform thiz, Snapshot target)
         {
-            thiz.localPosition = thiz.localPosition.Overridden(target.Position);
-            thiz.localEulerAngles = thiz.localEulerAngles.Overridden(target.EulerAngles);
             thiz.localScale = thiz.localScale.Overridden(target.Scale);
+            thiz.localEulerAngles = thiz.localEulerAngles.Overridden(target.EulerAngles);
+            thiz.localPosition = thiz.localPosition.Overridden(target.Position);
+        }
+        public static void AddFromLocalSnapshot(this Transform thiz, Snapshot add)
+        {
+            thiz.localScale += add.scale0;
+            thiz.localEulerAngles += add.EulerAngles;
+            thiz.localPosition += add.Position;
         }
         public struct TransformChildren : Lists.IMicroList<Transform>
         {

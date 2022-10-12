@@ -12,18 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65f59777886594308acab016347e34c9, type: 3}
   m_Name: EllipseSpriteLib
   m_EditorClassIdentifier: 
-  Chaos: 1
+  Chaos: 0
   Power: 1
   Speed: 1
   HashSource_: 0
   DragAndDropTargets: []
   Entries:
   - tags: []
-    odds: 1
+    odds: 2
     Data:
-      v2Compare: {x: 0, y: 0}
-      v3Compare: {x: 0, y: 0, z: 0}
-      v4Compare: {x: 0, y: 0, z: 0, w: 0}
       Delay:
         Pivot: 1
         Fuzz: 0.5
@@ -34,23 +31,20 @@ MonoBehaviour:
           value: {fileID: 0}
         TargetColor:
           Pivot:
-            h: 0
+            h: 0.75
             s: 1
-            v: 0.8962264
-            a: 0.68235296
+            v: 1
+            a: 1
           Fuzz:
-            h: 0
-            s: 0
-            v: 0
+            h: 0.05
+            s: 0.05
+            v: 0.05
             a: 0
         FuzzFlipX: 0
         FuzzFlipY: 0
   - tags: []
     odds: 1
     Data:
-      v2Compare: {x: 0, y: 0}
-      v3Compare: {x: 0, y: 0, z: 0}
-      v4Compare: {x: 0, y: 0, z: 0, w: 0}
       Delay:
         Pivot: 0
         Fuzz: 0
@@ -61,14 +55,14 @@ MonoBehaviour:
           value: {fileID: 0}
         TargetColor:
           Pivot:
-            h: 0.2
-            s: 0.7
-            v: 0.5
-            a: NaN
+            h: 0.55
+            s: 0.70312506
+            v: 0.5019608
+            a: 1
           Fuzz:
-            h: 0
-            s: 0
-            v: 0
+            h: 0.05
+            s: 0.05
+            v: 0.05
             a: 0
         FuzzFlipX: 0
         FuzzFlipY: 0

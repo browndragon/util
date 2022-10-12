@@ -162,7 +162,6 @@ namespace BDUtil.Clone
             {
                 if (cloned.transform.parent == null)
                 {  // A prefab asset with no parents: a prefab afaiac.
-                    Debug.Log($"{PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(cloned)} contains {cloned.IDStr()}");
                     cloned.FabType = FabTypes.ActuallyAPrefab;
                     // Special rule, we need to set ourselves as the asset type.
                     cloned.Asset = cloned.gameObject.OrThrow();

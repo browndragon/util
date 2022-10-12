@@ -99,7 +99,7 @@ CircleCollider2D:
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
@@ -171,7 +171,7 @@ MonoBehaviour:
   Library: {fileID: 11400000, guid: b74cc0559ea1a4eb0906ee19c1f59ae8, type: 2}
   chaos: 1
   power: 1
-  speed: 1
+  speed: Infinity
   CanInterrupt: 1
   Category: 
   Strategy: 0

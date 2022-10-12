@@ -47,9 +47,6 @@ namespace BDUtil.Screen
         where TSnapshot : ISnapshot<TSnapshot>
         where TTarget : ITarget<TSnapshot>
         {
-            public Vector2 v2Compare;
-            public Vector3 v3Compare;
-            public Vector4 v4Compare;
             public Randoms.Fuzzy<float> Delay;
             public Easings.Enum Easing;
             public TTarget Target;

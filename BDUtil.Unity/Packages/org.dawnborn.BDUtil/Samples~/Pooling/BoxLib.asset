@@ -19,22 +19,20 @@ MonoBehaviour:
   DragAndDropTargets: []
   Entries:
   - tags: []
-    odds: 0
+    odds: 1
     Data:
       Delay:
         Pivot: 0
-        Scale: 0
+        Fuzz: 0
       Prefab: {fileID: 5989485087663694003, guid: a3f2d6393ea274241bb9537ca0934b43, type: 3}
       Strategy: 2
-      RelativeTo: 1
-      Transform:
-        PivotOverrides: 0
-        Pivot:
-          Position: {x: 0, y: 0, z: 0}
-          EulerAngles: {x: 0, y: 0, z: 0}
-          scale0: {x: 0, y: 0, z: 0}
-        alsoOverride: 487
-        Fuzz:
-          PositionFuzz: {x: 0.1, y: 0.1, z: 0}
-          EulerAnglesFuzz: {x: 0, y: 0, z: 90}
-          Scale0Fuzz: {x: 0.1, y: 0.1, z: 0}
+      TransformTarget:
+        Position:
+          Pivot: {x: 0, y: 0, z: 0}
+          Fuzz: {x: 1, y: 1, z: 0}
+        EulerAngles:
+          Pivot: {x: 0, y: 0, z: 0}
+          Fuzz: {x: 0, y: 0, z: 180}
+        Scale0:
+          Pivot: {x: 0, y: 0, z: 0}
+          Fuzz: {x: 0.5, y: 0.5, z: 0}

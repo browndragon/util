@@ -107,7 +107,7 @@ namespace BDUtil.Library
             [SerializeField] string[] tags;
             public IEnumerable<string> Tags => tags.IsEmpty() ? EmptyTag : tags;
             [SuppressMessage("IDE", "IDE0044")]
-            [SerializeField] float odds;
+            [SerializeField] internal float odds;
             public float Odds => DefaultSafe(odds);
             public TData Data;
             object IEntry.Data => Data;
@@ -135,7 +135,6 @@ namespace BDUtil.Library
                 return -1;
             }
         }
-
         protected void OnEnable() => Recalculate();
         protected void OnValidate()
         {
