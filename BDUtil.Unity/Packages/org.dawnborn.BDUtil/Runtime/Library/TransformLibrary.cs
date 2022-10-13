@@ -11,7 +11,7 @@ namespace BDUtil.Library
     public class TransformLibrary : PlayerLibrary<Transforms.Snapshot, Transforms.Target>
     {
         protected override Transforms.Snapshot GetInitial(Snapshots.IFuzzControls player)
-        => player.transformSnapshot;
+        => player.transform.GetLocalSnapshot();
         protected override Transforms.Snapshot Get(Snapshots.IFuzzControls player)
         => player.transform.GetLocalSnapshot();
         protected override void Set(Snapshots.IFuzzControls player, Transforms.Snapshot local)

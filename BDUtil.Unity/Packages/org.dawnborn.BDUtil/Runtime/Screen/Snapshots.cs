@@ -27,7 +27,6 @@ namespace BDUtil.Screen
 
             Camera camera { get; }
             Transform transform { get; }
-            Transforms.Snapshot transformSnapshot { get; }
             SpriteRenderer renderer { get; }
             SpriteRenderers.Snapshot rendererSnapshot { get; }
             AudioSource audio { get; }

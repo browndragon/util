@@ -50,13 +50,11 @@ namespace BDUtil.Library
             camera = Camera.main;
             renderer = GetComponent<SpriteRenderer>();
             audio = GetComponent<AudioSource>();
-            transformSnapshot = transform != null ? transform.GetLocalSnapshot() : default;
             rendererSnapshot = renderer != null ? renderer.GetLocalSnapshot() : default;
             audioSnapshot = audio != null ? audio.GetLocalSnapshot() : default;
         }
         protected void OnDisable()
         {
-            transform.SetFromLocalSnapshot(transformSnapshot);
             if (renderer) renderer.SetFromLocalSnapshot(rendererSnapshot);
             if (audio) audio.SetFromLocalSnapshot(audioSnapshot);
         }
