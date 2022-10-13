@@ -80,7 +80,6 @@ namespace BDUtil.Screen
         /// Consider using GetLocalSnapshot to figure out which fields you _don't want to set_ first...
         public static void SetFromLocalSnapshot(this SpriteRenderer thiz, Snapshot target)
         {
-            Debug.Log($"Setting {thiz.color}=>{target.Color}");
             if (target.Sprite.HasValue) thiz.sprite = target.Sprite.Value;
             thiz.color = ((HSVA)thiz.color).Overridden(target.Color);
             if (target.FlipX.HasValue) thiz.flipX = target.FlipX.Value;

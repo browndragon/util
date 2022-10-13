@@ -43,12 +43,12 @@ namespace BDUtil.Screen
             public Randoms.Fuzzy<float> Pitch;
             [Range(0, 1)] public float Loop;
 
-            public Snapshot GetTarget(Snapshots.IFuzzControls controls, in Snapshot start)
+            public Snapshot GetTarget(Snapshots.IFuzzControls controls, in Snapshot snapshot)
             {
-                Snapshot @return = start;
+                Snapshot @return = snapshot;
                 @return.AudioClip = AudioClip;
-                @return.Volume = controls.Random.Fuzzed(Volume.Pivot * controls.Power, Volume.Fuzz, start.Volume);
-                @return.Pitch = controls.Random.Fuzzed(Pitch.Pivot * controls.Speed, Pitch.Fuzz, start.Pitch);
+                @return.Volume = controls.Random.Fuzzed(Volume.Pivot * controls.Power, Volume.Fuzz, snapshot.Volume);
+                @return.Pitch = controls.Random.Fuzzed(Pitch.Pivot * controls.Speed, Pitch.Fuzz, snapshot.Pitch);
                 @return.Loop = float.IsFinite(Loop) ? new(controls.Random.RandomTrue(Loop)) : new();
                 return @return;
             }
