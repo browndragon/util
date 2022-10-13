@@ -23,8 +23,7 @@ namespace BDUtil.Clone
             OnDestroyInvalid = 1 << 1,
             OnDestroyValid = 1 << 2,
         }
-        public LogEvents LogInstance = LogEvents.Awake;
-        public LogEvents LogOthers = Enums<LogEvents>.Everything;
+        public LogEvents LogEvent = LogEvents.Awake;
 
         public string SceneName => $"{name}.Scene";
         public string PreDestroyMessage = "PreDestroy";
@@ -61,7 +60,7 @@ namespace BDUtil.Clone
 
         void Log(LogEvents @event, Postfab postfab)
         {
-            if (!(postfab.IsPostfabInstance && LogInstance.HasFlag(@event) || !postfab.IsPostfabInstance && LogOthers.HasFlag(@event))) return;
+            if (!LogEvent.HasFlag(@event)) return;
             if (@event == LogEvents.OnDestroyInvalid) Debug.LogWarning($"{postfab.FabType}.{@event}: {postfab.IDStr()}.Link={postfab.Link.IDStr()}!");
             else Debug.Log($"{postfab.FabType}.{@event}: {postfab.IDStr()}.Link={postfab.Link.IDStr()}");
         }
