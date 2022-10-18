@@ -9,13 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6863e5e9752734dca99453f4d0e57c49, type: 3}
-  m_Name: ActionsHead
+  m_Script: {fileID: 11500000, guid: 69a6665631c474aa09e26c2a577f5827, type: 3}
+  m_Name: DirTopic
   m_EditorClassIdentifier: 
   Action:
     m_PersistentCalls:
       m_Calls: []
-  deque: {fileID: 11400000, guid: cc974105428644a8f845c75460030bb2, type: 2}
-  PopEnd: 1
-  Comparer:
-    serialized: 
+  defaultValue: {x: 0, y: 0}
+  value: {x: 0, y: 0}

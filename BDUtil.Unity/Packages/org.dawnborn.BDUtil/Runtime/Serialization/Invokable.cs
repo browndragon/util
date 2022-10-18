@@ -19,7 +19,7 @@ namespace BDUtil.Serialization
 
     public static class Invokable
     {
-        /// Rally point for Invokes.
+        /// Rally point for Invokes. I should make this a decorator instead, but that would require more thought.
         [Serializable]
         public struct Layout { }
         // Do/don't show the button or send the message in some circumstances...

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace BDUtil.Serialization
 {
-    /// This is a hack for scriptableobjects et al, which need to push initialization logic from "early" into "after subsystem intialization".
+    /// This is a hack for scriptableobjects et al, which need to push initialization logic from "early" into "after subsystem intialization", because they OnEnable in editor before they would in player.
     /// For instance, you might want to ensure it's late enough to create singleton monobehaviours, that any scene is active, etc.
     public class Subsystem
     {

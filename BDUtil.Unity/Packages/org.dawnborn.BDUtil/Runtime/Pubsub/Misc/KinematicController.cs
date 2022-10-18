@@ -11,15 +11,14 @@ namespace BDUtil.Pubsub
     where TRB : Component
     where TV : struct
     {
-        public bool IsRelative;
-        public TV InitialVelocity;
+        public Val<TV> Control;
+        public TV GroundSpeed;
+        public TV AirSpeed;
+        public bool YIsAdd = true;
+        [Tooltip("If true, the speeds are relative to my own facing")]
+        public bool IsRelative = false;
         new protected TRB rigidbody;
-        protected virtual void OnEnable()
-        {
-            rigidbody = GetComponent<TRB>();
-        }
-        protected virtual void OnDisable()
-        {
-        }
+        protected virtual void OnEnable() => rigidbody = GetComponent<TRB>();
+        protected virtual void OnDisable() { }
     }
 }

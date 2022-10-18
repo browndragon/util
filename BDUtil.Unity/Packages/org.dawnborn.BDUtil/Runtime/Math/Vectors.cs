@@ -173,5 +173,8 @@ namespace BDUtil.Math
             ret.Override(@override);
             return ret;
         }
+
+        public static Vector2 OfAngle(float degrees)
+        => new(Mathf.Cos(Mathf.Deg2Rad * degrees), Mathf.Sin(Mathf.Deg2Rad * degrees));
     }
 }
