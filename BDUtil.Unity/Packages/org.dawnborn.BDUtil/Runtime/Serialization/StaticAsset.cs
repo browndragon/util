@@ -73,8 +73,7 @@ namespace BDUtil.Serialization
         {
             get
             {
-                if (_main == null)
-                    LoadOrCreate();
+                if (_main == null) LoadOrCreate();
                 return _main;
             }
         }

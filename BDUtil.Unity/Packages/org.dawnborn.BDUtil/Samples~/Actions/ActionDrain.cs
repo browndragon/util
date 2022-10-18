@@ -19,7 +19,7 @@ namespace BDUtil
             unsubscribe.Add(ActionHead.Subscribe(a => a()));
 
             /// scriptableobjects are loaded too early to actually use ticker.main, so guard that behind a slow load.
-            Lifecycle.OnMain += () =>
+            Serialization.Subsystem.OnReady += () =>
             {
                 Debug.Log($"Ticker showed up; registering for ticks");
                 foreach (Lifecycle.Event @event in TickerEvents)

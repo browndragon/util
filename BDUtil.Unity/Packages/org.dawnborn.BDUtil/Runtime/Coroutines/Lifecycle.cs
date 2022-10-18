@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using BDUtil.Fluent;
+using BDUtil.Serialization;
 using UnityEngine;
 
 namespace BDUtil
@@ -8,35 +9,8 @@ namespace BDUtil
     [Tooltip("Proxies unity monobehaviour events into listenable actions. See TickTopic to turn them into normal topics. See Coroutines to implicitly run on them.")]
     [SuppressMessage("IDE", "IDE0051")]
     [AddComponentMenu("")]  // Suppresses this from the AddComponentMenu dialogue 'entirely'.
-    public class Lifecycle : MonoBehaviour
+    public class Lifecycle : SingletonMB<Lifecycle>
     {
-        [SuppressMessage("IDE", "IDE1006")]
-        static event Action onMain;
-        public static event Action OnMain
-        {
-            add
-            {
-                if (_main == null) onMain += value;
-                else value?.Invoke();
-            }
-            remove => throw new NotSupportedException();
-        }
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        public static void OnSubsystemRegistrationFireDelayed()
-        {
-            Debug.Log($"FireDelayed subsys reg");
-            main.OrThrow();
-            onMain?.Invoke();
-            onMain = onMain.UnsubscribeAll();
-        }
-
-        static Lifecycle _main;
-        [SuppressMessage("IDE", "IDE1006")]
-        public static Lifecycle main
-        {
-            get => _main ??= FindObjectOfType<Lifecycle>() ?? Create<Lifecycle>();
-            private set => _main = value;
-        }
         public enum Event
         {
             Update = default,
@@ -94,19 +68,15 @@ namespace BDUtil
 
         #region Lifecycle Events
 
-        private void OnEnable()
+        protected override void OnEnable()
         {
-            if (_main != null && _main != this)
-                Debug.LogWarning($"Somehow you had another ticker {_main.GetInstanceID()} vs {GetInstanceID()}?");
-            _main = this;
+            base.OnEnable();
             EnableEvent.Publish();
         }
-        private void OnDisable()
+        protected override void OnDisable()
         {
             DisableEvent.Publish();
-            if (_main != null && _main != this)
-                Debug.LogWarning($"Somehow you had another ticker {_main.GetInstanceID()} vs {GetInstanceID()}?");
-            _main = null;
+            base.OnDisable();
             /// We're hide & don't save, baybee.
             DestroyImmediate(gameObject);
         }
@@ -148,12 +118,5 @@ namespace BDUtil
         private void OnPreRender() => PreRenderEvent.Publish();
 
         #endregion
-
-        public static TTicker Create<TTicker>(string name = "Ticker", HideFlags hideFlags = HideFlags.DontSave) where TTicker : Lifecycle
-        {
-            var go = new GameObject(name) { hideFlags = hideFlags };
-            DontDestroyOnLoad(go);
-            return go.AddComponent<TTicker>();
-        }
     }
 }
