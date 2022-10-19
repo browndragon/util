@@ -1,4 +1,5 @@
 using System;
+using BDUtil.Math;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -12,13 +13,53 @@ namespace BDUtil.Pubsub
     where TV : struct
     {
         public Val<TV> Control;
-        public TV GroundSpeed;
-        public TV AirSpeed;
-        public bool YIsAdd = true;
-        [Tooltip("If true, the speeds are relative to my own facing")]
-        public bool IsRelative = false;
+        public float GroundSpeed = 6f;
+        public AnimationCurves.Scaled Jump = AnimationCurves.Interpolated0101(Easings.OutQuad).FlippedX();
+        Rect JumpRect;
+        Timer JumpCooldown;
+
+        [Range(0f, 1f)]
+        public float MovementSmoothing = .05f;
+        [Range(0f, 1f)]
+        public float AirControl = .3333f;
+
         new protected TRB rigidbody;
-        protected virtual void OnEnable() => rigidbody = GetComponent<TRB>();
-        protected virtual void OnDisable() { }
+        protected Groundling groundling;
+        protected readonly Disposes.All unsubscribe = new();
+
+        protected virtual void OnEnable()
+        {
+            rigidbody = GetComponent<TRB>();
+            groundling = GetComponent<Groundling>();
+            unsubscribe.Add(groundling.OnGround.Topic.Subscribe(Land));
+        }
+        protected virtual void OnDisable()
+        {
+            unsubscribe.Dispose();
+        }
+        protected virtual void Land(bool onGround)
+        {
+            if (!onGround) return;
+            JumpCooldown = 0f;  // So we can jump again.
+        }
+        // Returns the Yspeed of the jump at current phase.
+        public float GetJumpdY()
+        {
+            if (!JumpCooldown.IsStarted && groundling.OnGround.Value)
+            {
+                JumpRect = Jump.Bounds;
+                JumpCooldown = new(JumpRect.width);
+            }
+            Tick tick = JumpCooldown.Tick;
+            if (!tick.IsLive)
+            {
+                return 0f;
+            }
+            return Jump.Evaluate(JumpCooldown.Tick.Passed);
+        }
+        // Returns the absval of XZ adjustment based on current regime;
+        // during jump acceleration, we continue to allow hmove.
+        public float GetWalkdXZ()
+        => GroundSpeed * (groundling.OnGround.Value || JumpCooldown.Tick.IsLive ? 1f : AirControl);
     }
 }

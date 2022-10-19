@@ -18,9 +18,23 @@ namespace BDUtil.Math
             public AnimationCurve Curve => curve ??= AnimationCurve.Linear(0f, 0f, 1f, 1f);
             public Vector2 Offset => offset;
             public Vector2 Scale => scale == default ? Vector2.one : scale;
-            public static implicit operator Scaled(AnimationCurve curve) => new() { curve = curve, scale = Vector2.one };
+            public static implicit operator Scaled(AnimationCurve curve) => new() { curve = curve, offset = Vector2.zero, scale = Vector2.one };
             public float Evaluate(float input)
-            => Curve.Evaluate(Scale.x * (input - Offset.x)) * Scale.y + Offset.y;
+            => Curve.Evaluate((input - Offset.x) / Scale.x) * Scale.y + Offset.y;
+
+            public Rect Bounds
+            {
+                get
+                {
+                    Rect keyRect = curve.GetKeyRect();
+                    Vector2 min = keyRect.min, max = keyRect.max;
+                    min.x = min.x * scale.x + offset.x;
+                    min.y = (min.y - offset.y) / scale.y;
+                    max.x = max.x * scale.x + offset.x;
+                    max.y = (max.y - offset.y) / scale.y;
+                    return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
+                }
+            }
         }
 
         /// Treat a curve as a distribution; pick a random point between its keyframes and get the evaluation there.
@@ -68,23 +82,31 @@ namespace BDUtil.Math
         /// Keep the same footprint, but play this curve backwards.
         public static void FlipX(this AnimationCurve thiz)
         {
-            if (thiz.length < 0) return;
-            float start = thiz[0].time, end = thiz[thiz.length - 1].time;
-            for (int i = 0; i < thiz.keys?.Length / 2; ++i)
+            Keyframe[] keys = thiz.keys;
+            if (!(keys?.Length > 0)) return;
+            float start = keys[0].time, end = keys[thiz.length - 1].time;
+            for (int i = 0; i < keys.Length / 2; ++i)
             {
-                Keyframe front = thiz.keys[i].FlipX(), back = thiz.keys[^i].FlipX();
+                Keyframe front = keys[i].FlipX(), back = keys[^(i + 1)].FlipX();
                 front.time = end - (front.time - start);
                 back.time = end - (back.time - start);
-                (thiz.keys[i], thiz.keys[^i]) = (back, front);
+                // But not *value*, which stays.
+                (keys[i], keys[^(i + 1)]) = (back, front);
             }
-            if (thiz.keys?.Length % 2 == 1)
+            if (keys.Length % 2 == 1)
             {
-                int index = 1 + thiz.length / 2;
-                Keyframe middle = thiz.keys[index].FlipX();
+                int index = thiz.length / 2; // Earlier we required less than this.
+                Keyframe middle = keys[index].FlipX();
                 middle.time = end - (middle.time - start);
-                thiz.keys[index] = middle;
+                keys[index] = middle;
             }
+            thiz.keys = keys;
             (thiz.preWrapMode, thiz.postWrapMode) = (thiz.postWrapMode, thiz.preWrapMode);
+        }
+        public static AnimationCurve FlippedX(this AnimationCurve thiz)
+        {
+            thiz.FlipX();
+            return thiz;
         }
         /// Keep the same footprint, but have each point reverse monotonicity
         public static void FlipY(this AnimationCurve thiz)
@@ -98,6 +120,11 @@ namespace BDUtil.Math
                 thiz.keys[i] = k;
             }
         }
+        public static AnimationCurve FlippedY(this AnimationCurve thiz)
+        {
+            thiz.FlipY();
+            return thiz;
+        }
         public static void Transform(this AnimationCurve thiz, Rect toRect)
         {
             if (toRect.width == 0f || toRect.height == 0f)
@@ -108,39 +135,47 @@ namespace BDUtil.Math
             Rect keyRect = thiz.GetKeyRect();
             Vector2 scale = new(toRect.width / keyRect.width, toRect.height / keyRect.height);
             Vector2 offset = new(toRect.x - keyRect.x, toRect.y - keyRect.y);
-            for (int i = 0; i < thiz.keys.Length; ++i)
+            Keyframe[] keys = thiz.keys;
+            for (int i = 0; i < keys.Length; ++i)
             {
-                Keyframe oldKey = thiz.keys[i];
+                Keyframe oldKey = keys[i];
                 oldKey.time = scale.x * (oldKey.time - keyRect.x) + offset.x;
                 oldKey.value = scale.y * (oldKey.value - keyRect.y) + offset.y;
-                thiz.keys[i] = oldKey;
+                keys[i] = oldKey;
             }
+            thiz.keys = keys;
         }
-        public static void Concatenate(this AnimationCurve thiz, AnimationCurve that)
+        public static AnimationCurve Transformed(this AnimationCurve thiz, Rect toRect)
         {
-            if (!(thiz?.length > 1)) return;
-            if (!(that?.length > 1)) return;
-            Keyframe myLast = thiz[thiz.length - 1];
-            Keyframe theirFirst = that[0];
-            myLast.outTangent = theirFirst.outTangent;
-            myLast.outWeight = theirFirst.outWeight;
-            thiz.keys[thiz.length - 1] = myLast;
-            for (int j = 1; j < that?.keys.Length; ++j)
-            {
-                Keyframe theirs = that.keys[j];
-                theirs.time = theirs.time - theirFirst.time + myLast.time;
-                theirs.value = theirs.value - theirFirst.value + myLast.value;
-                that.keys[j] = theirs;
-            }
-            thiz.postWrapMode = that.postWrapMode;
+            thiz.Transform(toRect);
+            return thiz;
         }
-        public static AnimationCurve Concatenated0101(AnimationCurve a, AnimationCurve b)
-        {
-            AnimationCurve c = new(a.keys);
-            c.Concatenate(b);
-            c.Transform(new(0, 0, 1, 1));
-            return c;
-        }
+
+        // public static void Concatenate(this AnimationCurve thiz, AnimationCurve that)
+        // {
+        //     if (!(thiz?.length > 1)) return;
+        //     if (!(that?.length > 1)) return;
+        //     Keyframe myLast = thiz[thiz.length - 1];
+        //     Keyframe theirFirst = that[0];
+        //     myLast.outTangent = theirFirst.outTangent;
+        //     myLast.outWeight = theirFirst.outWeight;
+        //     thiz.keys[thiz.length - 1] = myLast;
+        //     for (int j = 1; j < that?.keys.Length; ++j)
+        //     {
+        //         Keyframe theirs = that.keys[j];
+        //         theirs.time = theirs.time - theirFirst.time + myLast.time;
+        //         theirs.value = theirs.value - theirFirst.value + myLast.value;
+        //         that.keys[j] = theirs;
+        //     }
+        //     thiz.postWrapMode = that.postWrapMode;
+        // }
+        // public static AnimationCurve Concatenated0101(AnimationCurve a, AnimationCurve b)
+        // {
+        //     AnimationCurve c = new(a.keys);
+        //     c.Concatenate(b);
+        //     c.Transform(new(0, 0, 1, 1));
+        //     return c;
+        // }
         public static void AddInterpolated(this AnimationCurve thiz, Func<float, float> func, float start = 0f, float step = 1 / 16f, float length = 1f)
         {
             for (float i = 0f; i < length; i += step) thiz.AddKey(start + i, func(i / length));

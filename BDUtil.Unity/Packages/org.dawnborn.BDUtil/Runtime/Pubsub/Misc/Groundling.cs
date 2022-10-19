@@ -10,7 +10,7 @@ namespace BDUtil.Pubsub
     [RequireComponent(typeof(Rigidbody2D))]
     public class Groundling : MonoBehaviour
     {
-        public float GroundDistance = 1 / 128f;
+        public float GroundDistance = .025f;
         bool needsInitialization;
         public bool RawOnGround;
         public Val<bool> OnGround;
@@ -32,7 +32,6 @@ namespace BDUtil.Pubsub
         {
             scratch[0] = default;
             RawOnGround = rigidbody.Cast(Vector2.down, filter, scratch, GroundDistance) > 0;
-            if (RawOnGround) Debug.Log($"OnGround: {scratch[0].collider.IDStr()}", scratch[0].collider);
             scratch[0] = default;
         }
         static readonly ContactFilter2D filter = new()
@@ -44,6 +43,7 @@ namespace BDUtil.Pubsub
         {
             if (needsInitialization)
             {
+                needsInitialization = false;
                 OnGround.Value = RawOnGround;
                 TimeInState.Reset();
                 return;
@@ -59,6 +59,7 @@ namespace BDUtil.Pubsub
                 return;
             }
             if (!HangTime.IsStarted) HangTime.Reset();
+            Debug.Log($"Started hangtime @ {HangTime.Start}");
             if (HangTime.Tick.IsLive) return;
             OnGround.Value = false;
             TimeInState.Reset();
