@@ -19,7 +19,6 @@ namespace BDUtil.Pubsub
             {
                 transform.localScale = transform.localScale.WithX(-transform.localScale.x);
             }
-            Debug.Log($"Attempt jump {origJump}");
             if (origJump > 0)
             {
                 float jumpfactor = GetJumpdY();

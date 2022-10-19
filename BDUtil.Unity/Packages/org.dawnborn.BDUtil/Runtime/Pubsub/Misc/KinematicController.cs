@@ -15,7 +15,6 @@ namespace BDUtil.Pubsub
         public Val<TV> Control;
         public float GroundSpeed = 6f;
         public AnimationCurves.Scaled Jump = AnimationCurves.Interpolated0101(Easings.OutQuad).FlippedX();
-        Rect JumpRect;
         Timer JumpCooldown;
 
         [Range(0f, 1f)]
@@ -45,14 +44,13 @@ namespace BDUtil.Pubsub
         // Returns the Yspeed of the jump at current phase.
         public float GetJumpdY()
         {
-            if (!JumpCooldown.IsStarted && groundling.OnGround.Value)
+            if (groundling.OnGround.Value)
             {
-                JumpRect = Jump.Bounds;
-                JumpCooldown = new(JumpRect.width);
+                if (!JumpCooldown.IsStarted || !JumpCooldown.Tick.IsLive) JumpCooldown = new(Jump.Bounds.width);
             }
             Tick tick = JumpCooldown.Tick;
             if (!tick.IsLive)
-            {
+            {  // We're after the cooldown, so we can't jump (/again).
                 return 0f;
             }
             return Jump.Evaluate(JumpCooldown.Tick.Passed);
