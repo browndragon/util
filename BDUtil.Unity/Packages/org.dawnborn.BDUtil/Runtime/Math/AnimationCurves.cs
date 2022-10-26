@@ -13,12 +13,18 @@ namespace BDUtil.Math
             [SerializeField] AnimationCurve curve;
             [Tooltip("Input is -X; output is finally +Y")]
             [SerializeField] Vector2 offset;
-            [Tooltip("Input is then divided by X; output is then multiplied by Y.")]
-            [SerializeField] Vector2 scale;
+            [Tooltip("Input is then divided by X+1; output is then multiplied by Y+1.")]
+            [SerializeField] Vector2 scale0;
             public AnimationCurve Curve => curve ??= AnimationCurve.Linear(0f, 0f, 1f, 1f);
             public Vector2 Offset => offset;
-            public Vector2 Scale => scale == default ? Vector2.one : scale;
-            public static implicit operator Scaled(AnimationCurve curve) => new() { curve = curve, offset = Vector2.zero, scale = Vector2.one };
+            public Vector2 Scale => scale0 + Vector2.one;
+            public Scaled(AnimationCurve curve, Vector2 offset = default, Vector2 scale0 = default)
+            {
+                this.curve = curve;
+                this.offset = offset;
+                this.scale0 = scale0;
+            }
+            public static implicit operator Scaled(AnimationCurve curve) => new() { curve = curve, offset = Vector2.zero, scale0 = Vector2.zero };
             public float Evaluate(float input)
             => Curve.Evaluate((input - Offset.x) / Scale.x) * Scale.y + Offset.y;
 
@@ -28,10 +34,10 @@ namespace BDUtil.Math
                 {
                     Rect keyRect = curve.GetKeyRect();
                     Vector2 min = keyRect.min, max = keyRect.max;
-                    min.x = min.x * scale.x + offset.x;
-                    min.y = (min.y - offset.y) / scale.y;
-                    max.x = max.x * scale.x + offset.x;
-                    max.y = (max.y - offset.y) / scale.y;
+                    min.x = min.x * (1 + scale0.x) + offset.x;
+                    min.y = (min.y - offset.y) / (1 + scale0.y);
+                    max.x = max.x * (1 + scale0.x) + offset.x;
+                    max.y = (max.y - offset.y) / (1 + scale0.y);
                     return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
                 }
             }

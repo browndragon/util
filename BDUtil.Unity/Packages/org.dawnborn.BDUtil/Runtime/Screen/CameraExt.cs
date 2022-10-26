@@ -21,16 +21,13 @@ namespace BDUtil.Screen
             return ray.Linecast(plane);
         }
         /// Move the camera along xy so that the point indicated in screencoords is now at viewport(.5,.5).
-        public static void MoveAlongXY(this Camera thiz, Vector2 screenPoint, float maxDisplacement, bool isBounded)
+        public static void MoveAlongXY(this Camera thiz, Vector2 screenPoint, ref Vector2 velocity, float smoothTime = .025f, float maxSpeed = 24f)
         {
-            Vector3 lookAt = thiz.ViewportPointToIntersection(new(.5f, .5f, 0f));
-            Vector3 pointingAt = thiz.ScreenPointToIntersection(screenPoint);
-            Vector3 delta = Vector3.ClampMagnitude(pointingAt - lookAt, maxDisplacement);
-            pointingAt = lookAt + delta;
-            if (isBounded && !SceneBounds.Bounds.Contains(pointingAt)) return;
-            thiz.transform.position = thiz.transform.position + delta;
+            Vector2 lookAt = thiz.ViewportPointToIntersection(new(.5f, .5f, 0f));
+            Vector2 pointingAt = thiz.ScreenPointToIntersection(screenPoint);
+            thiz.MoveAlongXYDelta(pointingAt - lookAt, ref velocity, smoothTime, maxSpeed);
         }
-        public static void MoveAlongXYDelta(this Camera thiz, Vector2 delta, bool isBounded)
-        => thiz.MoveAlongXY((Vector2)thiz.ViewportToScreenPoint(.5f * Vector2.one) + delta, float.PositiveInfinity, isBounded);
+        public static void MoveAlongXYDelta(this Camera thiz, Vector2 delta, ref Vector2 velocity, float smoothTime = .025f, float maxSpeed = 24f)
+        => thiz.transform.position += (Vector3)Vector2.SmoothDamp(Vector2.zero, delta, ref velocity, smoothTime, maxSpeed);
     }
 }

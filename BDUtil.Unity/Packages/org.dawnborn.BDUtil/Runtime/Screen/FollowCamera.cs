@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using BDUtil;
 using BDUtil.Math;
 using BDUtil.Pubsub;
@@ -83,36 +82,47 @@ namespace BDRPG.Screen
             if (Input.GetMouseButtonUp(1)) suppressed = false;
         }
 
-        protected void LateUpdate()
+        public Vector2 Velocity;
+        public Vector2 Viewport0;
+        public Vector2 SpeedRatio;
+        public bool IsInDeadZone;
+        protected void FixedUpdate()
         {
             if (PointSource == null) return;
             if (suppressed) return;
             Vector2 trackedViewport = PointSource.GetViewportPoint(camera);
             // Okay, so:
-            Vector2 ratio = trackedViewport - .5f * Vector2.one;
+            Viewport0 = trackedViewport - .5f * Vector2.one;
             // We're now x&y in [-.5f,+.5f].
             Vector2 halfDead = DeadZone / 2;
-            if (ratio.x.IsInRange(-halfDead.x, +halfDead.x)) ratio.x = 0f;
-            if (ratio.y.IsInRange(-halfDead.y, +halfDead.y)) ratio.y = 0f;
-            if (ratio.x == 0f && ratio.y == 0f) return;
+            if (Viewport0.x.IsInRange(-halfDead.x, +halfDead.x)) Viewport0.x = 0f;
+            if (Viewport0.y.IsInRange(-halfDead.y, +halfDead.y)) Viewport0.y = 0f;
+            if (IsInDeadZone = Viewport0 == default) return;
 
-            Vector2 sign = new(Mathf.Sign(ratio.x), Mathf.Sign(ratio.y));
-            Vector2 abs = new(ratio.x * sign.x, ratio.y * sign.y);
+            // Okay, we're NOT in the dead zone. Converge!
+            SpeedRatio = Viewport0;
+            Vector2 sign = new(Mathf.Sign(SpeedRatio.x), Mathf.Sign(SpeedRatio.y));
+            Vector2 abs = new(SpeedRatio.x * sign.x, SpeedRatio.y * sign.y);
             Vector2 halfMax = MaxZone / 2;
-            if (abs.x > halfMax.x) ratio.x = sign.x * 1f;
-            else ratio.x = sign.x * Curve.Evaluate((abs.x - halfDead.x) / (halfMax.x - halfDead.x));
-            if (abs.y > halfMax.y) ratio.y = sign.y * 1f;
-            else ratio.y = sign.y * Curve.Evaluate((abs.y - halfDead.y) / (halfMax.y - halfDead.y));
+            if (abs.x > halfMax.x) SpeedRatio.x = sign.x * 1f;
+            else SpeedRatio.x = sign.x * Curve.Evaluate((abs.x - halfDead.x) / (halfMax.x - halfDead.x));
+            if (abs.y > halfMax.y) SpeedRatio.y = sign.y * 1f;
+            else SpeedRatio.y = sign.y * Curve.Evaluate((abs.y - halfDead.y) / (halfMax.y - halfDead.y));
 
-            float speed = Time.deltaTime * GroundSpeed * ratio.magnitude;
+            float speed = GroundSpeed * SpeedRatio.magnitude;
             camera.MoveAlongXY(
                 Vector2.Scale(
                     new(UnityEngine.Screen.width, UnityEngine.Screen.height),
                     trackedViewport
                 ),
-                speed,
-                true
+                ref Velocity,
+                maxSpeed: speed
             );
+            if (!SceneBounds.Bounds.Contains(camera.transform.position))
+            {
+                Vector3 inBounds = SceneBounds.Bounds.ClosestPoint(camera.transform.position);
+                camera.MoveAlongXYDelta(inBounds - camera.transform.position, ref Velocity);
+            }
         }
     }
 }

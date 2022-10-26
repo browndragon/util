@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace BDUtil.Pubsub
 {
-    [RequireComponent(typeof(Groundling), typeof(Rigidbody2D)), RequireComponent(typeof(Animator))]
+    [RequireComponent(typeof(CharacterController2D), typeof(Rigidbody2D)), RequireComponent(typeof(Animator))]
     public class PhysicalAnimator2D : MonoBehaviour
     {
         public string NamedX = "dXZ";
@@ -11,22 +11,21 @@ namespace BDUtil.Pubsub
         public string NamedOnGround = "OnGround";
 
         new Rigidbody2D rigidbody;
-        Groundling groundling;
+        CharacterController2D characterController;
         Animator animator;
 
         protected void Awake()
         {
             rigidbody = GetComponent<Rigidbody2D>();
-            groundling = GetComponent<Groundling>();
+            characterController = GetComponent<CharacterController2D>();
             animator = GetComponent<Animator>();
         }
 
         protected void Update()
         {
-            animator.SetBool(NamedOnGround, groundling.OnGround.Value);
+            animator.SetBool(NamedOnGround, characterController.IsGrounded);
             animator.SetFloat(NamedX, rigidbody.velocity.x);
             animator.SetFloat(NamedY, rigidbody.velocity.y);
         }
-        static readonly RaycastHit2D[] scratch = new RaycastHit2D[1];
     }
 }

@@ -5,90 +5,91 @@ namespace BDUtil.Math
     using static Arith;
     /// A well-known Ease.
     /// maps [0f,1f]->[0f-delta,1f+delta] (sometimes they might squeak outside of the range).
-    /// See BDEase.Unity/Packages/Runtime/Easer.cs for an inspector-compatible way to select an easing.
     /// See https://easings.net/ for a cheatsheet.
     public static class Easings
     {
         /// Names a well-known easing function in a unity-compatible way.
+        [Flags]
         public enum Enum
         {
-            Linear = default,
-            InQuad,
-            OutQuad,
-            InOutQuad,
-            InCubic,
-            OutCubic,
-            InOutCubic,
-            InQuart,
-            OutQuart,
-            InOutQuart,
-            InQuint,
-            OutQuint,
-            InOutQuint,
-            InSine,
-            OutSine,
-            InOutSine,
-            InExpo,
-            OutExpo,
-            InOutExpo,
-            InCirc,
-            OutCirc,
-            InOutCirc,
-            InBack,
-            OutBack,
-            InOutBack,
-            InElastic,
-            OutElastic,
-            InOutElastic,
-            InBounce,
-            OutBounce,
-            InOutBounce,
-            None,
-        }
+            Linear = 0,
+            Quad = 1 << 0,
+            Cubic = 1 << 1,
+            Quart = 1 << 2,
+            Quint = 1 << 3,
+            Sine = 1 << 4,
+            Expo = 1 << 5,
+            Circ = 1 << 6,
+            Back = 1 << 7,
+            Elastic = 1 << 8,
+            Bounce = 1 << 9,
+            Hard = 1 << 10,
 
-        public static float ClampInvoke(this Enum thiz, float @in) => thiz.Invoke(@in switch
+            // Modifiers (on a default Linear, if not otherwise stated).
+            // If you don't specify any of In/Out, you get InOut (same as if you say both).
+            In = 1 << 28,
+            Out = 1 << 29,
+            FlipX = 1 << 30,
+            FlipY = 1 << 31,
+        }
+        static readonly Enum NonMetaMask = ~(Enum.In | Enum.Out | Enum.FlipX | Enum.FlipY);
+
+        public static float ClampInvoke(this Enum thiz, float t) => thiz.Invoke(t.GetValenceInclusive(0f, 1f) switch
         {
-            var x when x < 0 => 0,
-            var x when x > 1 => 1,
-            var x => x
+            true => 1,
+            null => t,
+            false => 0
         });
         /// Applies `thiz` (as the named function).
-        public static float Invoke(this Enum thiz, float @in) => thiz switch
+        public static float Invoke(this Enum thiz, float t)
         {
-            Enum.Linear => Linear(@in),
-            Enum.InQuad => InQuad(@in),
-            Enum.OutQuad => OutQuad(@in),
-            Enum.InOutQuad => InOutQuad(@in),
-            Enum.InCubic => InCubic(@in),
-            Enum.OutCubic => OutCubic(@in),
-            Enum.InOutCubic => InOutCubic(@in),
-            Enum.InQuart => InQuart(@in),
-            Enum.OutQuart => OutQuart(@in),
-            Enum.InOutQuart => InOutQuart(@in),
-            Enum.InQuint => InQuint(@in),
-            Enum.OutQuint => OutQuint(@in),
-            Enum.InOutQuint => InOutQuint(@in),
-            Enum.InSine => InSine(@in),
-            Enum.OutSine => OutSine(@in),
-            Enum.InOutSine => InOutSine(@in),
-            Enum.InExpo => InExpo(@in),
-            Enum.OutExpo => OutExpo(@in),
-            Enum.InOutExpo => InOutExpo(@in),
-            Enum.InCirc => InCirc(@in),
-            Enum.OutCirc => OutCirc(@in),
-            Enum.InOutCirc => InOutCirc(@in),
-            Enum.InBack => InBack(@in),
-            Enum.OutBack => OutBack(@in),
-            Enum.InOutBack => InOutBack(@in),
-            Enum.InElastic => InElastic(@in),
-            Enum.OutElastic => OutElastic(@in),
-            Enum.InOutElastic => InOutElastic(@in),
-            Enum.InBounce => InBounce(@in),
-            Enum.OutBounce => OutBounce(@in),
-            Enum.InOutBounce => InOutBounce(@in),
-            Enum.None => None(@in),
-            _ => throw new NotImplementedException($"Unrecognized {thiz}"),
-        };
+            if (thiz.HasFlag(Enum.FlipX)) t = 1 - t;
+            bool? @in = thiz.HasFlag(Enum.In) && !thiz.HasFlag(Enum.Out)
+                ? true
+                : thiz.HasFlag(Enum.Out) && !thiz.HasFlag(Enum.In)
+                ? false
+                : null;
+            float value = (thiz & NonMetaMask, @in) switch
+            {
+                (Enum.Linear, _) => t,
+                (Enum.Quad, true) => InQuad(t),
+                (Enum.Quad, false) => OutQuad(t),
+                (Enum.Quad, null) => InOutQuad(t),
+                (Enum.Cubic, true) => InCubic(t),
+                (Enum.Cubic, false) => OutCubic(t),
+                (Enum.Cubic, null) => InOutCubic(t),
+                (Enum.Quart, true) => InQuart(t),
+                (Enum.Quart, false) => OutQuart(t),
+                (Enum.Quart, null) => InOutQuart(t),
+                (Enum.Quint, true) => InQuint(t),
+                (Enum.Quint, false) => OutQuint(t),
+                (Enum.Quint, null) => InOutQuint(t),
+                (Enum.Sine, true) => InSine(t),
+                (Enum.Sine, false) => OutSine(t),
+                (Enum.Sine, null) => InOutSine(t),
+                (Enum.Expo, true) => InExpo(t),
+                (Enum.Expo, false) => OutExpo(t),
+                (Enum.Expo, null) => InOutExpo(t),
+                (Enum.Circ, true) => InCirc(t),
+                (Enum.Circ, false) => OutCirc(t),
+                (Enum.Circ, null) => InOutCirc(t),
+                (Enum.Back, true) => InBack(t),
+                (Enum.Back, false) => OutBack(t),
+                (Enum.Back, null) => InOutBack(t),
+                (Enum.Elastic, true) => InElastic(t),
+                (Enum.Elastic, false) => OutElastic(t),
+                (Enum.Elastic, null) => InOutElastic(t),
+                (Enum.Bounce, true) => InBounce(t),
+                (Enum.Bounce, false) => OutBounce(t),
+                (Enum.Bounce, null) => InOutBounce(t),
+                (Enum.Hard, true) => InHard(t),
+                (Enum.Hard, false) => OutHard(t),
+                (Enum.Hard, null) => InOutHard(t),
+                _ => throw thiz.BadValue(),
+            };
+            if (thiz.HasFlag(Enum.FlipY)) value = 1 - value;
+            return value;
+        }
 
         /// https://gist.github.com/Kryzarel/bba64622057f21a1d6d44879f9cd7bd4
         public static float Linear(float t) => t;
@@ -201,7 +202,9 @@ namespace BDUtil.Math
             return 1 - InBounce((1 - t) * 2) / 2;
         }
 
-        public static float None(float t) => t <= 0f ? 0f : 1f;
+        public static float InHard(float t) => t <= 0f ? 0f : 1f;
+        public static float OutHard(float t) => t < 1f ? 0f : 1f;
+        public static float InOutHard(float t) => t <= .5f ? 0f : 1f;
 
         // // Function cache so you don't keep creating dynamics. Is this really worth it? I dunno.
         // public static class Funcs

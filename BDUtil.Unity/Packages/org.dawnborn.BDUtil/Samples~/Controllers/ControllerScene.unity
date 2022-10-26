@@ -452,8 +452,8 @@ GameObject:
   - component: {fileID: 2072897509}
   - component: {fileID: 2072897508}
   - component: {fileID: 2072897507}
-  - component: {fileID: 2072897506}
   - component: {fileID: 2072897511}
+  - component: {fileID: 2072897512}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -461,35 +461,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &2072897506
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2072897505}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4ab629a7f1cbf401d9a058208f78f596, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GroundDistance: 0.025
-  RawOnGround: 0
-  OnGround:
-    topic: {fileID: 0}
-    DefaultValue: 0
-    Action:
-      m_PersistentCalls:
-        m_Calls: []
-  HangTime:
-    Length: 0.125
-    Start: NaN
-  LandTime:
-    Length: 0
-    Start: NaN
-  TimeInState:
-    Length: 0
-    Start: 0
 --- !u!50 &2072897507
 Rigidbody2D:
   serializedVersion: 4
@@ -606,174 +577,63 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0ac72ba000664a8988f0cfcf2832234, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Control:
-    topic: {fileID: 11400000, guid: e0ea58e289bef4912b498c5c97ebf876, type: 2}
-    DefaultValue: {x: 0, y: 0}
-    Action:
-      m_PersistentCalls:
-        m_Calls: []
-  GroundSpeed: 6
-  Jump:
-    curve:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: 1
-        inSlope: 0.0625
-        outSlope: 0.0625
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.0625
-        value: 0.99609375
-        inSlope: 0.125
-        outSlope: 0.125
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.125
-        value: 0.984375
-        inSlope: 0.25
-        outSlope: 0.25
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.1875
-        value: 0.96484375
-        inSlope: 0.375
-        outSlope: 0.375
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.25
-        value: 0.9375
-        inSlope: 0.5
-        outSlope: 0.5
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.3125
-        value: 0.90234375
-        inSlope: 0.625
-        outSlope: 0.625
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.375
-        value: 0.859375
-        inSlope: 0.75
-        outSlope: 0.75
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.4375
-        value: 0.80859375
-        inSlope: 0.875
-        outSlope: 0.875
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.5
-        value: 0.75
-        inSlope: 1
-        outSlope: 1
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.5625
-        value: 0.68359375
-        inSlope: 1.125
-        outSlope: 1.125
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.625
-        value: 0.609375
-        inSlope: 1.25
-        outSlope: 1.25
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.6875
-        value: 0.52734375
-        inSlope: 1.375
-        outSlope: 1.375
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.75
-        value: 0.4375
-        inSlope: 1.5
-        outSlope: 1.5
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.8125
-        value: 0.33984375
-        inSlope: 1.625
-        outSlope: 1.625
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.875
-        value: 0.234375
-        inSlope: 1.75
-        outSlope: 1.75
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.9375
-        value: 0.12109375
-        inSlope: 1.875
-        outSlope: 1.875
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 1
-        value: 0
-        inSlope: 1.9375
-        outSlope: 1.9375
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    offset: {x: 0, y: 0}
-    scale: {x: 0.125, y: 12}
+  MaxDX: 12
+  MaxAcceleration: Infinity
+  JumpForce: 60
+  JumpFunc: 1610612768
+  CrouchSpeed: 0.333
   MovementSmoothing: 0.05
   AirControl: 0.3333
+  GroundLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  GroundCheck: {x: 0.5, y: 0, z: 0.2}
+  CeilingCheck: {x: 0.5, y: 1, z: 0.2}
+  IsGrounded: 0
+  IsCrouching: 0
+  JumpingSince:
+    Length: 0.125
+    Start: NaN
+  FacingRight: 1
+  OnGroundEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnCrouchEvent:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &2072897512
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2072897505}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ca0209ff210b48f4aa06e90cfbfe1c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Subscribes:
+  - rid: 6742291673361154048
+  references:
+    version: 2
+    RefIds:
+    - rid: 6742291673361154048
+      type: {class: V2Topic/UEventV2, ns: BDUtil.Pubsub, asm: org.dawnborn.bdutil.Runtime}
+      data:
+        Topic: {fileID: 11400000, guid: e0ea58e289bef4912b498c5c97ebf876, type: 2}
+        Event:
+          m_PersistentCalls:
+            m_Calls:
+            - m_Target: {fileID: 2072897511}
+              m_TargetAssemblyTypeName: BDUtil.Pubsub.CharacterController2D, org.dawnborn.bdutil.Runtime
+              m_MethodName: Move
+              m_Mode: 0
+              m_Arguments:
+                m_ObjectArgument: {fileID: 0}
+                m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+                m_IntArgument: 0
+                m_FloatArgument: 0
+                m_StringArgument: 
+                m_BoolArgument: 0
+              m_CallState: 2

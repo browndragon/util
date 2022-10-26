@@ -58,17 +58,8 @@ namespace BDUtil.Math
             onTick(new(Length, Length));
             onComplete?.Invoke();
         }
-        public Timer Stopped()
-        {
-            Start = float.NaN;
-            return this;
-        }
-        public Timer Started()
-        {
-            Start = Time.time;
-            return this;
-        }
-        public void Reset() => this = Started();
+        public void Stop() => Start = float.NaN;
+        public void Reset() => Start = Time.time;
         public bool MoveNext() => Tick;
         public Timer GetEnumerator() => this;
         public void Dispose() { }
@@ -105,17 +96,8 @@ namespace BDUtil.Math
             onTick(new(Length, Length));
             onComplete?.Invoke();
         }
-        public FixedTimer Stopped()
-        {
-            Start = float.NaN;
-            return this;
-        }
-        public FixedTimer Started()
-        {
-            Start = Time.time;
-            return this;
-        }
-        public void Reset() => this = Started();
+        public void Stop() => Start = float.NaN;
+        public void Reset() => Start = Time.fixedTime;
         public bool MoveNext() => Tick;
         public FixedTimer GetEnumerator() => this;
         public void Dispose() { }
