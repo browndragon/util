@@ -59,7 +59,6 @@ namespace BDUtil.Pubsub
                 return;
             }
             if (!HangTime.IsStarted) HangTime.Reset();
-            Debug.Log($"Started hangtime @ {HangTime.Start}");
             if (HangTime.Tick.IsLive) return;
             OnGround.Value = false;
             TimeInState.Reset();

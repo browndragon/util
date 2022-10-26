@@ -50,7 +50,7 @@ namespace BDUtil.Pubsub
             }
             Tick tick = JumpCooldown.Tick;
             if (!tick.IsLive)
-            {  // We're after the cooldown, so we can't jump (/again).
+            {  // We're after the cooldown AND not on the ground, so we can't jump (/again).
                 return 0f;
             }
             return Jump.Evaluate(JumpCooldown.Tick.Passed);

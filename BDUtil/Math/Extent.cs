@@ -13,6 +13,32 @@ namespace BDUtil.Math
     public struct Extent : IEquatable<Extent>
     {
         public static readonly Extent zero = default;
+        [Serializable]
+        public struct Centered
+        {
+            public float center;
+            public float radius;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Extent(Centered c) => new(c.center - c.radius, 2 * c.radius);
+        }
+        [Serializable]
+        public struct MinMax
+        {
+            public float min;
+            public float max;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Extent(MinMax c) => new(c.min, c.max - c.min);
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static MinMax Of(float min, float max) => new(min, max);
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            internal MinMax(float min, float max)
+            {
+                if (min > max) (min, max) = (max, min);
+                this.min = min;
+                this.max = max;
+            }
+        }
+
         public float position;
         public float size;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -55,14 +81,6 @@ namespace BDUtil.Math
             size = max - min;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Extent MinMax(float min, float max)
-        {
-            if (max < min) (min, max) = (max, min);
-            float position = min;
-            float size = max - min;
-            return new(position, size);
-        }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float NormalizedToPoint(Extent span, float normalized)
         {

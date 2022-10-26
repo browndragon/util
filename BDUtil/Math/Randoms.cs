@@ -53,14 +53,19 @@ namespace BDUtil.Math
             public T Pivot;
             public T Fuzz;
         }
-        // Returns a value in [0, +1).
+        // Returns a value in [0, +1) (though apparently unity is [0,+1]?!).
         // You can give it a wider implementation for more chaos, but if you do you MUST
-        // remain centered on .5.
+        // remain centered on .5. Better is to weight the distribution of results (see: Easings, Distribution, etc).
         public static float Unit(this UnitRandom thiz) => (thiz ?? @default).Invoke();
 
         /// Returns a random value in [min, max) with the same underlying distribution as UnitRandom.
         public static float Range(this UnitRandom thiz, float min, float max)
-        => max <= min ? min : min + (max - min) * thiz.Unit();
+        {
+            float @return = min;
+            float delta = max - min;
+            if (delta < 0f) return @return;
+            return @return + delta * thiz.Unit();
+        }
         /// Returns a random value in [min, max) with the same underlying distribution as UnitRandom.
         public static int Range(this UnitRandom thiz, int min, int max) => (int)System.Math.Floor(min + (max - min) * thiz.Unit());
 
@@ -112,6 +117,30 @@ namespace BDUtil.Math
                 Arith<T>.Default.SetAxis(ref @return, i, fuzzed);
             }
             return @return;
+        }
+        static readonly List<int> keeps = new();
+        // Returns (non-reentrant!!!) an ordered list of indices [0,count) randomly sampled to retain odds elements (round up).
+        // Takes O(n) in `count`, even if `odds` is miniscule.
+        public static IEnumerable<int> RandomIndices(this UnitRandom thiz, int count, float odds)
+        {
+            float rem = odds * count;
+            int choices = (int)rem;
+            rem -= choices;
+            if (thiz.RandomTrue(rem)) choices++;
+            return thiz.RandomIndices(count, choices);
+        }
+        // Returns (non-reentrant!!!) an ordered list of indices [0,count) randomly sampled choices times
+        // Takes O(n) in `count`, even if `odds` is miniscule.
+        public static IEnumerable<int> RandomIndices(this UnitRandom thiz, int count, int choices)
+        {
+            keeps.Clear();
+            for (
+                int i = 0; i < count; ++i
+            ) keeps.Add(i);
+            for (
+                int i = 0, lose = count - choices; i < lose; ++i
+            ) keeps.RemoveAt(thiz.Range(0, keeps.Count));
+            return keeps;
         }
     }
 }

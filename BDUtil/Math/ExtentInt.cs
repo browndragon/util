@@ -16,6 +16,24 @@ namespace BDUtil.Math
     public struct ExtentInt : IEquatable<ExtentInt>
     {
         public static readonly ExtentInt zero = default;
+        [Serializable]
+        public struct MinMax
+        {
+            public int min;
+            public int max;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator ExtentInt(MinMax c) => new(c.min, c.max - c.min);
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static MinMax Of(int min, int max) => new(min, max);
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            internal MinMax(int min, int max)
+            {
+                if (min > max) (min, max) = (max, min);
+                this.min = min;
+                this.max = max;
+            }
+        }
+
         public int position;
         public int size;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -56,14 +74,6 @@ namespace BDUtil.Math
         {
             this.position = position;
             this.size = size;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ExtentInt MinMax(int min, int max)
-        {
-            if (max < min) (min, max) = (max, min);
-            int position = min;
-            int size = max - min;
-            return new(position, size);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(ExtentInt other) => this == other;

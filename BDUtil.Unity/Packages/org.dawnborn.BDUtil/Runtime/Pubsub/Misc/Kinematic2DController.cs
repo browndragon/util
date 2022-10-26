@@ -7,7 +7,7 @@ namespace BDUtil.Pubsub
     [RequireComponent(typeof(Groundling))]
     public class Kinematic2DController : KinematicController<Rigidbody2D, Vector2>
     {
-        protected void Update()
+        protected void FixedUpdate()
         {
             Vector2 speed = Control.Value;
             float origJump = speed.y;

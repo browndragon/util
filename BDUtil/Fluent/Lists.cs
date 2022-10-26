@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace BDUtil.Fluent
 {
@@ -43,6 +44,12 @@ namespace BDUtil.Fluent
             public void Reset() => i = -1;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Dispose() { }
+        }
+        public static T GetValueOrDefault<T>(this IReadOnlyList<T> thiz, int i)
+        {
+            if (i < 0) return default;
+            if (i >= thiz.Count) return default;
+            return thiz[i];
         }
     }
 }

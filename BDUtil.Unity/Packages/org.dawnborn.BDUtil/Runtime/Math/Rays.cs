@@ -1,3 +1,6 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 namespace BDUtil.Math
 {
@@ -14,6 +17,7 @@ namespace BDUtil.Math
             // Returns true/+distance or false/-distance based on in front/behind ray (ugh).
             return ray.GetPoint(distance);
         }
+
         /// Projects a ray as though it were a line and discovers where it intersects x/y/z (default =0).
         /// This is great for projecting camera rays to hit world 0, where theoretically the plane of the camera might break the plane of the scene...
         /// Simpler math than the Linecast case, since there's no plane to flip.
