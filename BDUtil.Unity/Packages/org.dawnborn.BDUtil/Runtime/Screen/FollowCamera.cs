@@ -14,6 +14,7 @@ namespace BDRPG.Screen
     public class FollowCamera : MonoBehaviour
     {
         static readonly Rect unitRect = Rect.MinMaxRect(0f, 0f, 1f, 1f);
+        public float CamSmooth = .125f;
 
         public interface IPointSource
         {
@@ -82,7 +83,7 @@ namespace BDRPG.Screen
             if (Input.GetMouseButtonUp(1)) suppressed = false;
         }
 
-        public Vector2 Velocity;
+        public Vector3 Velocity;
         public Vector2 Viewport0;
         public Vector2 SpeedRatio;
         public bool IsInDeadZone;
@@ -97,7 +98,15 @@ namespace BDRPG.Screen
             Vector2 halfDead = DeadZone / 2;
             if (Viewport0.x.IsInRange(-halfDead.x, +halfDead.x)) Viewport0.x = 0f;
             if (Viewport0.y.IsInRange(-halfDead.y, +halfDead.y)) Viewport0.y = 0f;
-            if (IsInDeadZone = Viewport0 == default) return;
+            if (IsInDeadZone = Viewport0 == default)
+            {
+                camera.MoveAlongXYDelta(
+                    default,
+                    ref Velocity,
+                    maxSpeed: GroundSpeed
+                );
+                return;
+            }
 
             // Okay, we're NOT in the dead zone. Converge!
             SpeedRatio = Viewport0;
@@ -105,24 +114,22 @@ namespace BDRPG.Screen
             Vector2 abs = new(SpeedRatio.x * sign.x, SpeedRatio.y * sign.y);
             Vector2 halfMax = MaxZone / 2;
             if (abs.x > halfMax.x) SpeedRatio.x = sign.x * 1f;
-            else SpeedRatio.x = sign.x * Curve.Evaluate((abs.x - halfDead.x) / (halfMax.x - halfDead.x));
+            else SpeedRatio.x = (abs.x - halfDead.x) / (halfMax.x - halfDead.x);
             if (abs.y > halfMax.y) SpeedRatio.y = sign.y * 1f;
-            else SpeedRatio.y = sign.y * Curve.Evaluate((abs.y - halfDead.y) / (halfMax.y - halfDead.y));
+            else SpeedRatio.y = (abs.y - halfDead.y) / (halfMax.y - halfDead.y);
 
-            float speed = GroundSpeed * SpeedRatio.magnitude;
-            camera.MoveAlongXY(
-                Vector2.Scale(
-                    new(UnityEngine.Screen.width, UnityEngine.Screen.height),
-                    trackedViewport
-                ),
-                ref Velocity,
-                maxSpeed: speed
-            );
-            if (!SceneBounds.Bounds.Contains(camera.transform.position))
+            float speed = GroundSpeed * Curve.Evaluate(SpeedRatio.magnitude);
+            Vector3 worldpoint = camera.ViewportPointToIntersection((Vector3)trackedViewport);
+            if (!SceneBounds.Bounds.Contains(worldpoint))
             {
-                Vector3 inBounds = SceneBounds.Bounds.ClosestPoint(camera.transform.position);
-                camera.MoveAlongXYDelta(inBounds - camera.transform.position, ref Velocity);
+                worldpoint = SceneBounds.Bounds.ClosestPoint(worldpoint);
             }
+            camera.MoveAlongXYDelta(
+                worldpoint - camera.LookingAt(),
+                ref Velocity,
+                CamSmooth,
+                speed
+            );
         }
     }
 }
