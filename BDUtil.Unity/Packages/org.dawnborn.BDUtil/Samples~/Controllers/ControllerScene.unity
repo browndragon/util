@@ -123,85 +123,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &768584039
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 768584042}
-  - component: {fileID: 768584041}
-  - component: {fileID: 768584040}
-  m_Layer: 0
-  m_Name: Gravity
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!249 &768584040
-AreaEffector2D:
-  serializedVersion: 2
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 768584039}
-  m_Enabled: 1
-  m_UseColliderMask: 1
-  m_ColliderMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_UseGlobalAngle: 0
-  m_ForceAngle: -90
-  m_ForceMagnitude: 10
-  m_ForceVariation: 0
-  m_ForceTarget: 0
-  m_Drag: 0
-  m_AngularDrag: 0
---- !u!61 &768584041
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 768584039}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_UsedByEffector: 1
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0
---- !u!4 &768584042
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 768584039}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 20, y: 12, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1048842142
 GameObject:
   m_ObjectHideFlags: 0
@@ -214,6 +135,7 @@ GameObject:
   - component: {fileID: 1048842144}
   - component: {fileID: 1048842143}
   - component: {fileID: 1048842146}
+  - component: {fileID: 1048842147}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -307,6 +229,19 @@ MonoBehaviour:
     Action:
       m_PersistentCalls:
         m_Calls: []
+--- !u!114 &1048842147
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1048842142}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02950948d75744663a1985ebc88c0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Gravity: {x: 0, y: -10}
 --- !u!1 &1115105680
 GameObject:
   m_ObjectHideFlags: 0
@@ -578,22 +513,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MaxDX: 12
-  MaxAcceleration: Infinity
-  JumpForce: 60
-  JumpFunc: 1610612768
-  CrouchSpeed: 0.333
+  CrouchDXScale: 0.333
+  JumpDXScale: 0.666
+  AirDXScale: 0.333
+  JumpDY: 12
+  RiseDY: 0
+  DropDY: -6
+  JumpGravity: 0
+  RiseGravity: 3
+  FallGravity: 6
+  JumpTime:
+    Length: 0.375
+    Start: NaN
+  IsJumping: 0
   MovementSmoothing: 0.05
-  AirControl: 0.3333
   GroundLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  GroundCheck: {x: 0.5, y: 0, z: 0.2}
-  CeilingCheck: {x: 0.5, y: 1, z: 0.2}
+  GroundCheck: {x: 0.5, y: 0, z: 0.1}
   IsGrounded: 0
-  IsCrouching: 0
-  JumpingSince:
-    Length: 0.125
+  CoyoteTime:
+    Length: 0.0625
     Start: NaN
+  CeilingCheck: {x: 0.5, y: 1, z: 0.1}
+  IsCrouching: 0
   FacingRight: 1
   OnGroundEvent:
     m_PersistentCalls:
