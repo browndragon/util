@@ -11,11 +11,25 @@ namespace BDUtil.Math
         void IArith<Vector2>.SetAxis(ref Vector2 a, int i, float value) => a[i] = value;
     }
     [Impl]
+    public struct V2IArith : IArith<Vector2Int>
+    {
+        int IArith<Vector2Int>.Axes => 2;
+        float IArith<Vector2Int>.GetAxis(in Vector2Int a, int i) => a[i];
+        void IArith<Vector2Int>.SetAxis(ref Vector2Int a, int i, float value) => a[i] = (int)value;
+    }
+    [Impl]
     public struct V3Arith : IArith<Vector3>
     {
         int IArith<Vector3>.Axes => 3;
         float IArith<Vector3>.GetAxis(in Vector3 a, int i) => a[i];
         void IArith<Vector3>.SetAxis(ref Vector3 a, int i, float value) => a[i] = value;
+    }
+    [Impl]
+    public struct V3IArith : IArith<Vector3Int>
+    {
+        int IArith<Vector3Int>.Axes => 2;
+        float IArith<Vector3Int>.GetAxis(in Vector3Int a, int i) => a[i];
+        void IArith<Vector3Int>.SetAxis(ref Vector3Int a, int i, float value) => a[i] = (int)value;
     }
     [Impl]
     public struct V4Arith : IArith<Vector4>

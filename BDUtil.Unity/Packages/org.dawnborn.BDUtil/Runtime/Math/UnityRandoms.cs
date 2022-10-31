@@ -25,7 +25,11 @@ namespace BDUtil.Math
         => thiz.RandomValue(curve.Curve) * curve.Scale.y + curve.Offset.y;
         public static Vector2 RandomValue(this Randoms.UnitRandom thiz, Rect rect)
         => thiz.Range(rect.min, rect.max);
+        public static Vector2Int RandomValue(this Randoms.UnitRandom thiz, RectInt rect)
+        => thiz.Range(rect.min, rect.max);
         public static Vector3 RandomValue(this Randoms.UnitRandom thiz, Bounds bounds)
+        => thiz.Range(bounds.min, bounds.max);
+        public static Vector3Int RandomValue(this Randoms.UnitRandom thiz, BoundsInt bounds)
         => thiz.Range(bounds.min, bounds.max);
         // There doesn't seem to be a bounds4. Weird.
     }
