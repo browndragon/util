@@ -23,7 +23,7 @@ namespace BDUtil.Pubsub
 
         protected void Update()
         {
-            animator.SetBool(NamedOnGround, characterController.IsGrounded);
+            animator.SetBool(NamedOnGround, !characterController.IsMidair);
             animator.SetFloat(NamedX, rigidbody.velocity.x);
             animator.SetFloat(NamedY, rigidbody.velocity.y);
         }

@@ -512,18 +512,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0ac72ba000664a8988f0cfcf2832234, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MaxDX: 12
-  CrouchDXScale: 0.333
-  JumpDXScale: 0.666
-  AirDXScale: 0.333
+  MaxDX: 6
+  CrouchDXScale: 1
+  JumpDXScale: 0.75
+  AirDXScale: 0.25
   JumpDY: 12
   RiseDY: 0
-  DropDY: -6
+  FallDY: 6
   JumpGravity: 0
-  RiseGravity: 3
-  FallGravity: 6
+  RiseGravity: 1
+  FallGravity: 2
   JumpTime:
-    Length: 0.375
+    Length: 0.125
     Start: NaN
   IsJumping: 0
   MovementSmoothing: 0.05
@@ -531,7 +531,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   GroundCheck: {x: 0.5, y: 0, z: 0.1}
-  IsGrounded: 0
   CoyoteTime:
     Length: 0.0625
     Start: NaN

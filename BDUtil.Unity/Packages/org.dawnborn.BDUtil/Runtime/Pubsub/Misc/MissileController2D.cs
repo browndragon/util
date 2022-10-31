@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using BDUtil.Math;
 using UnityEngine;
@@ -7,32 +6,33 @@ using UnityEngine.Events;
 namespace BDUtil.Pubsub
 {
     [RequireComponent(typeof(Rigidbody2D), typeof(SpriteRenderer))]
-    public class CharacterController2D : MonoBehaviour
+    public class MissileController2D : MonoBehaviour
     {
         public float MaxDX = 12f;
-        [Range(0, 1)] public float CrouchDXScale = .333f;
-        [Range(0, 1)] public float JumpDXScale = .666f;
-        [Range(0, 1)] public float AirDXScale = .333f;
+        [Range(0, 1)] public float CrouchDXScale = .5f;  // While crouching/sneaking
+        [Range(0, 1)] public float JumpDXScale = .75f;  // During the liftoff of a jump.
+        [Range(0, 1)] public float AirDXScale = .25f;  // While in air.
 
         public float JumpDY = 18f;
         public float RiseDY = 0f;
-        public float FallDY = -6f;
-        public float JumpGravity = 0f;  // Gravity during initial launch phase of jump.
-        public float RiseGravity = 4f;  // Gravity scale while dy > 0 (after launch phase)
+        public float DropDY = -6f;
+        public float JumpGravity = 0f;  // Gravity during initial phase of jump.
+        public float RiseGravity = 4f;  // Gravity scale while dy > 0 (but not jumping)
         public float FallGravity = 6f;  // Gravity scale while dy < 0
         public FixedTimer JumpTime = 1f / 8f;  // Time allowed during initial phase of jump.
-        // Determines after-JumpTime but while dy>0 whether to use riseGravity ("longer jump") or fallGravity ("shorter jump").
         public bool IsJumping;
 
         [Range(0, .3f)] public float MovementSmoothing = .05f;  // How much to smooth out the movement
 
         public LayerMask GroundLayerMask = -1;  // A mask determining what is ground to the character
         public Vector3 GroundCheck = new(.5f, 0, .1f);  // A position marking where to check if the player is grounded. Z is radius!
-        public FixedTimer CoyoteTime = 1f / 16f;  // Amount of time after leaving ground you still count.
-        public bool IsMidair => !CoyoteTime.Tick.IsLive;
+        public bool IsGrounded;
+        bool wasGrounded;
+        public FixedTimer CoyoteTime = 1f / 16f;
 
         public Vector3 CeilingCheck = new(.5f, 1f, .1f);  // A position marking where to check for ceilings. Z is radius!
         public bool IsCrouching = false;
+        bool wasCrouching;
 
         // So that we can use sprites that face left.
         public bool FacingRight = true;
@@ -46,14 +46,14 @@ namespace BDUtil.Pubsub
         public UnityEvent<bool> OnCrouchEvent = new();
 
         [field: Range(-1f, 1f)] public float WantDX { get; set; }
-        [field: Range(-1f, 1f)] public float WantDY { get; set; }
-        public bool WantCrouch => WantDY < 0f;
-        public bool WantJump => WantDY > 0f;
+        public bool WantCrouch { get; set; }
+        public bool WantJump { get; set; }
 
         public void Move(Vector2 move)
         {
             WantDX = move.x;
-            WantDY = move.y;
+            WantJump = move.y > 0;
+            WantCrouch = move.y < 0;
         }
 
         protected void Awake()
@@ -99,46 +99,43 @@ namespace BDUtil.Pubsub
 
         protected void FixedUpdate()
         {
+            // Check to see if we're on the ground.
             CheckGround();
             CheckCrouch();
-            CheckJumping();
-            ApplyMovement();
+            ApplyJump();
+            ApplyWalk();
         }
 
-        /// You can jump if you're in contact with the ground & not currently jumping.
-        bool CanJump => CoyoteTime.Tick.IsLive && !IsJumping;
-
-        void CheckJumping()
+        void ApplyJump()
         {
-            if (!WantJump) IsJumping = false;
-            else if (CanJump)
+            bool isRising = rigidbody.velocity.y > 0f;
+            if (WantJump)
             {
-                IsJumping = true;
-                JumpTime.Reset();
+                if (CoyoteTime.Tick.IsLive && !isRising && !JumpTime.Tick.IsLive)
+                {
+                    rigidbody.velocity = new(rigidbody.velocity.x, Mathf.Max(JumpDY, rigidbody.velocity.y));
+                    IsJumping = true;
+                    JumpTime.Reset();
+                }
             }
-            // If you're actively sinking, you're not jumping [anymore].
-            if (rigidbody.velocity.y < 0) IsJumping = false;
-            if (!IsJumping) JumpTime.Stop();
+            else
+            {
+                IsJumping = false;
+                JumpTime.Stop();
+            }
+
+            if (!isRising) IsJumping = false;
 
             if (JumpTime.Tick.IsLive) rigidbody.gravityScale = JumpGravity;
-            else if (IsJumping) rigidbody.gravityScale = RiseGravity;
+            else if (isRising) rigidbody.gravityScale = IsJumping ? RiseGravity : FallGravity;
             else rigidbody.gravityScale = FallGravity;
         }
-        void ApplyMovement()
+        void ApplyWalk()
         {
             Vector2 delta = new(WantDX * MaxDX, rigidbody.velocity.y);
-
-            bool firstJumpTick = JumpTime.Tick.Passed <= 0f;
-            if (firstJumpTick && JumpDY > 0f)
+            if (JumpTime.Tick.IsLive) delta.x *= JumpDXScale;
+            else if (!CoyoteTime.Tick.IsLive)  // "we're off the ground for real".
             {
-                delta.x *= JumpDXScale;
-                delta.y = WantDY * JumpDY;
-            }
-            else if (WantDY > 0f && RiseDY > 0f) delta.y = Mathf.Max(delta.y, WantDY * RiseDY);
-            else delta.y = Mathf.Min(delta.y, WantDY * FallDY);
-
-            if (IsMidair)
-            {  // Lets you "swim" in air, a little. Could be ice-friction too?
                 delta.x *= AirDXScale;
                 switch ((delta.x.Valence(), rigidbody.velocity.x.Valence()))
                 {
@@ -147,8 +144,11 @@ namespace BDUtil.Pubsub
                     default: delta.x += rigidbody.velocity.x; break;
                 }
             }
-            if (IsCrouching) delta.x *= CrouchDXScale;
-
+            if (IsCrouching)
+            {
+                delta.x *= CrouchDXScale;
+                delta.y = Mathf.Min(delta.y, DropDY);
+            }
             rigidbody.velocity = new(
                 Mathf.SmoothDamp(rigidbody.velocity.x, delta.x, ref _accX, MovementSmoothing),
                 Mathf.SmoothDamp(rigidbody.velocity.y, delta.y, ref _accY, MovementSmoothing)
@@ -158,7 +158,7 @@ namespace BDUtil.Pubsub
 
         void CheckCrouch()
         {
-            bool wasCrouching = IsCrouching;
+            wasCrouching = IsCrouching;
             if (WantCrouch) IsCrouching = true;
             else
             {
@@ -175,13 +175,15 @@ namespace BDUtil.Pubsub
 
         void CheckGround()
         {
-            bool wasMidair = IsMidair;
+            wasGrounded = IsGrounded;
+            IsGrounded = false;
             foreach (Collider2D _ in OverlapRelativeCircle(GroundCheck))
             {
-                CoyoteTime.Reset();
+                IsGrounded = true;
                 break;
             }
-            if (wasMidair ^ IsMidair) OnGroundEvent.Invoke(wasMidair);
+            if (IsGrounded) CoyoteTime.Reset();
+            if (wasGrounded ^ IsGrounded) OnGroundEvent.Invoke(IsGrounded);
         }
 
         static readonly Collider2D[] colliders = new Collider2D[16];
