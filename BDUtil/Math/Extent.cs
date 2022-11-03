@@ -13,55 +13,43 @@ namespace BDUtil.Math
     public struct Extent : IEquatable<Extent>
     {
         public static readonly Extent zero = default;
-        [Serializable]
-        public struct Centered
-        {
-            public float center;
-            public float radius;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static implicit operator Extent(Centered c) => new(c.center - c.radius, 2 * c.radius);
-        }
-        [Serializable]
-        public struct MinMax
-        {
-            public float min;
-            public float max;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static implicit operator Extent(MinMax c) => new(c.min, c.max - c.min);
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static MinMax Of(float min, float max) => new(min, max);
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            internal MinMax(float min, float max)
-            {
-                if (min > max) (min, max) = (max, min);
-                this.min = min;
-                this.max = max;
-            }
-        }
-
-        public float position;
-        public float size;
+        public float min;
+        public float max;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Extent(float position, float size)
+        public Extent(float min, float max)
         {
-            this.position = position;
-            this.size = size;
+            this.min = min;
+            this.max = max;
         }
         public float center
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => position + size / 2;
+            get => (min + max) / 2;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set { float radius = this.radius; min = value - radius; max = value + radius; }
         }
-        public float min
+        public float position
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => position;
+            get => min;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => min = value;
         }
-        public float max
+        public float size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => position + size;
+            get => max - min;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => radius = value / 2;
         }
+        public float radius
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => size / 2;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set { float center = this.center; min = center - value; max = center + value; }
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(float x) => x.IsInRangeInclusive(min, max);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -69,44 +57,47 @@ namespace BDUtil.Math
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(float position, float size)
         {
-            this.position = position;
-            this.size = size;
+            min = position;
+            max = position + size;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ClampToBounds(Extent other)
         {
             float min = System.Math.Max(this.min, other.min);
             float max = System.Math.Min(this.max, other.max);
-            position = min;
-            size = max - min;
+            this.min = min;
+            this.max = max;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float NormalizedToPoint(Extent span, float normalized)
+        public bool Equals(Extent other) => this == other;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(Extent a, Extent b) => a.min == b.min && a.max == b.max;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(Extent a, Extent b) => a.min != b.min || a.max != b.max;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override bool Equals(object other) => other is Extent e && this == e;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override int GetHashCode() => Chain.Hash ^ min ^ max;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override string ToString() => $"[{min}, {max}]";
+    }
+    public static class Extents
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float NormalizedToPoint(this Extent span, float normalized)
         {
             normalized *= span.size;
             normalized += span.position;
             return normalized;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float PointToNormalized(Extent span, float point)
+        public static float PointToNormalized(this Extent span, float point)
         {
             point -= span.position;
             point /= span.size;
             return point;
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Equals(Extent other) => this == other;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(Extent a, Extent b) => a.position == b.position && a.size == b.size;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(Extent a, Extent b) => a.position == b.position && a.size == b.size;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override bool Equals(object other) => other is Extent e && this == e;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override int GetHashCode() => Chain.Hash ^ position ^ size;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override string ToString() => $"[min, max]";
     }
 }

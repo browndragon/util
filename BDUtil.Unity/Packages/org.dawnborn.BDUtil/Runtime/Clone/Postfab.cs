@@ -65,6 +65,36 @@ namespace BDUtil.Clone
         /// Postfabs MUST have a link, and it MUST be a prefab/variant asset file, and it MUST be the same as Asset.
         public bool IsPostfabInstance => FabType == FabTypes.Postfab;
 
+        /// Called on a prefab via an event or whatever.
+        public GameObject AcquireInstance() => Pool.main.Acquire(gameObject);
+        /// Called on a prefab via an event or whatever.
+        public GameObject AcquireInstance(Transform parent)
+        {
+            GameObject acquired = Pool.main.Acquire(gameObject, false);
+            acquired.transform.SetParent(parent);
+            acquired.SetActive(true);
+            return acquired;
+        }
+        /// Called on a prefab via an event or whatever.
+        public GameObject AcquireInstance(Vector3 position)
+        {
+            GameObject acquired = Pool.main.Acquire(gameObject, false);
+            acquired.transform.position = position;
+            acquired.SetActive(true);
+            return acquired;
+        }
+        /// Called on a prefab via an event or whatever.
+        public GameObject AcquireInstance(Vector2 position)
+        {
+            GameObject acquired = Pool.main.Acquire(gameObject, false);
+            acquired.transform.position = position;
+            acquired.SetActive(true);
+            return acquired;
+        }
+        /// Called on a postfab via an event or whatever to release (or if needed destroy) me.
+        public void ReleaseInstance() => Pool.main.Release(gameObject);
+
+
         /// A link to this thing's Instantiating object; basically a prefab, but it might get complicated.
         /// For an instance of a prefab or variant asset, it's the asset.
         /// For an instance of a child of a prefab or variant asset, it's also that child -- which isn't itself the root asset, be warned!

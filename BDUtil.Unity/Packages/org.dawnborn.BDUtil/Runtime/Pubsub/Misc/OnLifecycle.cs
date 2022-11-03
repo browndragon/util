@@ -1,3 +1,4 @@
+using BDUtil.Math;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -11,12 +12,38 @@ namespace BDUtil.Pubsub
         public UnityEvent OnEnable_;
         public UnityEvent OnDisable_;
         public UnityEvent OnDestroy_;
+        public Delay Delay;
+        public UnityEvent After_;
 
-        protected void Start() => OnStart_?.Invoke();
-        protected void OnEnable() => OnEnable_?.Invoke();
-        protected void OnDisable() => OnDisable_?.Invoke();
-        protected void OnDestroy() => OnDestroy_?.Invoke();
+        protected void Start()
+        {
+            OnStart_?.Invoke();
+        }
+        protected void OnEnable()
+        {
+            Delay.Reset();
+            OnEnable_?.Invoke();
+        }
+        protected void OnDisable()
+        {
+            Delay.Stop();
+            OnDisable_?.Invoke();
+        }
+        protected void OnDestroy()
+        {
+            OnDestroy_?.Invoke();
+        }
+        protected void Update()
+        {
+            if (Delay.IsEnded)
+            {
+                Delay.Stop();
+                After_?.Invoke();
+            }
+        }
 
+        // For objects which fade some time after creation
+        internal void SelfDestruct() => Destroy(this);
 
         Animator animator;
         Animator Animator

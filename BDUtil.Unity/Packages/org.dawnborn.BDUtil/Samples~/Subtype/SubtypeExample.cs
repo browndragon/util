@@ -9,7 +9,7 @@ namespace BDUtil.Serialization
     [RequireComponent(typeof(Collider2D))]
     public class SubtypeExample : MonoBehaviour
     {
-        public Timer Duration = .5f;
+        public Delay Duration = .5f;
         public Easings.Enum Easer;
         public interface ITarget
         {

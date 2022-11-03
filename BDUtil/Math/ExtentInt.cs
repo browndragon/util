@@ -16,54 +16,37 @@ namespace BDUtil.Math
     public struct ExtentInt : IEquatable<ExtentInt>
     {
         public static readonly ExtentInt zero = default;
-        [Serializable]
-        public struct MinMax
-        {
-            public int min;
-            public int max;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static implicit operator ExtentInt(MinMax c) => new(c.min, c.max - c.min);
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static MinMax Of(int min, int max) => new(min, max);
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            internal MinMax(int min, int max)
-            {
-                if (min > max) (min, max) = (max, min);
-                this.min = min;
-                this.max = max;
-            }
-        }
 
-        public int position;
-        public int size;
+        public int min;
+        public int max;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ExtentInt(int position, int size)
+        public ExtentInt(int min, int max)
         {
-            this.position = position;
-            this.size = size;
+            this.min = min;
+            this.max = max;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ClampToBounds(ExtentInt other)
         {
             int min = System.Math.Max(this.min, other.min);
             int max = System.Math.Min(this.max, other.max);
-            position = min;
-            size = max - min;
+            this.min = min;
+            this.max = max;
         }
         public float center
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => position + size / 2f;
+            get => (min + max) / 2f;
         }
-        public int min
+        public int size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => position;
+            get => max - min;
         }
-        public int max
+        public float radius
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => position + size;
+            get => size / 2f;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(int x) => x.IsInRangeInclusive(min, max);
@@ -72,22 +55,22 @@ namespace BDUtil.Math
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(int position, int size)
         {
-            this.position = position;
-            this.size = size;
+            min = position;
+            max = position + size;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(ExtentInt other) => this == other;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(ExtentInt a, ExtentInt b) => a.position == b.position && a.size == b.size;
+        public static bool operator ==(ExtentInt a, ExtentInt b) => a.min == b.min && a.max == b.max;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(ExtentInt a, ExtentInt b) => a.position == b.position && a.size == b.size;
+        public static bool operator !=(ExtentInt a, ExtentInt b) => a.min != b.min || a.max != b.max;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override bool Equals(object other) => other is ExtentInt e && this == e;
+        public override bool Equals(object obj) => obj is ExtentInt other && this == other;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override int GetHashCode() => Chain.Hash ^ position ^ size;
+        public override int GetHashCode() => Chain.Hash ^ min ^ max;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override string ToString() => $"[min, max]";
+        public override string ToString() => $"[{min}, {max}]";
 
         public struct Iter : IEnumerator<int>
         {

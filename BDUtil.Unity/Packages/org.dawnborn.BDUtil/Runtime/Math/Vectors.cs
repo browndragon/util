@@ -148,8 +148,8 @@ namespace BDUtil.Math
         public static Extent ScaledBy(in this Extent thiz, float scale, float moveCenter = 0f)
         {
             float center = thiz.center + moveCenter;
-            float half = thiz.size * scale / 2f;
-            return Extent.MinMax.Of(center - half, center + half);
+            float radius = thiz.radius * scale;
+            return new(center - radius, center + radius);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Rect ScaledBy(in this Rect thiz, float scale, Vector2 moveCenter = default)

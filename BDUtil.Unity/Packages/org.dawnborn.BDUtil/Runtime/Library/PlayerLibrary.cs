@@ -32,8 +32,7 @@ namespace BDUtil.Library
             float duration = TotalDuration(player, animate);
             var start = Get(player);
             var target = animate.Target.GetTarget(player, GetInitial(player));
-            player.StartCoroutine(new Timer(duration)
-                .Foreach(t =>
+            player.StartCoroutine(Clock.Now.StoppedDelayOf(duration).Foreach(t =>
                 {
                     var eased = animate.Easing.Invoke(t);
                     var current = Get(player);
@@ -41,7 +40,8 @@ namespace BDUtil.Library
                     currentTarget.Override(target);  // Override _again_ to fix any NaNs in the target.
                     var lerped = start.Lerp(currentTarget, eased);
                     Set(player, lerped);
-                }));
+                }
+            ));
             return duration;
         }
     }

@@ -1,92 +1,80 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using BDUtil.Math;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace BDUtil.Pubsub
 {
-    [RequireComponent(typeof(Rigidbody2D), typeof(SpriteRenderer))]
+    [RequireComponent(typeof(Rigidbody2D))]
     public class CharacterController2D : MonoBehaviour
     {
         public float MaxDX = 12f;
-        [Range(0, 1)] public float CrouchDXScale = .333f;
-        [Range(0, 1)] public float JumpDXScale = .666f;
-        [Range(0, 1)] public float AirDXScale = .333f;
+        public float WalkDXScale = .5f;
+        public float CrouchDXScale = .5f;
+        public float JumpDXScale = .75f;
+        public float AirDXScale = .5f;
 
-        public float JumpDY = 18f;
-        public float RiseDY = 0f;
-        public float FallDY = -6f;
+        public float MaxDY = 6f;
+        public float JumpDYScale = 3f;
+        public float RiseDYScale = 0f;
+        public float FallDYScale = -1f;
+
         public float JumpGravity = 0f;  // Gravity during initial launch phase of jump.
         public float RiseGravity = 4f;  // Gravity scale while dy > 0 (after launch phase)
         public float FallGravity = 6f;  // Gravity scale while dy < 0
-        public FixedTimer JumpTime = 1f / 8f;  // Time allowed during initial phase of jump.
-        // Determines after-JumpTime but while dy>0 whether to use riseGravity ("longer jump") or fallGravity ("shorter jump").
-        public bool IsJumping;
 
-        [Range(0, .3f)] public float MovementSmoothing = .05f;  // How much to smooth out the movement
+        public Delay Grounded = Clock.FixedNow.StoppedDelayOf(.125f);
+        public Delay Walled = Clock.FixedNow.StoppedDelayOf(.125f);
+        public Delay Ceilinged = Clock.FixedNow.StoppedDelayOf(.125f);
+        public Delay Laddered = Clock.FixedNow.StoppedDelayOf(.125f);
+        public bool IsMidair => !Grounded && !Walled && !Laddered && !Ceilinged;
 
-        public LayerMask GroundLayerMask = -1;  // A mask determining what is ground to the character
-        public Vector3 GroundCheck = new(.5f, 0, .1f);  // A position marking where to check if the player is grounded. Z is radius!
-        public FixedTimer CoyoteTime = 1f / 16f;  // Amount of time after leaving ground you still count.
-        public bool IsMidair => !CoyoteTime.Tick.IsLive;
+        // Ability cooldown cycle: begun, executed, and then departed.
+        public Cooldown Jumping = new(0f, .125f, .0625f, Clock.FixedNow);
+        public bool JumpRising;
+        public Cooldown Running = new(0f, float.PositiveInfinity, .125f, Clock.FixedNow);
+        public Cooldown Firing = new(0f, 0f, .5f, Clock.FixedNow);
+        public Cooldown Interacting = new(0f, 0f, .5f, Clock.FixedNow);
 
-        public Vector3 CeilingCheck = new(.5f, 1f, .1f);  // A position marking where to check for ceilings. Z is radius!
-        public bool IsCrouching = false;
+        public Cooldown Crouching = new(0f, float.PositiveInfinity, 0f, Clock.FixedNow);
+
+        [Range(0, .3f)] public float MovementSmoothing = .05f;  // How much to smooth out the deltaV.
 
         // So that we can use sprites that face left.
         public bool FacingRight = true;
 
         new Rigidbody2D rigidbody;
-        new SpriteRenderer renderer;
 
-        [Header("Events")]
-        [Space]
-        public UnityEvent<bool> OnGroundEvent = new();
-        public UnityEvent<bool> OnCrouchEvent = new();
-
-        [field: Range(-1f, 1f)] public float WantDX { get; set; }
-        [field: Range(-1f, 1f)] public float WantDY { get; set; }
-        public bool WantCrouch => WantDY < 0f;
-        public bool WantJump => WantDY > 0f;
-
-        public void Move(Vector2 move)
+        [SerializeField] Vector2 wantMove;
+        public Vector2 WantMove { get => wantMove; set => SetWantMove(value); }
+        public void SetWantMove(Vector2 value)
         {
-            WantDX = move.x;
-            WantDY = move.y;
-        }
-
-        protected void Awake()
-        {
-            rigidbody = GetComponentInParent<Rigidbody2D>();
-            renderer = GetComponentInChildren<SpriteRenderer>();
-        }
-        protected void Start()
-        {
-            rigidbody.gravityScale = FallGravity;
-        }
-
-        IEnumerable<Collider2D> OverlapRelativeCircle(Vector3 relative)
-        {
-            Bounds localBounds = renderer.localBounds;
-            Vector3 global = localBounds.min + new Vector3(
-                localBounds.size.x * relative.x,
-                localBounds.size.y * relative.y,
-                0f
+            wantMove = value;
+            if (value != default) LastWantMove = value;
+            LastComponentMove = new(
+                wantMove.x != 0f ? wantMove.x : LastComponentMove.x,
+                wantMove.y != 0f ? wantMove.y : LastComponentMove.y
             );
-            global = renderer.transform.TransformPoint(global);
-            int collisions = Physics2D.OverlapCircleNonAlloc(global, relative.z, colliders, GroundLayerMask);
-            for (int i = 0; i < collisions; i++)
-            {
-                if (colliders[i].isTrigger) continue;
-                if (colliders[i].attachedRigidbody == rigidbody) continue;
-                yield return colliders[i];
-            }
         }
+        // Last (nondefault) move.
+        public Vector2 LastWantMove { get; private set; } = Vector2.right;
+        // Per-component last (nondefault) move.
+        public Vector2 LastComponentMove { get; private set; } = new(1, 1);
+
+        [field: SerializeField] public bool WantRun { get; set; }
+        [field: SerializeField] public bool WantFire { get; set; }
+        [field: SerializeField] public bool WantInteract { get; set; }
+
+        public bool WantCrouch => WantMove.y < 0f;
+        public bool WantJump => WantMove.y > 0f;
+
+
+        protected void Awake() => rigidbody = GetComponentInParent<Rigidbody2D>();
+        protected void Start() => rigidbody.gravityScale = FallGravity;
 
         protected void Update()
         {
-            bool? ShouldFaceRight = WantDX.Valence();
+            bool? ShouldFaceRight = WantMove.x.Valence();
             // basically localScale's valence, but flipped if !FacingRight.
             bool? IsFacingRight = transform.localScale.x.Valence() ^ !FacingRight;
             switch (ShouldFaceRight ^ IsFacingRight)
@@ -95,95 +83,122 @@ namespace BDUtil.Pubsub
                 case false: break;
                 case true: transform.localScale = transform.localScale.WithX(-transform.localScale.x); break;
             }
+            if (WantFire) Firing.Warm();
         }
 
         protected void FixedUpdate()
         {
-            CheckGround();
+            CheckColliders();
             CheckCrouch();
-            CheckJumping();
             ApplyMovement();
+            CheckJumping();
         }
 
-        /// You can jump if you're in contact with the ground & not currently jumping.
-        bool CanJump => CoyoteTime.Tick.IsLive && !IsJumping;
-
-        void CheckJumping()
+        protected void OnDrawGizmosSelected()
         {
-            if (!WantJump) IsJumping = false;
-            else if (CanJump)
+            if (rigidbody == null) rigidbody = GetComponent<Rigidbody2D>();
+            if (rigidbody == null) return;
+            int i = -1;
+            Color old = Gizmos.color;
+            foreach (ContactPoint2D contact in GetContacts())
             {
-                IsJumping = true;
-                JumpTime.Reset();
+                i++;
+                Gizmos.color = new((float)i / ContactCount, 1f, 0f, .7f);
+                Gizmos.DrawLine(contact.point, contact.point + contact.normal);
             }
-            // If you're actively sinking, you're not jumping [anymore].
-            if (rigidbody.velocity.y < 0) IsJumping = false;
-            if (!IsJumping) JumpTime.Stop();
-
-            if (JumpTime.Tick.IsLive) rigidbody.gravityScale = JumpGravity;
-            else if (IsJumping) rigidbody.gravityScale = RiseGravity;
-            else rigidbody.gravityScale = FallGravity;
+            Gizmos.color = old;
         }
+
+        void CheckColliders()
+        {
+            bool wasGrounded = Grounded;  // , wasCeilinged = Ceilinged, wasWalled = Walled;
+            foreach (ContactPoint2D contact in GetContacts())
+            {
+                if (contact.normal.y > contact.normal.x && contact.normal.y > -contact.normal.x)
+                {
+                    Grounded.Reset();
+                    continue;
+                }
+                if (contact.normal.y < contact.normal.x && contact.normal.y < -contact.normal.x)
+                {
+                    Ceilinged.Reset();
+                    continue;
+                }
+                if (contact.normal.x > contact.normal.y && contact.normal.x > -contact.normal.y)
+                {
+                    /*Left*/
+                    Walled.Reset();
+                    continue;
+                }
+                if (contact.normal.x < contact.normal.y && contact.normal.x < -contact.normal.y)
+                {
+                    /*Right*/
+                    Walled.Reset();
+                    continue;
+                }
+            }
+            if (!wasGrounded && Grounded)
+            {
+                JumpRising = false;
+                Jumping.Reset();
+            }
+        }
+        void CheckCrouch()
+        {
+            if (WantCrouch) Crouching.Warm(restartHot: true);
+            else if (Ceilinged) Crouching.Warm(restartHot: true);
+        }
+        [SerializeField] Delay airtime = Clock.FixedNow.StoppedDelayOf(float.PositiveInfinity);
         void ApplyMovement()
         {
-            Vector2 delta = new(WantDX * MaxDX, rigidbody.velocity.y);
+            Vector2 delta = new(WantMove.x * MaxDX, WantMove.y * MaxDY);
+            Vector2 veloc = rigidbody.velocity;
 
-            bool firstJumpTick = JumpTime.Tick.Passed <= 0f;
-            if (firstJumpTick && JumpDY > 0f)
-            {
-                delta.x *= JumpDXScale;
-                delta.y = WantDY * JumpDY;
-            }
-            else if (WantDY > 0f && RiseDY > 0f) delta.y = Mathf.Max(delta.y, WantDY * RiseDY);
-            else delta.y = Mathf.Min(delta.y, WantDY * FallDY);
+            if (delta.y > 0f && Jumping && JumpDYScale > 0f) delta.y = Mathf.Max(veloc.y, delta.y * JumpDYScale);
+            else if (delta.y > 0f && RiseDYScale > 0f) delta.y = Mathf.Max(veloc.y, delta.y * RiseDYScale);
+            else delta.y = Mathf.Min(veloc.y, delta.y * FallDYScale);
 
             if (IsMidair)
             {  // Lets you "swim" in air, a little. Could be ice-friction too?
                 delta.x *= AirDXScale;
-                switch ((delta.x.Valence(), rigidbody.velocity.x.Valence()))
+                switch ((delta.x.Valence(), veloc.x.Valence()))
                 {
-                    case (true, true): delta.x = Mathf.Max(delta.x, rigidbody.velocity.x); break;
-                    case (false, false): delta.x = Mathf.Min(delta.x, rigidbody.velocity.x); break;
-                    default: delta.x += rigidbody.velocity.x; break;
+                    case (true, true): delta.x = Mathf.Max(delta.x, veloc.x); break;
+                    case (false, false): delta.x = Mathf.Min(delta.x, veloc.x); break;
+                    default: delta.x += veloc.x; break;
                 }
             }
-            if (IsCrouching) delta.x *= CrouchDXScale;
+            if (Crouching) delta.x *= CrouchDXScale;
 
             rigidbody.velocity = new(
                 Mathf.SmoothDamp(rigidbody.velocity.x, delta.x, ref _accX, MovementSmoothing),
                 Mathf.SmoothDamp(rigidbody.velocity.y, delta.y, ref _accY, MovementSmoothing)
             );
         }
+        void CheckJumping()
+        {
+            if (!WantJump) { Jumping.Cool(); JumpRising = false; }
+            else if (Grounded) Jumping.Warm();
+            else if (rigidbody.velocity.y < 0) { Jumping.Cool(); JumpRising = false; }
+
+            if (Jumping.ResetCount() > 0)
+            {
+                JumpRising = true;
+                rigidbody.velocity = new(rigidbody.velocity.x * JumpDXScale, rigidbody.velocity.y);
+            }
+
+            if (Jumping) rigidbody.gravityScale = JumpGravity;
+            else if (JumpRising) rigidbody.gravityScale = RiseGravity;
+            else rigidbody.gravityScale = FallGravity;
+        }
         float _accX = default, _accY = default;
 
-        void CheckCrouch()
+        static int ContactCount = -1;
+        static readonly ContactPoint2D[] Contacts = new ContactPoint2D[32];
+        IEnumerable<ContactPoint2D> GetContacts()
         {
-            bool wasCrouching = IsCrouching;
-            if (WantCrouch) IsCrouching = true;
-            else
-            {
-                bool canStand = true;
-                foreach (Collider2D _ in OverlapRelativeCircle(CeilingCheck))
-                {
-                    canStand = false;
-                    break;
-                }
-                IsCrouching = !canStand;
-            }
-            if (IsCrouching ^ wasCrouching) OnCrouchEvent.Invoke(IsCrouching);
+            ContactCount = rigidbody.GetContacts(Contacts);
+            for (int i = 0; i < ContactCount; ++i) yield return Contacts[i];
         }
-
-        void CheckGround()
-        {
-            bool wasMidair = IsMidair;
-            foreach (Collider2D _ in OverlapRelativeCircle(GroundCheck))
-            {
-                CoyoteTime.Reset();
-                break;
-            }
-            if (wasMidair ^ IsMidair) OnGroundEvent.Invoke(wasMidair);
-        }
-
-        static readonly Collider2D[] colliders = new Collider2D[16];
     }
 }

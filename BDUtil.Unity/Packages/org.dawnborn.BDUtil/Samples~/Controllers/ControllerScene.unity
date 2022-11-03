@@ -229,6 +229,21 @@ MonoBehaviour:
     Action:
       m_PersistentCalls:
         m_Calls: []
+  Fire1:
+    topic: {fileID: 11400000, guid: ebbc9b07b006842af9cde4e7bc543d05, type: 2}
+    Action:
+      m_PersistentCalls:
+        m_Calls: []
+  Fire2:
+    topic: {fileID: 11400000, guid: 3d73f598a168548ee83e3116ac084960, type: 2}
+    Action:
+      m_PersistentCalls:
+        m_Calls: []
+  Fire3:
+    topic: {fileID: 11400000, guid: 1226f8172ad4c44248bc63ea4c0e0e8f, type: 2}
+    Action:
+      m_PersistentCalls:
+        m_Calls: []
 --- !u!114 &1048842147
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -512,37 +527,100 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0ac72ba000664a8988f0cfcf2832234, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MaxDX: 6
-  CrouchDXScale: 1
+  MaxDX: 12
+  WalkDXScale: 0.5
+  CrouchDXScale: 0.5
   JumpDXScale: 0.75
-  AirDXScale: 0.25
-  JumpDY: 12
-  RiseDY: 0
-  FallDY: 6
+  AirDXScale: 0.5
+  MaxDY: 6
+  JumpDYScale: 3
+  RiseDYScale: 0
+  FallDYScale: 1
   JumpGravity: 0
-  RiseGravity: 1
-  FallGravity: 2
-  JumpTime:
+  RiseGravity: 4
+  FallGravity: 6
+  Grounded:
+    Now:
+      IsFixed: 1
+    Start: NaN
     Length: 0.125
+  Walled:
+    Now:
+      IsFixed: 1
     Start: NaN
-  IsJumping: 0
+    Length: 0.125
+  Ceilinged:
+    Now:
+      IsFixed: 1
+    Start: NaN
+    Length: 0.125
+  Laddered:
+    Now:
+      IsFixed: 1
+    Start: NaN
+    Length: 0.125
+  Jumping:
+    Warming: 0
+    Hot: 0.125
+    Cooling: 0
+    <PeekHeat>k__BackingField: 0
+    <Count>k__BackingField: 0
+    Timer:
+      Now:
+        IsFixed: 0
+      Start: 0
+      Length: 0
+  JumpRising: 0
+  Running:
+    Warming: 0
+    Hot: 0
+    Cooling: 0
+    <PeekHeat>k__BackingField: 0
+    <Count>k__BackingField: 0
+    Timer:
+      Now:
+        IsFixed: 0
+      Start: 0
+      Length: 0
+  Firing:
+    Warming: 0
+    Hot: 0
+    Cooling: 0
+    <PeekHeat>k__BackingField: 0
+    <Count>k__BackingField: 0
+    Timer:
+      Now:
+        IsFixed: 0
+      Start: 0
+      Length: 0
+  Interacting:
+    Warming: 0
+    Hot: 0
+    Cooling: 0
+    <PeekHeat>k__BackingField: 0
+    <Count>k__BackingField: 0
+    Timer:
+      Now:
+        IsFixed: 0
+      Start: 0
+      Length: 0
+  Crouching:
+    Warming: 0
+    Hot: 0
+    Cooling: 0
+    <PeekHeat>k__BackingField: 0
+    <Count>k__BackingField: 0
+    Timer:
+      Now:
+        IsFixed: 0
+      Start: 0
+      Length: 0
   MovementSmoothing: 0.05
-  GroundLayerMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  GroundCheck: {x: 0.5, y: 0, z: 0.1}
-  CoyoteTime:
-    Length: 0.0625
-    Start: NaN
-  CeilingCheck: {x: 0.5, y: 1, z: 0.1}
-  IsCrouching: 0
   FacingRight: 1
-  OnGroundEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  OnCrouchEvent:
-    m_PersistentCalls:
-      m_Calls: []
+  wantMove: {x: 0, y: 0}
+  <WantRun>k__BackingField: 0
+  <WantFire>k__BackingField: 0
+  <WantInteract>k__BackingField: 0
 --- !u!114 &2072897512
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -557,6 +635,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Subscribes:
   - rid: 6742291673361154048
+  - rid: 6742291673361154049
+  - rid: 6742291673361154050
+  - rid: 6742291673361154052
   references:
     version: 2
     RefIds:
@@ -569,7 +650,7 @@ MonoBehaviour:
             m_Calls:
             - m_Target: {fileID: 2072897511}
               m_TargetAssemblyTypeName: BDUtil.Pubsub.CharacterController2D, org.dawnborn.bdutil.Runtime
-              m_MethodName: Move
+              m_MethodName: SetWantMove
               m_Mode: 0
               m_Arguments:
                 m_ObjectArgument: {fileID: 0}
@@ -579,3 +660,24 @@ MonoBehaviour:
                 m_StringArgument: 
                 m_BoolArgument: 0
               m_CallState: 2
+    - rid: 6742291673361154049
+      type: {class: Subscribers/UEvent, ns: BDUtil.Pubsub, asm: org.dawnborn.bdutil.Runtime}
+      data:
+        Topic: {fileID: 11400000, guid: ebbc9b07b006842af9cde4e7bc543d05, type: 2}
+        Event:
+          m_PersistentCalls:
+            m_Calls: []
+    - rid: 6742291673361154050
+      type: {class: Subscribers/UEvent, ns: BDUtil.Pubsub, asm: org.dawnborn.bdutil.Runtime}
+      data:
+        Topic: {fileID: 11400000, guid: 3d73f598a168548ee83e3116ac084960, type: 2}
+        Event:
+          m_PersistentCalls:
+            m_Calls: []
+    - rid: 6742291673361154052
+      type: {class: Subscribers/UEvent, ns: BDUtil.Pubsub, asm: org.dawnborn.bdutil.Runtime}
+      data:
+        Topic: {fileID: 11400000, guid: 1226f8172ad4c44248bc63ea4c0e0e8f, type: 2}
+        Event:
+          m_PersistentCalls:
+            m_Calls: []

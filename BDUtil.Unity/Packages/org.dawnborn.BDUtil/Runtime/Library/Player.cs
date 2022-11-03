@@ -89,11 +89,11 @@ namespace BDUtil.Library
         [Tooltip("Which index entry within a category was last played (or if UseIndexValue, next played)")]
         public int Index = -1;
         [Tooltip("How long the previous playable indicated it lasted")]
-        public Timer Delay = 0f;
+        public Delay Delay = 0f;
         public void PlayByCategoryForce(string tag, bool forceInterrupt)
         {
             if (tag == null) return;
-            if (Delay.Tick.IsLive && !CanInterrupt && !forceInterrupt) return;
+            if (Delay && !CanInterrupt && !forceInterrupt) return;
             Library.ICategory category = Library.GetICategory(tag);
             if (category == null) return;
             Index = PickIndex(category);
@@ -116,7 +116,7 @@ namespace BDUtil.Library
         public void PlayCurrentCategory() => PlayByCategory(Category);
         protected void Update()
         {
-            if (Delay.Tick.IsLive) return;
+            if (Delay) return;
             switch (Inertia)
             {
                 case Inertias.OnEnable:

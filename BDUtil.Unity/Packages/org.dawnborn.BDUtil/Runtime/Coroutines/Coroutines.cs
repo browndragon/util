@@ -19,7 +19,6 @@ namespace BDUtil
         public const YieldInstruction Next = null;
         public static readonly WaitForFixedUpdate Fixed = new();
         public static readonly WaitForEndOfFrame End = new();
-
         public static Coroutine Schedule(Action action, YieldInstruction instruction = Next)
         {
             IEnumerator afterDelay()
