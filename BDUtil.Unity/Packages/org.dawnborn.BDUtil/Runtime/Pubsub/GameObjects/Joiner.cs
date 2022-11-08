@@ -11,6 +11,8 @@ namespace BDUtil.Pubsub
         [SerializeField] ObjsSet[] Sets;
         [SuppressMessage("IDE", "IDE0044")]
         [SerializeField] ObjsById[] ByIds;
+        [SuppressMessage("IDE", "IDE0044")]
+        [SerializeField] GameObjectTopic[] GameObjects;
         readonly Disposes.All unsubscribe = new();
         [SuppressMessage("IDE", "IDE0051")]
         void OnEnable()
@@ -24,6 +26,11 @@ namespace BDUtil.Pubsub
             {
                 topic.Collection.Add(gameObject.GetInstanceID(), gameObject);
                 unsubscribe.Add(() => topic.Collection.Remove(gameObject.GetInstanceID()));
+            }
+            foreach (GameObjectTopic topic in GameObjects)
+            {
+                topic.Value = gameObject;
+                unsubscribe.Add(() => { if (topic.Value == gameObject) topic.Value = null; });
             }
         }
         [SuppressMessage("IDE", "IDE0051")]

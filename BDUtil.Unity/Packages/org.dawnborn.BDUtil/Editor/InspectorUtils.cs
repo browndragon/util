@@ -1,12 +1,43 @@
-using BDUtil.Fluent;
 using UnityEditor;
 using UnityEngine;
 namespace BDUtil.Editor
 {
     public static class InspectorUtils
     {
+
+        public readonly ref struct RawScope
+        {
+            public readonly float OrigLabelWidth;
+            public readonly int OrigIndentLevel;
+            public float LabelWidth
+            {
+                get => EditorGUIUtility.labelWidth;
+                set => EditorGUIUtility.labelWidth = value;
+            }
+            public int IndentLevel
+            {
+                get => EditorGUI.indentLevel;
+                set => EditorGUI.indentLevel = value;
+            }
+            internal RawScope(float labelWidth, int indentLevel)
+            {
+                this = default;
+                OrigLabelWidth = LabelWidth;
+                OrigIndentLevel = IndentLevel;
+                if (labelWidth >= 0f) LabelWidth = labelWidth;
+                if (indentLevel >= 0) IndentLevel = indentLevel;
+            }
+            public void Dispose()
+            {
+                LabelWidth = OrigLabelWidth;
+                IndentLevel = OrigIndentLevel;
+            }
+        }
+        public static RawScope Raw(float labelWidth = 0f, int indentLevel = 0) => new(labelWidth, indentLevel);
+
         public static float standardFieldWidth = 80f;
         public static float standardHorizontalSpacing = 1.5f * EditorGUIUtility.standardVerticalSpacing;
+        public static float labelControlSpacing = 2f;
         public static bool HasWidthFor(float width) => UnityEngine.Screen.width > width;
 
         public static Rect NextVertical(in Rect prev, float height = float.NaN, float margin = float.NaN)
@@ -31,11 +62,15 @@ namespace BDUtil.Editor
         }
         public static float GetLineWidth(int numElements, bool incLabel = true, int numSeparators = -1)
         {
-            if (numSeparators < 0) numSeparators += numElements;
+            if (numSeparators < 0) numSeparators += numElements - 1;
             return numElements * standardFieldWidth
                 + numSeparators * standardHorizontalSpacing
                 + (incLabel ? Mathf.Max(standardFieldWidth, EditorGUIUtility.labelWidth) : 0f);
         }
+
+        public static float GetLabelWidth(GUIContent label)  // , float spare = float.NaN)
+        => EditorStyles.label.CalcSize(label).x; // + (float.IsNaN(spare) ? labelControlSpacing : spare);
+
         public abstract class WideDrawer : PropertyDrawer
         {
             protected virtual bool WantsWide(

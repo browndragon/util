@@ -65,33 +65,10 @@ namespace BDUtil.Clone
         /// Postfabs MUST have a link, and it MUST be a prefab/variant asset file, and it MUST be the same as Asset.
         public bool IsPostfabInstance => FabType == FabTypes.Postfab;
 
-        /// Called on a prefab via an event or whatever.
-        public GameObject AcquireInstance() => Pool.main.Acquire(gameObject);
-        /// Called on a prefab via an event or whatever.
-        public GameObject AcquireInstance(Transform parent)
-        {
-            GameObject acquired = Pool.main.Acquire(gameObject, false);
-            acquired.transform.SetParent(parent);
-            acquired.SetActive(true);
-            return acquired;
-        }
-        /// Called on a prefab via an event or whatever.
-        public GameObject AcquireInstance(Vector3 position)
-        {
-            GameObject acquired = Pool.main.Acquire(gameObject, false);
-            acquired.transform.position = position;
-            acquired.SetActive(true);
-            return acquired;
-        }
-        /// Called on a prefab via an event or whatever.
-        public GameObject AcquireInstance(Vector2 position)
-        {
-            GameObject acquired = Pool.main.Acquire(gameObject, false);
-            acquired.transform.position = position;
-            acquired.SetActive(true);
-            return acquired;
-        }
-        /// Called on a postfab via an event or whatever to release (or if needed destroy) me.
+        /// Called on a _prefab_ via an event or whatever.
+        public void AcquireInstance() => Pool.main.Acquire(gameObject);
+        /// Called on a _postfab_ via an event or whatever to release (or if needed destroy) me.
+        /// You can also use the Pool scriptableobject's Release method with a gameObject argument.
         public void ReleaseInstance() => Pool.main.Release(gameObject);
 
 

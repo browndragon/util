@@ -14,15 +14,15 @@ namespace BDUtil.Math.Editor
                                    SerializedProperty property,
                                    GUIContent label)
         {
-            SerializedProperty posProp = property.FindPropertyRelative("position");
-            SerializedProperty sizeProp = property.FindPropertyRelative("size");
-            scratchGC[0] = new("Pos");
-            scratchGC[1] = new("Size");
-            scratchData[0] = posProp.floatValue;
-            scratchData[1] = sizeProp.floatValue;
+            SerializedProperty minProp = property.FindPropertyRelative("min");
+            SerializedProperty maxProp = property.FindPropertyRelative("max");
+            scratchGC[0] = new("Min");
+            scratchGC[1] = new("Max");
+            scratchData[0] = minProp.floatValue;
+            scratchData[1] = maxProp.floatValue;
             EditorGUI.MultiFloatField(position, label, scratchGC, scratchData);
-            posProp.floatValue = scratchData[0];
-            sizeProp.floatValue = scratchData[1];
+            minProp.floatValue = scratchData[0];
+            maxProp.floatValue = scratchData[1];
         }
         static readonly GUIContent[] scratchGC = new GUIContent[2];
         static readonly float[] scratchData = new float[2];

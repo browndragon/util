@@ -1,10 +1,7 @@
-using System;
 using BDUtil;
 using BDUtil.Math;
-using BDUtil.Pubsub;
 using BDUtil.Screen;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 namespace BDRPG.Screen
 {
@@ -15,50 +12,16 @@ namespace BDRPG.Screen
     {
         static readonly Rect unitRect = Rect.MinMaxRect(0f, 0f, 1f, 1f);
         public float CamSmooth = .125f;
+        public bool FollowMouse = true;
+        [Tooltip("A point in the viewport space where -1 is left/bottom, +1 is right/top")]
+        [field: SerializeField] public Vector2 ViewportPoint { get; private set; }
 
-        public interface IPointSource
-        {
-            Vector2 GetViewportPoint(Camera camera);
-        }
-        [Serializable]
-        public struct MousePointSource : IPointSource
-        {
-            public Vector2 GetViewportPoint(Camera camera)
-            {
-                // Mouse is over a button; don't move.
-                if (EventSystem.current?.IsPointerOverGameObject() ?? false) return .5f * Vector2.one;
-                Vector2 pointer = camera.ScreenToViewportPoint(Input.mousePosition);
-                // Mouse is off of the screen; don't move.
-                if (!unitRect.Contains(pointer)) return .5f * Vector2.one;
-                return pointer;
-            }
-        }
-        [Serializable]
-        public struct TransformPointSource : IPointSource
-        {
-            public Transform Transform;
-            public Vector2 GetViewportPoint(Camera camera)
-            {
-                if (Transform == null) return .5f * Vector2.one;
-                return camera.WorldToViewportPoint(Transform.position);
-            }
-
-        }
-        [Serializable]
-        public struct WorldPointSource : IPointSource
-        {
-            public Topic<Vector3> PointSource;
-            public Vector2 GetViewportPoint(Camera camera) => camera.WorldToViewportPoint(PointSource.Value);
-        }
-        [Serializable]
-        public struct GameObjectSource : IPointSource
-        {
-            public Topic<GameObject> PointSource;
-            public Vector2 GetViewportPoint(Camera camera) => camera.WorldToViewportPoint(PointSource.Value.transform.position);
-        }
-
-        [Tooltip("What are we following? It's legal to change this during play.")]
-        [SerializeReference, Subtype] public IPointSource PointSource = new MousePointSource();
+        public void SetViewportPointFromWorldPoint(Vector3 worldPoint)
+        => ViewportPoint = 2 * camera.WorldToViewportPoint(worldPoint) - Vector3.one;
+        public void SetViewportPointFromObject(GameObject gameObject)
+        => SetViewportPointFromWorldPoint(gameObject.transform.position);
+        public void SetViewportPointFromComponent(Component component)
+        => SetViewportPointFromWorldPoint(component.transform.position);
 
         [Tooltip("Screen-center ratio to ignore movement; (1,1) would disable all, (0,0) none.")]
         public Vector2 DeadZone = .5f * Vector2.one;
@@ -84,42 +47,42 @@ namespace BDRPG.Screen
         }
 
         public Vector3 Velocity;
-        public Vector2 Viewport0;
         public Vector2 SpeedRatio;
         public bool IsInDeadZone;
         protected void FixedUpdate()
         {
-            if (PointSource == null) return;
             if (suppressed) return;
-            Vector2 trackedViewport = PointSource.GetViewportPoint(camera);
-            // Okay, so:
-            Viewport0 = trackedViewport - .5f * Vector2.one;
+            if (FollowMouse)
+            {
+                ViewportPoint = 2 * (Vector2)camera.ScreenToViewportPoint(Input.mousePosition) - Vector2.one;
+            }
             // We're now x&y in [-.5f,+.5f].
             Vector2 halfDead = DeadZone / 2;
-            if (Viewport0.x.IsInRange(-halfDead.x, +halfDead.x)) Viewport0.x = 0f;
-            if (Viewport0.y.IsInRange(-halfDead.y, +halfDead.y)) Viewport0.y = 0f;
-            if (IsInDeadZone = Viewport0 == default)
+            SpeedRatio = ViewportPoint;
+            if (SpeedRatio.x.IsInRange(-halfDead.x, +halfDead.x)) SpeedRatio.x = 0f;
+            if (SpeedRatio.y.IsInRange(-halfDead.y, +halfDead.y)) SpeedRatio.y = 0f;
+            if (IsInDeadZone = SpeedRatio == default)
             {
                 camera.MoveAlongXYDelta(
                     default,
                     ref Velocity,
-                    maxSpeed: GroundSpeed
+                    CamSmooth  //,
+                               // maxSpeed: GroundSpeed
                 );
                 return;
             }
 
             // Okay, we're NOT in the dead zone. Converge!
-            SpeedRatio = Viewport0;
-            Vector2 sign = new(Mathf.Sign(SpeedRatio.x), Mathf.Sign(SpeedRatio.y));
-            Vector2 abs = new(SpeedRatio.x * sign.x, SpeedRatio.y * sign.y);
-            Vector2 halfMax = MaxZone / 2;
-            if (abs.x > halfMax.x) SpeedRatio.x = sign.x * 1f;
-            else SpeedRatio.x = (abs.x - halfDead.x) / (halfMax.x - halfDead.x);
-            if (abs.y > halfMax.y) SpeedRatio.y = sign.y * 1f;
-            else SpeedRatio.y = (abs.y - halfDead.y) / (halfMax.y - halfDead.y);
+            // Vector2 sign = new(Mathf.Sign(SpeedRatio.x), Mathf.Sign(SpeedRatio.y));
+            // Vector2 abs = new(SpeedRatio.x * sign.x, SpeedRatio.y * sign.y);
+            // Vector2 halfMax = MaxZone / 2;
+            // if (abs.x > halfMax.x) SpeedRatio.x = sign.x * 1f;
+            // else SpeedRatio.x = (abs.x - halfDead.x) / (halfMax.x - halfDead.x);
+            // if (abs.y > halfMax.y) SpeedRatio.y = sign.y * 1f;
+            // else SpeedRatio.y = (abs.y - halfDead.y) / (halfMax.y - halfDead.y);
 
-            float speed = GroundSpeed * Curve.Evaluate(SpeedRatio.magnitude);
-            Vector3 worldpoint = camera.ViewportPointToIntersection((Vector3)trackedViewport);
+            // float speed = GroundSpeed * Curve.Evaluate(SpeedRatio.magnitude);
+            Vector3 worldpoint = camera.LookingAt((ViewportPoint + Vector2.one) / 2);
             if (!SceneBounds.Bounds.Contains(worldpoint))
             {
                 worldpoint = SceneBounds.Bounds.ClosestPoint(worldpoint);
@@ -127,8 +90,8 @@ namespace BDRPG.Screen
             camera.MoveAlongXYDelta(
                 worldpoint - camera.LookingAt(),
                 ref Velocity,
-                CamSmooth,
-                speed
+                CamSmooth  // ,
+                           // speed
             );
         }
     }

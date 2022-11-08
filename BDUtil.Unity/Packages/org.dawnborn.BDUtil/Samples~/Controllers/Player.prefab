@@ -1,0 +1,326 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3427485217265422992
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3427485217265422999}
+  - component: {fileID: -5725757667885982401}
+  - component: {fileID: 3427485217265422996}
+  - component: {fileID: 3427485217265422997}
+  - component: {fileID: 3427485217265422994}
+  - component: {fileID: 3427485217265422998}
+  - component: {fileID: 3427485217265423001}
+  - component: {fileID: 1855793416571705013}
+  m_Layer: 0
+  m_Name: Player
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3427485217265422999
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3427485217265422992}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.19403258, y: 0.012230076, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &-5725757667885982401
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3427485217265422992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1005b6684b5084084a08e2389d01e6c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <FabType>k__BackingField: 2
+  <Link>k__BackingField: {fileID: 0}
+  <Asset>k__BackingField: {fileID: 3427485217265422992}
+--- !u!212 &3427485217265422996
+SpriteRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3427485217265422992}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 1, y: 1}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
+  m_SpriteSortPoint: 0
+--- !u!58 &3427485217265422997
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3427485217265422992}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 0.5
+--- !u!50 &3427485217265422994
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3427485217265422992}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 1
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 4
+--- !u!114 &3427485217265422998
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3427485217265422992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0ac72ba000664a8988f0cfcf2832234, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MaxDX: 12
+  WalkDXScale: 0.5
+  CrouchDXScale: 0.5
+  JumpDXScale: 0.75
+  AirDXScale: 0.5
+  MaxDY: 6
+  JumpDYScale: 3
+  RiseDYScale: 0
+  FallDYScale: 1
+  JumpGravity: 0
+  RiseGravity: 4
+  FallGravity: 6
+  Touching: 0
+  NoneAfter:
+    Now: 1
+    Start: NaN
+    Length: 0.125
+  Grounded:
+    Now: 1
+    Start: NaN
+    Length: 0.125
+  Walled:
+    Now: 1
+    Start: NaN
+    Length: 0.125
+  Ceilinged:
+    Now: 1
+    Start: NaN
+    Length: 0.125
+  Laddered:
+    Now: 1
+    Start: NaN
+    Length: 0.125
+  Jumping:
+    Warming: 0
+    Hot: 0.125
+    Cooling: 0
+    <PeekHeat>k__BackingField: 0
+    <Count>k__BackingField: 0
+    Timer:
+      Now: 0
+      Start: NaN
+      Length: 0
+  JumpRising: 0
+  Running:
+    Warming: 0
+    Hot: 0
+    Cooling: 0
+    <PeekHeat>k__BackingField: 0
+    <Count>k__BackingField: 0
+    Timer:
+      Now: 0
+      Start: NaN
+      Length: 0
+  Firing:
+    Warming: 0
+    Hot: 0
+    Cooling: 0
+    <PeekHeat>k__BackingField: 0
+    <Count>k__BackingField: 0
+    Timer:
+      Now: 0
+      Start: NaN
+      Length: 0
+  Interacting:
+    Warming: 0
+    Hot: 0
+    Cooling: 0
+    <PeekHeat>k__BackingField: 0
+    <Count>k__BackingField: 0
+    Timer:
+      Now: 0
+      Start: NaN
+      Length: 0
+  Crouching:
+    Warming: 0
+    Hot: 0
+    Cooling: 0
+    <PeekHeat>k__BackingField: 0
+    <Count>k__BackingField: 0
+    Timer:
+      Now: 0
+      Start: NaN
+      Length: Infinity
+  MovementSmoothing: 0.05
+  FacingRight: 1
+  wantMove: {x: 0, y: 0}
+  <WantRun>k__BackingField: 0
+  <WantFire>k__BackingField: 0
+  <WantInteract>k__BackingField: 0
+  airtime:
+    Now: 1
+    Start: NaN
+    Length: Infinity
+--- !u!114 &3427485217265423001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3427485217265422992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ca0209ff210b48f4aa06e90cfbfe1c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Subscribes:
+  - rid: 6742291673361154048
+  - rid: 6742291673361154049
+  - rid: 6742291673361154050
+  - rid: 6742291673361154052
+  references:
+    version: 2
+    RefIds:
+    - rid: 6742291673361154048
+      type: {class: V2Topic/UEventV2, ns: BDUtil.Pubsub, asm: org.dawnborn.bdutil.Runtime}
+      data:
+        Topic: {fileID: 11400000, guid: e0ea58e289bef4912b498c5c97ebf876, type: 2}
+        Event:
+          m_PersistentCalls:
+            m_Calls:
+            - m_Target: {fileID: 3427485217265422998}
+              m_TargetAssemblyTypeName: BDUtil.Pubsub.CharacterController2D, org.dawnborn.bdutil.Runtime
+              m_MethodName: SetWantMove
+              m_Mode: 0
+              m_Arguments:
+                m_ObjectArgument: {fileID: 0}
+                m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+                m_IntArgument: 0
+                m_FloatArgument: 0
+                m_StringArgument: 
+                m_BoolArgument: 0
+              m_CallState: 2
+    - rid: 6742291673361154049
+      type: {class: Subscribers/UEvent, ns: BDUtil.Pubsub, asm: org.dawnborn.bdutil.Runtime}
+      data:
+        Topic: {fileID: 11400000, guid: ebbc9b07b006842af9cde4e7bc543d05, type: 2}
+        Event:
+          m_PersistentCalls:
+            m_Calls: []
+    - rid: 6742291673361154050
+      type: {class: Subscribers/UEvent, ns: BDUtil.Pubsub, asm: org.dawnborn.bdutil.Runtime}
+      data:
+        Topic: {fileID: 11400000, guid: 3d73f598a168548ee83e3116ac084960, type: 2}
+        Event:
+          m_PersistentCalls:
+            m_Calls: []
+    - rid: 6742291673361154052
+      type: {class: Subscribers/UEvent, ns: BDUtil.Pubsub, asm: org.dawnborn.bdutil.Runtime}
+      data:
+        Topic: {fileID: 11400000, guid: 1226f8172ad4c44248bc63ea4c0e0e8f, type: 2}
+        Event:
+          m_PersistentCalls:
+            m_Calls: []
+--- !u!114 &1855793416571705013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3427485217265422992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a51a370338fd48a8b9da9b6f81c79cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Sets: []
+  ByIds: []
+  GameObjects:
+  - {fileID: 11400000, guid: 9d737f06070964302a5bb879e0fbff36, type: 2}

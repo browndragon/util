@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BDUtil.Fluent;
 using BDUtil.Math;
 using UnityEngine;
 
@@ -17,17 +18,25 @@ namespace BDUtil.Pubsub
         public float MaxDY = 6f;
         public float JumpDYScale = 3f;
         public float RiseDYScale = 0f;
-        public float FallDYScale = -1f;
+        public float FallDYScale = 1f;
 
         public float JumpGravity = 0f;  // Gravity during initial launch phase of jump.
         public float RiseGravity = 4f;  // Gravity scale while dy > 0 (after launch phase)
         public float FallGravity = 6f;  // Gravity scale while dy < 0
 
+        [Flags]
+        public enum Touchings
+        {
+            None = default,
+            Floor = 1 << 0,
+            Left = 1 << 1,
+            Top = 1 << 2,
+            Right = 1 << 3,
+            Ladder = 1 << 4,
+        };
+        public Touchings Touching;
         public Delay Grounded = Clock.FixedNow.StoppedDelayOf(.125f);
-        public Delay Walled = Clock.FixedNow.StoppedDelayOf(.125f);
-        public Delay Ceilinged = Clock.FixedNow.StoppedDelayOf(.125f);
-        public Delay Laddered = Clock.FixedNow.StoppedDelayOf(.125f);
-        public bool IsMidair => !Grounded && !Walled && !Laddered && !Ceilinged;
+        public bool IsMidair => !Touching.HasFlag(Touchings.Floor) && !Grounded;
 
         // Ability cooldown cycle: begun, executed, and then departed.
         public Cooldown Jumping = new(0f, .125f, .0625f, Clock.FixedNow);
@@ -83,7 +92,9 @@ namespace BDUtil.Pubsub
                 case false: break;
                 case true: transform.localScale = transform.localScale.WithX(-transform.localScale.x); break;
             }
+            if (WantRun) Running.Warm();
             if (WantFire) Firing.Warm();
+            if (WantInteract) Interacting.Warm();
         }
 
         protected void FixedUpdate()
@@ -94,49 +105,36 @@ namespace BDUtil.Pubsub
             CheckJumping();
         }
 
-        protected void OnDrawGizmosSelected()
-        {
-            if (rigidbody == null) rigidbody = GetComponent<Rigidbody2D>();
-            if (rigidbody == null) return;
-            int i = -1;
-            Color old = Gizmos.color;
-            foreach (ContactPoint2D contact in GetContacts())
-            {
-                i++;
-                Gizmos.color = new((float)i / ContactCount, 1f, 0f, .7f);
-                Gizmos.DrawLine(contact.point, contact.point + contact.normal);
-            }
-            Gizmos.color = old;
-        }
-
         void CheckColliders()
         {
             bool wasGrounded = Grounded;  // , wasCeilinged = Ceilinged, wasWalled = Walled;
+            bool wasLaddered = Touching.HasFlag(Touchings.Ladder);
+            Touching = Touchings.None;
             foreach (ContactPoint2D contact in GetContacts())
             {
                 if (contact.normal.y > contact.normal.x && contact.normal.y > -contact.normal.x)
                 {
-                    Grounded.Reset();
+                    Touching |= Touchings.Floor;
                     continue;
                 }
                 if (contact.normal.y < contact.normal.x && contact.normal.y < -contact.normal.x)
                 {
-                    Ceilinged.Reset();
+                    Touching |= Touchings.Top;
                     continue;
                 }
                 if (contact.normal.x > contact.normal.y && contact.normal.x > -contact.normal.y)
                 {
-                    /*Left*/
-                    Walled.Reset();
+                    Touching |= Touchings.Left;
                     continue;
                 }
                 if (contact.normal.x < contact.normal.y && contact.normal.x < -contact.normal.y)
                 {
-                    /*Right*/
-                    Walled.Reset();
+                    Touching |= Touchings.Right;
                     continue;
                 }
             }
+            if (wasLaddered) Touching |= Touchings.Ladder;
+            if (Touching.HasFlag(Touchings.Floor)) Grounded.Reset();
             if (!wasGrounded && Grounded)
             {
                 JumpRising = false;
@@ -146,29 +144,25 @@ namespace BDUtil.Pubsub
         void CheckCrouch()
         {
             if (WantCrouch) Crouching.Warm(restartHot: true);
-            else if (Ceilinged) Crouching.Warm(restartHot: true);
+            else if (Touching.HasFlag(Touchings.Top)) Crouching.Warm(restartHot: true);
+            else Crouching.Cool();
         }
-        [SerializeField] Delay airtime = Clock.FixedNow.StoppedDelayOf(float.PositiveInfinity);
         void ApplyMovement()
         {
             Vector2 delta = new(WantMove.x * MaxDX, WantMove.y * MaxDY);
-            Vector2 veloc = rigidbody.velocity;
+            Vector2 veloc = rigidbody.velocity, origVeloc = veloc;
 
             if (delta.y > 0f && Jumping && JumpDYScale > 0f) delta.y = Mathf.Max(veloc.y, delta.y * JumpDYScale);
             else if (delta.y > 0f && RiseDYScale > 0f) delta.y = Mathf.Max(veloc.y, delta.y * RiseDYScale);
             else delta.y = Mathf.Min(veloc.y, delta.y * FallDYScale);
 
-            if (IsMidair)
+            if (Crouching) delta.x *= CrouchDXScale;
+            if (IsMidair && !Grounded)  // After a little bit of coyote time
             {  // Lets you "swim" in air, a little. Could be ice-friction too?
                 delta.x *= AirDXScale;
-                switch ((delta.x.Valence(), veloc.x.Valence()))
-                {
-                    case (true, true): delta.x = Mathf.Max(delta.x, veloc.x); break;
-                    case (false, false): delta.x = Mathf.Min(delta.x, veloc.x); break;
-                    default: delta.x += veloc.x; break;
-                }
+                delta.x += veloc.x;
+                delta.x = Mathf.Clamp(delta.x, -MaxDX * JumpDXScale, +MaxDX * JumpDXScale);
             }
-            if (Crouching) delta.x *= CrouchDXScale;
 
             rigidbody.velocity = new(
                 Mathf.SmoothDamp(rigidbody.velocity.x, delta.x, ref _accX, MovementSmoothing),
@@ -180,12 +174,6 @@ namespace BDUtil.Pubsub
             if (!WantJump) { Jumping.Cool(); JumpRising = false; }
             else if (Grounded) Jumping.Warm();
             else if (rigidbody.velocity.y < 0) { Jumping.Cool(); JumpRising = false; }
-
-            if (Jumping.ResetCount() > 0)
-            {
-                JumpRising = true;
-                rigidbody.velocity = new(rigidbody.velocity.x * JumpDXScale, rigidbody.velocity.y);
-            }
 
             if (Jumping) rigidbody.gravityScale = JumpGravity;
             else if (JumpRising) rigidbody.gravityScale = RiseGravity;
