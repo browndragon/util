@@ -1,4 +1,3 @@
-using BDUtil;
 using BDUtil.Math;
 using BDUtil.Screen;
 using UnityEngine;
@@ -10,7 +9,7 @@ namespace BDRPG.Screen
     [Tooltip("Follows something -- the mouse, a specific character, etc.")]
     public class FollowCamera : MonoBehaviour
     {
-        static readonly Rect unitRect = Rect.MinMaxRect(0f, 0f, 1f, 1f);
+        // static readonly Rect unitRect = Rect.MinMaxRect(0f, 0f, 1f, 1f);
         public float CamSmooth = .125f;
         public bool FollowMouse = true;
         [Tooltip("A point in the viewport space where -1 is left/bottom, +1 is right/top")]
@@ -29,8 +28,8 @@ namespace BDRPG.Screen
         public Vector2 MaxZone = .875f * Vector2.one;
         [Tooltip("Mouse ratio between dead & max -> speed ratio between 0 & GroundSpeed")]
         public AnimationCurve Curve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-        [Tooltip("Speed to move along ground to bring mouse back into dead zone")]
-        public float GroundSpeed = 25;
+        // [Tooltip("Speed to move along ground to bring mouse back into dead zone")]
+        // public float GroundSpeed = 25;
 
         new Camera camera;
         bool suppressed;
@@ -49,7 +48,7 @@ namespace BDRPG.Screen
         public Vector3 Velocity;
         public Vector2 SpeedRatio;
         public bool IsInDeadZone;
-        protected void FixedUpdate()
+        protected void LateUpdate()
         {
             if (suppressed) return;
             if (FollowMouse)
@@ -66,22 +65,11 @@ namespace BDRPG.Screen
                 camera.MoveAlongXYDelta(
                     default,
                     ref Velocity,
-                    CamSmooth  //,
-                               // maxSpeed: GroundSpeed
+                    CamSmooth
                 );
                 return;
             }
 
-            // Okay, we're NOT in the dead zone. Converge!
-            // Vector2 sign = new(Mathf.Sign(SpeedRatio.x), Mathf.Sign(SpeedRatio.y));
-            // Vector2 abs = new(SpeedRatio.x * sign.x, SpeedRatio.y * sign.y);
-            // Vector2 halfMax = MaxZone / 2;
-            // if (abs.x > halfMax.x) SpeedRatio.x = sign.x * 1f;
-            // else SpeedRatio.x = (abs.x - halfDead.x) / (halfMax.x - halfDead.x);
-            // if (abs.y > halfMax.y) SpeedRatio.y = sign.y * 1f;
-            // else SpeedRatio.y = (abs.y - halfDead.y) / (halfMax.y - halfDead.y);
-
-            // float speed = GroundSpeed * Curve.Evaluate(SpeedRatio.magnitude);
             Vector3 worldpoint = camera.LookingAt((ViewportPoint + Vector2.one) / 2);
             if (!SceneBounds.Bounds.Contains(worldpoint))
             {
@@ -90,8 +78,7 @@ namespace BDRPG.Screen
             camera.MoveAlongXYDelta(
                 worldpoint - camera.LookingAt(),
                 ref Velocity,
-                CamSmooth  // ,
-                           // speed
+                CamSmooth
             );
         }
     }
