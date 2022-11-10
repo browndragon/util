@@ -227,25 +227,20 @@ MonoBehaviour:
   DeadAngleSize: 15
   Dir:
     topic: {fileID: 11400000, guid: e0ea58e289bef4912b498c5c97ebf876, type: 2}
-    DefaultValue: {x: 0, y: 0}
-    Action:
-      m_PersistentCalls:
-        m_Calls: []
+    defaults:
+      Value: {x: 0, y: 0}
   Fire1:
     topic: {fileID: 11400000, guid: ebbc9b07b006842af9cde4e7bc543d05, type: 2}
-    Action:
-      m_PersistentCalls:
-        m_Calls: []
+    defaults:
+      Value: 0
   Fire2:
-    topic: {fileID: 11400000, guid: 3d73f598a168548ee83e3116ac084960, type: 2}
-    Action:
-      m_PersistentCalls:
-        m_Calls: []
+    topic: {fileID: 11400000, guid: 85ecf3887734449c99c8bf46bd748de9, type: 2}
+    defaults:
+      Value: 0
   Fire3:
-    topic: {fileID: 11400000, guid: 1226f8172ad4c44248bc63ea4c0e0e8f, type: 2}
-    Action:
-      m_PersistentCalls:
-        m_Calls: []
+    topic: {fileID: 11400000, guid: 4dec17902db8e4996a2490e844fcec87, type: 2}
+    defaults:
+      Value: 0
 --- !u!114 &1048842147
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -276,11 +271,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target:
-    topic: {fileID: 11400000, guid: 9d737f06070964302a5bb879e0fbff36, type: 2}
-    DefaultValue: {fileID: 0}
-    Action:
-      m_PersistentCalls:
-        m_Calls: []
+    topic: {fileID: 0}
+    defaults:
+      Value: {fileID: 0}
   OnUpdate:
     m_PersistentCalls:
       m_Calls:
@@ -358,7 +351,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  GroundSpeed: 25
   Velocity: {x: 0, y: 0, z: 0}
   SpeedRatio: {x: 0, y: 0}
   IsInDeadZone: 0
@@ -579,6 +571,5 @@ PrefabInstance:
       propertyPath: OnUpdate.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
       value: 2
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 3427485217265423000, guid: 96ef21154c3cd4c0da72e244038c59eb, type: 3}
+    m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 96ef21154c3cd4c0da72e244038c59eb, type: 3}

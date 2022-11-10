@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BDUtil.Clone;
 using BDUtil.Math;
 using UnityEngine;
 
@@ -9,7 +10,7 @@ namespace BDUtil.Pubsub
     public class CharacterController2D : MonoBehaviour
     {
         public float MaxDX = 12f;
-        public float WalkDXScale = .5f;
+        public float WalkDXScale = 1f;
         public float CrouchDXScale = .5f;
         public float JumpDXScale = .75f;
         public float AirDXScale = .5f;
@@ -40,8 +41,9 @@ namespace BDUtil.Pubsub
         // Ability cooldown cycle: begun, executed, and then departed.
         public Cooldown Jumping = new(0f, .125f, .0625f, Clock.FixedNow);
         public bool JumpRising;
-        public Cooldown Running = new(0f, float.PositiveInfinity, .125f, Clock.FixedNow);
         public Cooldown Firing = new(0f, 0f, .5f, Clock.FixedNow);
+        public Rigidbody2D Ammo;
+        public float FireVelocity = 12f;
         public Cooldown Interacting = new(0f, 0f, .5f, Clock.FixedNow);
 
         public Cooldown Crouching = new(0f, float.PositiveInfinity, 0f, Clock.FixedNow);
@@ -68,6 +70,7 @@ namespace BDUtil.Pubsub
         public Vector2 LastWantMove { get; private set; } = Vector2.right;
         // Per-component last (nondefault) move.
         public Vector2 LastComponentMove { get; private set; } = new(1, 1);
+        public Vector3 FireDir => (LastComponentMove.x * Vector3.right + LastWantMove.y * Vector3.up).normalized;
 
         [field: SerializeField] public bool WantRun { get; set; }
         [field: SerializeField] public bool WantFire { get; set; }
@@ -91,9 +94,23 @@ namespace BDUtil.Pubsub
                 case false: break;
                 case true: transform.localScale = transform.localScale.WithX(-transform.localScale.x); break;
             }
-            if (WantRun) Running.Warm();
-            if (WantFire) Firing.Warm();
+            if (Ammo != null)
+            {
+                if (WantFire) Firing.Warm();
+                if (Firing.ResetCount() > 0)
+                {
+                    Rigidbody2D fired = Pool.main.Acquire(Ammo, false);
+                    fired.tag = tag;
+                    fired.transform.position = transform.position + FireDir;
+                    fired.gameObject.SetActive(true);
+                    fired.velocity = FireVelocity * FireDir;
+                }
+            }
             if (WantInteract) Interacting.Warm();
+            if (Interacting.ResetCount() > 0)
+            {
+                Debug.Log($"Interacting!");
+            }
         }
 
         protected void FixedUpdate()
@@ -149,7 +166,7 @@ namespace BDUtil.Pubsub
         void ApplyMovement()
         {
             Vector2 delta = new(WantMove.x * MaxDX, WantMove.y * MaxDY);
-            Vector2 veloc = rigidbody.velocity, origVeloc = veloc;
+            Vector2 veloc = rigidbody.velocity;  //, origVeloc = veloc;
 
             if (delta.y > 0f && Jumping && JumpDYScale > 0f) delta.y = Mathf.Max(veloc.y, delta.y * JumpDYScale);
             else if (delta.y > 0f && RiseDYScale > 0f) delta.y = Mathf.Max(veloc.y, delta.y * RiseDYScale);

@@ -37,30 +37,10 @@ namespace BDUtil.Screen
         {
             if (Bounds.Contains(@object.transform.position)) return;
             Rigidbody2D rigidbody2D = @object.GetComponent<Rigidbody2D>();
-            if (rigidbody2D) { BounceRigidbody2D(rigidbody2D); return; }
+            if (rigidbody2D) { rigidbody2D.Bounce(Bounds); return; }
             Rigidbody rigidbody = @object.GetComponent<Rigidbody>();
-            if (rigidbody) { BounceRigidbody(rigidbody); return; }
+            if (rigidbody) { rigidbody.Bounce(Bounds); return; }
             else @object.transform.position = bounds.ClosestPoint(@object.transform.position);
-        }
-        static void BounceRigidbody2D(Rigidbody2D rigidbody)
-        {
-            Vector2 velocity = rigidbody.velocity;
-            if (rigidbody.position.x > bounds.max.x) velocity.x = -Mathf.Abs(velocity.x);
-            if (rigidbody.position.x < bounds.min.x) velocity.x = Mathf.Abs(velocity.x);
-            if (rigidbody.position.y > bounds.max.y) velocity.y = -Mathf.Abs(velocity.y);
-            if (rigidbody.position.y < bounds.min.y) velocity.y = Mathf.Abs(velocity.y);
-            rigidbody.velocity = velocity;
-        }
-        static void BounceRigidbody(Rigidbody rigidbody)
-        {
-            Vector3 velocity = rigidbody.velocity;
-            if (rigidbody.position.x > bounds.max.x) velocity.x = -Mathf.Abs(velocity.x);
-            if (rigidbody.position.x < bounds.min.x) velocity.x = Mathf.Abs(velocity.x);
-            if (rigidbody.position.y > bounds.max.y) velocity.y = -Mathf.Abs(velocity.y);
-            if (rigidbody.position.y < bounds.min.y) velocity.y = Mathf.Abs(velocity.y);
-            if (rigidbody.position.z > bounds.max.z) velocity.z = -Mathf.Abs(velocity.z);
-            if (rigidbody.position.z < bounds.min.z) velocity.z = Mathf.Abs(velocity.z);
-            rigidbody.velocity = velocity;
         }
     }
 }

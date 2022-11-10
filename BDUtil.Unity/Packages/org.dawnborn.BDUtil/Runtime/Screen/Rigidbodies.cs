@@ -70,7 +70,17 @@ namespace BDUtil.Screen
             thiz.velocity = thiz.velocity.Overridden(target.Velocity);
             thiz.angularVelocity = thiz.angularVelocity.Overridden(target.AngularVelocity);
         }
-
-
+        public static void Bounce(this Rigidbody2D thiz, Bounds bounds)
+        {
+            Vector3 velocity = thiz.velocity;
+            bounds.Bounce(thiz.position, ref velocity);
+            thiz.velocity = velocity;
+        }
+        public static void Bounce(this Rigidbody thiz, Bounds bounds)
+        {
+            Vector3 velocity = thiz.velocity;
+            bounds.Bounce(thiz.position, ref velocity);
+            thiz.velocity = velocity;
+        }
     }
 }

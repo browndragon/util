@@ -9,10 +9,12 @@ namespace BDUtil.Pubsub
     {
         public float DeadZoneRadius = .5f;
         public float DeadAngleSize = 15f;
+
         public Val<Vector2> Dir;
-        public Val Fire1;
-        public Val Fire2;
-        public Val Fire3;
+        public Val<bool> Fire1;
+        public Val<bool> Fire2;
+        public Val<bool> Fire3;
+
         public Vector2 ScreenFactor => new(2f / UnityEngine.Screen.width, 2f / UnityEngine.Screen.height);
         public Rect ScreenZone => new(-Vector2.one, 2 * Vector2.one);
         protected void Update()
@@ -22,18 +24,25 @@ namespace BDUtil.Pubsub
         }
         void UpdateFire()
         {
-            if (Input.GetButton("Fire3")) Fire3.Topic.Publish();
-            else if (Input.GetButton("Fire2")) Fire2.Topic.Publish();
-            else if (Input.GetButton("Fire1")) Fire1.Topic.Publish();
-            else if (Input.touchCount >= 4) Fire3.Topic.Publish();
-            else if (Input.touchCount >= 3) Fire2.Topic.Publish();
-            else if (Input.touchCount >= 2) Fire1.Topic.Publish();
-            else if (Input.touchCount <= 0)
+            bool fire1 = false, fire2 = false, fire3 = false;
+
+            if (Input.GetButton("Fire1")) fire1 = true;
+            if (Input.GetButton("Fire2")) fire2 = true;
+            if (Input.GetButton("Fire3")) fire3 = true;
+            if (Input.GetMouseButtonDown(2)) fire3 = true;
+            if (Input.GetMouseButtonDown(1)) fire2 = true;
+            if (Input.GetMouseButtonDown(0)) fire1 = true;
+            switch (Input.touchCount)
             {
-                if (Input.GetMouseButtonDown(2)) Fire3.Topic.Publish();
-                else if (Input.GetMouseButtonDown(1)) Fire2.Topic.Publish();
-                else if (Input.GetMouseButtonDown(0)) Fire1.Topic.Publish();
+                case 0: break;
+                case 1: fire1 = true; break;
+                case 2: fire2 = true; break;
+                case 3: fire3 = true; break;
+                default: break;
             }
+            Fire1.Value = fire1;
+            Fire2.Value = fire2;
+            Fire3.Value = fire3;
         }
         void UpdateDirection()
         {

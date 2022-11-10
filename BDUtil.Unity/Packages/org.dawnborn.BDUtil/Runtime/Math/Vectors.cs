@@ -243,5 +243,15 @@ namespace BDUtil.Math
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2 OfAngle(float degrees)
         => new(Mathf.Cos(Mathf.Deg2Rad * degrees), Mathf.Sin(Mathf.Deg2Rad * degrees));
+
+        public static void Bounce(this Bounds bounds, Vector3 position, ref Vector3 velocity)
+        {
+            if (position.x > bounds.max.x) velocity.x = -Mathf.Abs(velocity.x);
+            if (position.x < bounds.min.x) velocity.x = Mathf.Abs(velocity.x);
+            if (position.y > bounds.max.y) velocity.y = -Mathf.Abs(velocity.y);
+            if (position.y < bounds.min.y) velocity.y = Mathf.Abs(velocity.y);
+            if (position.z > bounds.max.z) velocity.z = -Mathf.Abs(velocity.z);
+            if (position.z < bounds.min.z) velocity.z = Mathf.Abs(velocity.z);
+        }
     }
 }
