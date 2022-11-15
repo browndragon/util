@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using BDUtil.Math;
 using UnityEngine;
 
@@ -10,12 +8,12 @@ public class RasterScript : MonoBehaviour
     Vector2Int LastClick;
     Vector2Int LastHover;
     Texture2D Pixels;
-    void Awake()
+    protected void Awake()
     {
         Pixels = Texture2D.whiteTexture;
     }
     // Update is called once per frame
-    void Update()
+    protected void Update()
     {
         Vector2 pointF = Input.mousePosition;
         pointF.x /= Scale.x;
@@ -23,7 +21,7 @@ public class RasterScript : MonoBehaviour
         LastHover = new(Mathf.RoundToInt(pointF.x), Mathf.RoundToInt(pointF.y));
         if (Input.GetMouseButtonUp(0)) LastClick = LastHover;
     }
-    void OnGUI()
+    protected void OnGUI()
     {
         Rect rect = default;
         rect.size = Scale;

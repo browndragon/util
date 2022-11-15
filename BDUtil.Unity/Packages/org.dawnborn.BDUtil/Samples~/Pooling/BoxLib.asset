@@ -12,27 +12,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc29e4035e2034efab82662a22e412d7, type: 3}
   m_Name: BoxLib
   m_EditorClassIdentifier: 
-  Chaos: 1
-  Power: 1
-  Speed: 1
   HashSource_: 0
-  DragAndDropTargets: []
   Entries:
   - tags: []
-    odds: 1
+    Statistics:
+      odds0: 0
+      cost0: 0
     Data:
       Delay:
-        Pivot: 0
-        Fuzz: 0
+        min: 1
+        max: 2
       Prefab: {fileID: 5989485087663694003, guid: a3f2d6393ea274241bb9537ca0934b43, type: 3}
       Strategy: 2
       TransformTarget:
         Position:
-          Pivot: {x: 0, y: 0, z: 0}
-          Fuzz: {x: 1, y: 1, z: 0}
+          m_Center: {x: 0, y: 0, z: 0}
+          m_Extent: {x: 2, y: 2, z: 0}
         EulerAngles:
-          Pivot: {x: 0, y: 0, z: 0}
-          Fuzz: {x: 0, y: 0, z: 180}
+          m_Center: {x: 0, y: 0, z: 0}
+          m_Extent: {x: 0, y: 0, z: 359}
         Scale0:
-          Pivot: {x: 0, y: 0, z: 0}
-          Fuzz: {x: 0.5, y: 0.5, z: 0}
+          m_Center: {x: 0, y: 0, z: 0}
+          m_Extent: {x: 0, y: 0, z: 0}
+  DragAndDropTargets: []
+  ApplyPlayerRotation: 1
+  ApplyPlayerScale: 0

@@ -1,8 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-namespace BDUtil
+
+namespace BDUtil.Math
 {
     [Serializable]
     public struct Delay : IEnumerable<Delay.Tick>, IEnumerator<Delay.Tick>
@@ -19,7 +19,7 @@ namespace BDUtil
             public bool IsOver => Delay.End < Delay.Now.GetTime();
             public float RatioUnclamped => Delay.Length > 0f ? Elapsed / Delay.Length : float.PositiveInfinity;
             public float Elapsed => Delay.Now.GetTime() - Delay.Start;
-            public float Ratio => Mathf.Clamp(RatioUnclamped, 0f, 1f);
+            public float Ratio => Arith.Clamp01(RatioUnclamped);
             public static implicit operator float(in Tick thiz) => thiz.Ratio;
             public static implicit operator bool(in Tick thiz) => thiz.IsStarted && !thiz.IsOver;
         }
@@ -37,18 +37,7 @@ namespace BDUtil
             Start = start;
             if (start == default) Reset();
         }
-        public IEnumerator Foreach(Action<Tick> onTick, Action onComplete = default)
-        {
-            if (!HasStart) Reset();
-            foreach (var tick in this)
-            {
-                onTick(tick);
-                yield return Now.GetYield();
-            }
-            // And one more to get the value @ clamped 1.
-            onTick(new(this));
-            onComplete?.Invoke();
-        }
+
         public bool HasStart => !float.IsNaN(Start);
         public void Stop() => Start = float.NaN;
         public void Reset() => Start = Now.GetTime();

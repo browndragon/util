@@ -153,5 +153,14 @@ namespace BDUtil.Math
                 a.a + (b.a - a.a) * t
             );
         }
+
+        [Serializable]
+        public struct Fuzzed
+        {
+            public Color Color;
+            public HSVA Fuzz;
+            public Color Value => Randoms.main.Fuzz(Color, Fuzz);
+            public static implicit operator Color(Fuzzed f) => f.Value;
+        }
     }
 }

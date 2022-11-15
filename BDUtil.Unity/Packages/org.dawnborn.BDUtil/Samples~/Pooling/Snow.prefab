@@ -29,9 +29,9 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1321638923735474941}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0.56260675, w: -0.82672465}
+  m_LocalPosition: {x: -2.7306986, y: 1.0720909, z: 0}
+  m_LocalScale: {x: 0.99999994, y: 0.99999994, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -169,14 +169,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Library: {fileID: 11400000, guid: b74cc0559ea1a4eb0906ee19c1f59ae8, type: 2}
-  chaos: 1
-  power: 1
-  speed: Infinity
+  Chooser:
+    Category: 
+    Index: 0
+    Cost: 0
+    Strategy: 0
   CanInterrupt: 1
-  Category: 
-  Strategy: 0
   Inertia: 3
-  Index: -1
   Delay:
-    Length: 0
+    Now: 0
     Start: NaN
+    Length: 0

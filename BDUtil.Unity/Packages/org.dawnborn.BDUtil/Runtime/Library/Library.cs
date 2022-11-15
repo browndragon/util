@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using BDUtil.Fluent;
+using BDUtil.Math;
 using BDUtil.Raw;
-using BDUtil.Screen;
 using UnityEngine;
 
 namespace BDUtil.Library
@@ -12,15 +13,31 @@ namespace BDUtil.Library
     public abstract class Library : ScriptableObject
     {
         protected internal static readonly string[] EmptyTag = { "" };
-        protected internal static float DefaultSafe(float v, float min = 0f) => v == default ? 1f : v < min ? min : v;
-        protected readonly Dictionary<string, float> TagOdds = new();
         protected readonly Dictionary<int, string> Hashes = new();
-        [Tooltip("Multiply randomness factor on generated content")]
-        public float Chaos = 1f;
-        [Tooltip("Multiply power factor on generated content - how loud, etc")]
-        public float Power = 1f;
-        [Tooltip("Multiply power factor on generated content - how long, etc")]
-        public float Speed = 1f;
+
+        [Serializable]
+        public struct Statistics
+        {
+            public static readonly Statistics One = new() { odds0 = 0, cost0 = 0 };
+            [Tooltip("1+odds0=share of the odds that this is selected")]
+            [SerializeField] internal float odds0;
+            public float Odds => 1 + odds0;
+            [Tooltip("1+cost0=cost if this is selected (arbitrary units). Entries are sorted!")]
+            [SerializeField] internal float cost0;
+            public float Cost => 1 + cost0;
+            public static float SumOddsBelowCost(IEnumerable<Statistics> stats, float maxCost, out int limit)
+            {
+                float odds = 0f;
+                limit = 0;
+                foreach (Statistics stat in stats)
+                {
+                    if (stat.Cost > maxCost) return odds;
+                    odds += stat.Odds;
+                    limit++;
+                }
+                return odds;
+            }
+        }
 
         [Tooltip("Animator support: how to make tags & animator states agree on hashes")]
         public enum HashSource
@@ -42,22 +59,83 @@ namespace BDUtil.Library
             /// Additionally, tags are automatically hashed (using HashSource_) so that mechanim state enter events
             /// (which will match hashes with the tag of the same name)
             IEnumerable<string> Tags { get; }
-            // How likely it is that this object be the one selected.
-            float Odds { get; }
-            // The payload, which might include "wrapping" information.
+            Statistics Statistics { get; }
+            // The payload, which might include "wrapping" information; for instance, an AudioClip together with modified float Volume.
             object Data { get; }
         }
-        public interface ICategory
+
+        public readonly struct Category
         {
-            bool IsValid { get; }
-            /// The sum of the odds in Entries.
-            float Odds { get; }
-            IReadOnlyList<IEntry> Entries { get; }
-            /// Gets the index of an entry in Entries weighted by their individual odds.
-            int GetRandom();
+            public readonly float MaxCost;
+            public readonly float TotalOdds;
+            public readonly IReadOnlyList<IEntry> Entries;
+            public bool IsValid => Entries != null;
+            public Category(float maxCost, float totalOdds, IReadOnlyList<IEntry> entries)
+            {
+                MaxCost = maxCost;
+                TotalOdds = totalOdds;
+                Entries = entries;
+            }
+            public IEnumerable<Statistics> Statistics => Entries.Select(e => e.Statistics);
+            public IEnumerable<float> Odds => Entries.Select(e => e.Statistics.Odds);
         }
 
-        public abstract ICategory GetICategory(string tag);
+        [Serializable]
+        public struct EntryChooser
+        {
+            public static readonly EntryChooser Default = new() { Category = "", Index = -1 };
+
+            [Tooltip("The library will be queried for this tag ('' is the default!)")]
+            public string Category;
+            public int Index;
+            /// An amount of cost we're tracking for our choices.
+            public float Cost;
+            public enum Strategies
+            {
+                [Tooltip("Pick an item from the current category by odds")]
+                Random = default,
+                [Tooltip("Play the 'next' value in the current category")]
+                RoundRobin,
+                [Tooltip("Plays the given Category/Index value; you'll need to externally adjust.")]
+                External,
+                [Tooltip("Random ignoring the odds, with each index value having equal odds")]
+                IndexRandom,
+                [Tooltip("Random from those which we can currently afford, maintaining that value")]
+                CostRandom,
+            }
+            public Strategies Strategy;
+            public IEntry ChooseNext(Library library)
+            {
+                Category category = library.GetCategory(Category);
+                Index = PickIndex(category);
+                if (Index.IsInRange(0, category.Entries.Count))
+                {
+                    Cost -= category.Entries[Index].Statistics.Cost;
+                    return category.Entries[Index];
+                }
+                return default;
+            }
+            public int PickIndex(Category category)
+            => Strategy switch
+            {
+                Strategies.External => Index.PosMod(category.Entries.Count),
+                Strategies.IndexRandom => Randoms.main.Range(0, category.Entries.Count),
+                Strategies.Random => GetRandom(category),
+                Strategies.CostRandom => GetRandom(category, Cost),
+                Strategies.RoundRobin => (Index + 1).PosMod(category.Entries.Count),
+                _ => throw Strategy.BadValue(),
+            };
+
+            public int GetRandom(Category category, float maxCost = float.PositiveInfinity)
+            {
+                if (category.Entries == null || category.Entries.Count < 0) return -1;
+                if (maxCost >= category.MaxCost) return Randoms.main.Index(category.TotalOdds, category.Odds);
+                float odds = Statistics.SumOddsBelowCost(category.Statistics, maxCost, out int limit);
+                if (limit <= 0) return -1;
+                return Randoms.main.Index(odds, category.Odds);
+            }
+        }
+        public abstract Category GetCategory(string tag);
         public string GetTagStringFromHash(int hash)
         => Hashes.TryGetValue(hash, out string tag) ? tag : null;
         public string GetTagStringFromHash(AnimatorStateInfo stateInfo, bool isExit)
@@ -81,23 +159,12 @@ namespace BDUtil.Library
             };
             return tag;
         }
-        // Not always supported; play the given entry from this library on the player, returning its duration.
-        public abstract float Play(Snapshots.IFuzzControls player, IEntry entry);
     }
-    [Tooltip("A generic source of multiple assets (sprites, audio, treasure??) with rules to pick between them.")]
-    public abstract class Library<TObj, TData> : Library
+    public abstract class Library<TData> : Library
     {
-        [Tooltip("If this is a UnityEngine.Object, you can drag assets here to create entries")]
-        [SerializeField] protected TObj[] DragAndDropTargets;
         public List<Entry> Entries = new();
-        readonly Dictionary<string, List<Entry>> TagEntries = new();
-
-        protected abstract bool IsEntryForObject(in TData data, TObj obj);
-        protected abstract Entry NewEntry(Entry template, TObj fromObj);
-
-        // Not always supported; play the given entry from this library on the player, returning its duration.
-        public override float Play(Snapshots.IFuzzControls player, IEntry entry) => Play(player, ((Entry)entry).Data);
-        protected abstract float Play(Snapshots.IFuzzControls player, TData entry);
+        readonly Dictionary<string, List<Entry>> EntryByTag = new();
+        readonly Dictionary<string, (float maxCost, float totalOdds)> StatisticsByTag = new();
 
         [Serializable]
         public struct Entry : IEntry
@@ -106,36 +173,58 @@ namespace BDUtil.Library
             [Tooltip("These can be animator states; if so, `name` matches state enter and continue; `-name` matches state exit. The hash encoding matches; exits are the negative of the statehash.")]
             [SerializeField] string[] tags;
             public IEnumerable<string> Tags => tags.IsEmpty() ? EmptyTag : tags;
-            [SuppressMessage("IDE", "IDE0044")]
-            [SerializeField] internal float odds;
-            public float Odds => DefaultSafe(odds);
+            [SerializeField] internal Statistics Statistics;
+            Statistics IEntry.Statistics => Statistics;
             public TData Data;
             object IEntry.Data => Data;
         }
-        public readonly struct Category : ICategory
+        protected void OnEnable() => Recalculate();
+        public override Category GetCategory(string tag)
         {
-            public bool IsValid => Entries != null;
-            public readonly float Odds;
-            float ICategory.Odds => Odds;
-            public readonly IReadOnlyList<Entry> Entries;
-            IReadOnlyList<IEntry> ICategory.Entries => Entries.Upcast(default(IEntry));
-            public Category(float odds, IReadOnlyList<Entry> entries)
+            (float maxCost, float totalOdds) = StatisticsByTag.GetValueOrDefault(tag);
+            return new(maxCost, totalOdds, EntryByTag.GetValueOrDefault(tag).Upcast(default(IEntry)));
+        }
+        protected void Recalculate()
+        {
+            StatisticsByTag.Clear();
+            EntryByTag.Clear();
+            Hashes.Clear();
+            if (Entries == null) return;
+            foreach (Entry entry in Entries)
             {
-                Odds = odds;
-                Entries = entries;
+                foreach (string tag in entry.Tags) EntryByTag.Add(tag, entry);
             }
-            public int GetRandom()
+            if (HashSource_ == HashSource.None) return;
+            foreach (string tag in EntryByTag.Keys)
             {
-                if (Entries == null) return -1;
-                float chance = UnityEngine.Random.Range(0, Odds);
-                for (int i = 0; i < Entries.Count; ++i)
+                // Sort & calculate total odds.
+                List<Entry> entries = EntryByTag[tag];
+                entries.Sort((x, y) => x.Statistics.Cost.CompareTo(y.Statistics.Cost));
+                float odds = Statistics.SumOddsBelowCost(entries.Select(e => e.Statistics), float.PositiveInfinity, out int limit);
+                float maxCost = entries[^1].Statistics.Cost;
+                StatisticsByTag[tag] = (maxCost, odds);
+                if (tag.StartsWith("-"))
                 {
-                    if ((chance -= Entries[i].Odds) <= 0f) return i;
+                    Hashes.Add(-Animator.StringToHash(tag[1..]), tag);
+                    continue;
                 }
-                return -1;
+                Hashes.Add(Animator.StringToHash(tag), tag);
             }
         }
-        protected void OnEnable() => Recalculate();
+    }
+    [Tooltip("A library whose data is some configuration + a unity object (like audioclip + sound).")]
+    public abstract class Library<TData, TObj> : Library<TData>
+    where TObj : UnityEngine.Object
+    {
+        [Tooltip("If this is a UnityEngine.Object, you can drag assets here to create entries")]
+        [SerializeField] protected TObj[] DragAndDropTargets;
+        protected abstract bool IsEntryForObject(in TData data, TObj obj);
+        protected virtual Entry NewEntry(Entry template, TObj fromObj)
+        {
+            template.Data = NewEntry(template.Data, fromObj);
+            return template;
+        }
+        protected abstract TData NewEntry(TData template, TObj fromObj);
         protected void OnValidate()
         {
             if (DragAndDropTargets != null)
@@ -157,46 +246,5 @@ namespace BDUtil.Library
             foreach (Entry entry in Entries) if (IsEntryForObject(entry.Data, obj)) return true;
             return false;
         }
-
-        public Category GetCategory(string tag)
-        => new(TagOdds.GetValueOrDefault(tag), TagEntries.GetValueOrDefault(tag));
-        public override ICategory GetICategory(string tag)
-        {
-            Category category = GetCategory(tag);
-            if (!category.IsValid) return null;
-            return category;
-        }
-        void Recalculate()
-        {
-            TagOdds.Clear();
-            TagEntries.Clear();
-            Hashes.Clear();
-            if (Entries == null) return;
-            foreach (Entry entry in Entries)
-            {
-                foreach (string tag in entry.Tags)
-                {
-                    TagOdds[tag] = TagOdds.GetValueOrDefault(tag) + entry.Odds;
-                    TagEntries.Add(tag, entry);
-                }
-            }
-            if (HashSource_ == HashSource.None) return;
-            foreach (string tag in TagOdds.Keys)
-            {
-                if (tag.StartsWith("-"))
-                {
-                    Hashes.Add(-Animator.StringToHash(tag[1..]), tag);
-                    continue;
-                }
-                Hashes.Add(Animator.StringToHash(tag), tag);
-            }
-        }
-    }
-    // Convenience.
-    public abstract class Library<TData> : Library<Void, TData>
-    {
-        protected override bool IsEntryForObject(in TData data, Void obj) => false;
-        protected override bool HasEntryForObject(Void obj) => false;
-        protected override Entry NewEntry(Entry template, Void fromObj) => template;
     }
 }

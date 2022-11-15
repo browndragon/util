@@ -8,13 +8,21 @@ namespace BDUtil.Library
 {
 
     [CreateAssetMenu(menuName = "BDUtil/Library/Transform")]
-    public class TransformLibrary : PlayerLibrary<Transforms.Snapshot, Transforms.Target>
+    public class TransformLibrary : Library<Transforms.Target>, Player.IPlayerLibrary
     {
-        protected override Transforms.Snapshot GetInitial(Snapshots.IFuzzControls player)
-        => player.transform.GetLocalSnapshot();
-        protected override Transforms.Snapshot Get(Snapshots.IFuzzControls player)
-        => player.transform.GetLocalSnapshot();
-        protected override void Set(Snapshots.IFuzzControls player, Transforms.Snapshot local)
-        => player.transform.SetFromLocalSnapshot(local);
+        public bool PositionAdditive;
+        public bool RotationAdditive;
+        public bool Play(Player player)
+        {
+            Transforms.Snapshot initial = new(player.transform);
+            Transforms.Target target = (Transforms.Target)player.Chooser.ChooseNext(this).Data;
+            Transforms.Snapshot final = Randoms.main.Range(target);
+            if (PositionAdditive) final.Position += initial.Position;
+            if (RotationAdditive) final.Rotation *= initial.Rotation;
+            final.ApplyTo(player.transform);
+            return true;
+        }
+
+        public void Validate(Player player) { }
     }
 }

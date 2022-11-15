@@ -10,13 +10,13 @@ namespace BDUtil.Math
     [SuppressMessage("IDE", "IDE0064")]
     [SuppressMessage("IDE", "IDE1006")]
     [StructLayout(LayoutKind.Sequential)]
-    public struct Extent : IEquatable<Extent>
+    public struct Interval : IEquatable<Interval>
     {
-        public static readonly Extent zero = default;
+        public static readonly Interval zero = default;
         public float min;
         public float max;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Extent(float min, float max)
+        public Interval(float min, float max)
         {
             this.min = min;
             this.max = max;
@@ -53,7 +53,7 @@ namespace BDUtil.Math
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(float x) => x.IsInRangeInclusive(min, max);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Overlaps(Extent other) => other.min <= max && min <= other.max;
+        public bool Overlaps(Interval other) => other.min <= max && min <= other.max;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(float position, float size)
         {
@@ -61,23 +61,29 @@ namespace BDUtil.Math
             max = position + size;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ClampToBounds(Extent other)
+        public void ClampToBounds(Interval other)
         {
             float min = System.Math.Max(this.min, other.min);
             float max = System.Math.Min(this.max, other.max);
             this.min = min;
             this.max = max;
         }
+        public float GetClampedPoint(float x) => x.GetValenceInclusive(min, max) switch
+        {
+            true => max,
+            null => x,
+            false => min,
+        };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Equals(Extent other) => this == other;
+        public bool Equals(Interval other) => this == other;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(Extent a, Extent b) => a.min == b.min && a.max == b.max;
+        public static bool operator ==(Interval a, Interval b) => a.min == b.min && a.max == b.max;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(Extent a, Extent b) => a.min != b.min || a.max != b.max;
+        public static bool operator !=(Interval a, Interval b) => a.min != b.min || a.max != b.max;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override bool Equals(object other) => other is Extent e && this == e;
+        public override bool Equals(object other) => other is Interval e && this == e;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode() => Chain.Hash ^ min ^ max;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -86,14 +92,14 @@ namespace BDUtil.Math
     public static class Extents
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float NormalizedToPoint(this Extent span, float normalized)
+        public static float NormalizedToPoint(this Interval span, float normalized)
         {
             normalized *= span.size;
             normalized += span.position;
             return normalized;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float PointToNormalized(this Extent span, float point)
+        public static float PointToNormalized(this Interval span, float point)
         {
             point -= span.position;
             point /= span.size;

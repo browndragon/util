@@ -1,5 +1,4 @@
 using System;
-using BDUtil.Fluent;
 using BDUtil.Math;
 using UnityEngine;
 
@@ -8,68 +7,72 @@ namespace BDUtil.Screen
     public static class Rigidbodies
     {
         [Serializable]
-        public struct Snapshot : Snapshots.ISnapshot<Snapshot>
+        public struct Snapshot : ISnapshot<Rigidbody2D>, ISnapshot<Rigidbody>
         {
             public Vector3 Velocity;
             public Vector3 AngularVelocity;
 
-            public Snapshot Lerp(in Snapshot b, float t) => new()
+            public Snapshot(Vector3 velocity, Vector3 angularVelocity)
             {
-                Velocity = Vector3.Lerp(Velocity, Velocity.Overridden(b.Velocity), t),
-                AngularVelocity = Vector3.Lerp(AngularVelocity, AngularVelocity.Overridden(b.AngularVelocity), t)
-            };
+                Velocity = velocity;
+                AngularVelocity = angularVelocity;
+            }
+            public Snapshot(Vector2 velocity, float angularVelocity) : this(velocity, angularVelocity * Vector3.forward) { }
+            public Snapshot(Rigidbody2D rb2d) : this(rb2d.velocity, rb2d.angularVelocity) { }
+            public Snapshot(Rigidbody rb) : this(rb.velocity, rb.angularVelocity) { }
 
-            // Takes a snapshot, applying whatever overrides you specifying using a previous snapshot & a masking layer.
-            public void Override(in Snapshot overrides)
+            public void ReadFrom(Rigidbody2D player)
+            => this = new(player);
+            public void ReadFrom(Rigidbody player)
+            => this = new(player);
+            public void ReadFrom(GameObject player)
             {
-                Velocity.Override(overrides.Velocity);
-                AngularVelocity.Override(overrides.AngularVelocity);
+                Rigidbody2D rb2d = player.GetComponent<Rigidbody2D>();
+                if (rb2d != null)
+                {
+                    ReadFrom(rb2d);
+                    return;
+                }
+                ReadFrom(player.GetComponent<Rigidbody>());
+            }
+
+            public void ApplyTo(Rigidbody2D player)
+            {
+                player.velocity = Velocity;
+                player.rotation = AngularVelocity.z;
+            }
+
+            public void ApplyTo(Rigidbody player)
+            {
+                player.velocity = Velocity;
+                player.rotation = Quaternion.Euler(AngularVelocity);
+            }
+
+            public void ApplyTo(GameObject player)
+            {
+                Rigidbody2D rb2d = player.GetComponent<Rigidbody2D>();
+                if (rb2d != null)
+                {
+                    ApplyTo(rb2d);
+                    return;
+                }
+                ApplyTo(player.GetComponent<Rigidbody>());
             }
 
             public override string ToString() => $"Rididbody({Velocity},{AngularVelocity})";
         }
         [Serializable]
-        public struct Fuzz : Snapshots.ITarget<Snapshot>
+        public struct Target
         {
             public Transforms.Target Transform;
-            public Randoms.Fuzzy<Vector3> VelocityFuzz;
-            public Randoms.Fuzzy<Vector3> AngularVelocityFuzz;
-            public Snapshot GetTarget(Snapshots.IFuzzControls controls, in Snapshot start)
-            {
-                Snapshot @return = start;
-                @return.Velocity = controls.Random.Fuzzed(controls.Power * controls.Speed * VelocityFuzz.Pivot, VelocityFuzz.Fuzz, start.Velocity);
-                @return.AngularVelocity = controls.Random.Fuzzed(controls.Power * controls.Speed * AngularVelocityFuzz.Pivot, AngularVelocityFuzz.Fuzz, start.AngularVelocity);
-                return @return;
-            }
+            public Bounds Velocity;
+            public Bounds AngularVelocity;
         }
+        public static Snapshot GetTarget(this Randoms.IRandom thiz, Target target) => new(
+            thiz.Range(target.Velocity),
+            thiz.Range(target.AngularVelocity)
+        );
 
-        // Takes a snapshot, applying whatever overrides you specifying using a previous snapshot & a masking layer.
-        public static Snapshot GetLocalSnapshot(this Rigidbody2D thiz)
-        => new()
-        {
-            Velocity = thiz.velocity,
-            AngularVelocity = new(0f, 0f, thiz.angularVelocity),
-        };
-        /// Consider using GetLocalSnapshot to figure out which fields you _don't want to set_ first...
-        public static void SetFromLocalSnapshot(this Rigidbody2D thiz, Snapshot target)
-        {
-            thiz.velocity = thiz.velocity.Overridden(target.Velocity);
-            thiz.angularVelocity = float.IsFinite(target.AngularVelocity.z) ? target.AngularVelocity.z : thiz.angularVelocity;
-        }
-
-        // Takes a snapshot, applying whatever overrides you specifying using a previous snapshot & a masking layer.
-        public static Snapshot GetLocalSnapshot(this Rigidbody thiz)
-        => new()
-        {
-            Velocity = thiz.velocity,
-            AngularVelocity = thiz.angularVelocity,
-        };
-        /// Consider using GetLocalSnapshot to figure out which fields you _don't want to set_ first...
-        public static void SetFromLocalSnapshot(this Rigidbody thiz, Snapshot target)
-        {
-            thiz.velocity = thiz.velocity.Overridden(target.Velocity);
-            thiz.angularVelocity = thiz.angularVelocity.Overridden(target.AngularVelocity);
-        }
         public static void Bounce(this Rigidbody2D thiz, Bounds bounds)
         {
             Vector3 velocity = thiz.velocity;

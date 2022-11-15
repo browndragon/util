@@ -12,57 +12,36 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65f59777886594308acab016347e34c9, type: 3}
   m_Name: EllipseSpriteLib
   m_EditorClassIdentifier: 
-  Chaos: 0
-  Power: 1
-  Speed: 1
   HashSource_: 0
-  DragAndDropTargets: []
   Entries:
   - tags: []
-    odds: 2
+    Statistics:
+      odds0: 0
+      cost0: 0
     Data:
-      Delay:
-        Pivot: 1
-        Fuzz: 0.5
-      Easing: 0
-      Target:
-        TargetSprite:
-          HasValue: 0
-          value: {fileID: 0}
-        TargetColor:
-          Pivot:
-            h: 0.75
-            s: 1
-            v: 1
-            a: 1
-          Fuzz:
-            h: 0.05
-            s: 0.05
-            v: 0.05
-            a: 0
-        FuzzFlipX: 0
-        FuzzFlipY: 0
+      Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+      Color:
+        Color: {r: 0, g: 1, b: 0, a: 1}
+        Fuzz:
+          h: 0
+          s: 0
+          v: 0
+          a: 0
+      FlipX: 0
+      FlipY: 0
   - tags: []
-    odds: 1
+    Statistics:
+      odds0: 4
+      cost0: 0
     Data:
-      Delay:
-        Pivot: 0
-        Fuzz: 0
-      Easing: 0
-      Target:
-        TargetSprite:
-          HasValue: 0
-          value: {fileID: 0}
-        TargetColor:
-          Pivot:
-            h: 0.55
-            s: 0.70312506
-            v: 0.5019608
-            a: 1
-          Fuzz:
-            h: 0.05
-            s: 0.05
-            v: 0.05
-            a: 0
-        FuzzFlipX: 0
-        FuzzFlipY: 0
+      Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+      Color:
+        Color: {r: 1, g: 0, b: 0, a: 1}
+        Fuzz:
+          h: 0
+          s: 0
+          v: 0
+          a: 0
+      FlipX: 0
+      FlipY: 0
+  DragAndDropTargets: []

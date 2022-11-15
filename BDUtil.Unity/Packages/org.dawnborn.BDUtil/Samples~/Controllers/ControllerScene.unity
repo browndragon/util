@@ -271,7 +271,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target:
-    topic: {fileID: 0}
+    topic: {fileID: 11400000, guid: 9d737f06070964302a5bb879e0fbff36, type: 2}
     defaults:
       Value: {fileID: 0}
   OnUpdate:
@@ -510,6 +510,10 @@ PrefabInstance:
     - target: {fileID: 3427485217265422992, guid: 96ef21154c3cd4c0da72e244038c59eb, type: 3}
       propertyPath: m_Name
       value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 3427485217265422998, guid: 96ef21154c3cd4c0da72e244038c59eb, type: 3}
+      propertyPath: Ammo
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 3427485217265422999, guid: 96ef21154c3cd4c0da72e244038c59eb, type: 3}
       propertyPath: m_RootOrder

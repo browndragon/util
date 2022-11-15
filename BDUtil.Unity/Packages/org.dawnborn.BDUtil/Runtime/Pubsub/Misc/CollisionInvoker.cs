@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using BDUtil.Fluent;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -35,11 +37,32 @@ namespace BDUtil.Pubsub
     public abstract class CollisionInvoker<T> : CollisionInvoker
     where T : Component
     {
+        /// Whatever my tag is, ignore it.
+        public bool SkipSelfTag;
+        /// And also ignore these tags (like: terrain -- though this could also use layers.)
+        public Serialization.Store<HashSet<string>, string> SkipTags = new();
         public EnterStayExit<T> OnCollider = New<T>();
         public EnterStayExit<GameObject> OnGameObject = New<GameObject>();
         readonly Disposes.All unsubscribe = new();
 
         protected void OnEnable() => unsubscribe.Add(OnCollider.Subscribe(OnGameObject, collider => collider.gameObject));
         protected void OnDisable() => unsubscribe.Dispose();
+
+        protected bool DoCollide(GameObject other)
+        {
+            string tag = other.tag;
+            if (gameObject.CompareTag(tag) && SkipSelfTag)
+            {
+                Debug.Log($"Skipping collision {gameObject}<->{other}; skipselftag");
+                return false;
+            }
+            if (SkipTags.Collection.Contains(other.tag))
+            {
+                Debug.Log($"Skipping collision {gameObject}<->{other}; {other.tag} in {SkipTags.Collection.Summarize()}");
+                return false;
+            }
+            Debug.Log($"Enabling collision {gameObject}<->{other}");
+            return true;
+        }
     }
 }

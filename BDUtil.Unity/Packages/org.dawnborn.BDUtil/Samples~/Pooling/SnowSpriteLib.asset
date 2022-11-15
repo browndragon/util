@@ -12,33 +12,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65f59777886594308acab016347e34c9, type: 3}
   m_Name: SnowSpriteLib
   m_EditorClassIdentifier: 
-  Chaos: 1
-  Power: 1
-  Speed: 1
   HashSource_: 0
-  DragAndDropTargets: []
   Entries:
   - tags: []
-    odds: 1
+    Statistics:
+      odds0: 0
+      cost0: 0
     Data:
-      Delay:
-        Pivot: 0.5
-        Fuzz: 0
-      Easing: 0
-      Target:
-        TargetSprite:
-          HasValue: 0
-          value: {fileID: 0}
-        TargetColor:
-          Pivot:
-            h: 0.333333
-            s: 1
-            v: 1
-            a: 1
-          Fuzz:
-            h: 0.1
-            s: 0.1
-            v: 0.1
-            a: 0
-        FuzzFlipX: NaN
-        FuzzFlipY: NaN
+      Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+      Color:
+        Color: {r: 1, g: 1, b: 1, a: 1}
+        Fuzz:
+          h: 0
+          s: 0
+          v: 0
+          a: 0
+      FlipX: 0
+      FlipY: 0
+  DragAndDropTargets: []

@@ -1,77 +1,117 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using BDUtil.Fluent;
 
 namespace BDUtil.Math
 {
     public static class Randoms
     {
-        /// Returns a value in [0,1)...
-        public delegate float UnitRandom();
-        public static readonly Random system0 = new(0);
-        public static readonly UnitRandom const_5 = () => .5f;
-        // Intentionally NOT readonly! Unity remaps this, first chance it gets.
-        public static UnitRandom @default = () => (float)system0.NextDouble();
-        // Maps [0,1) through the given arbitrary func.
-        public static UnitRandom Distribution(this UnitRandom random, Func<float, float> func) => () => func.Invoke(random.Unit());
-        // Maps [0,1) through the given ease, resulting in a different value distribution.
-        public static UnitRandom Distribution(this UnitRandom random, Easings.Enum ease) => () => ease.Invoke(random.Unit());
-        // Maps r in [0,1) into [-1,+1] (so .5->0f), performs the given power (reapplying sign), then maps back to [0,1).
-        public static float Pow01(float pow, float r)
+        public interface IRandom
         {
-            // Adjust to be in (-1,+1) instead of [0,1).
-            r *= 2f;
-            r -= 1f;
-
-            // Take the power in absval, then return the sign so we're still in (-1,1)
-            float sign = Arith.Sign(r);
-            r *= sign;
-            r = Arith.Pow(r, pow);
-            r *= sign;
-
-            // Adjust back to [0,1).
-            r += 1f;
-            r /= 2f;
-            return r;
+            /// Returns a value in [0,1)
+            float Unit { get; }
         }
-        // Maps random over [0,1) into the "sharpened" version centered at .5f (see Pow01).
-        public static UnitRandom DistributionPow01(this UnitRandom thiz, float pow)
-        {
-            if (float.IsInfinity(pow) || float.IsNaN(pow) || pow == 0) return const_5;
-            if (thiz == null) thiz = @default;
-            if (pow == 1f) return thiz;
-            return () => Pow01(pow, thiz.Invoke());
-        }
-        // Generalized value + allowable fuzz radius around it.
-        // Despite use of term radius, fuzzing uses a cube centered on pivot.
+        /// Returns a random value in [min, max) with the same underlying distribution as IRandom.
+        /// This is equivalent to [min, max]; you can't prove I'd ever generate _exactly_ `max`.
+        /// But you might (but you won't) see exactly `min`.
+        public static float Range(this IRandom thiz, float min, float max)
+        => min + thiz.Unit * (max - min);
+        /// Returns a random value in [min, max) with the same underlying distribution as IRandom.
+        public static int Range(this IRandom thiz, int min, int max)
+        => (int)global::System.Math.Floor(thiz.Range((float)min, max));
+        /// Generates `true` with `odds` out of 1f; else false.
+        public static bool Odds(this IRandom thiz, float odds = .5f)
+        => thiz.Unit < odds;
+
+        /// Fixed/testing value.
         [Serializable]
-        public struct Fuzzy<T>
+        public struct Value : IRandom
         {
-            public Fuzzy(T pivot = default, T fuzz = default)
+            public float value;
+            public Value(float value) => this.value = value;
+            public float Unit => value;
+        }
+        /// Arbitrary smuggler of probability function.
+        public struct Func : IRandom
+        {
+            public global::System.Func<float> func;
+            public Func(global::System.Func<float> func) => this.func = func.OrThrow();
+            public float Unit => func.Invoke();
+        }
+        /// Sharpens or blunts the distribution of values by mapping [0,1]->[-1,+1]^(1+value0)->[0,1].
+        [Serializable]
+        public struct Pow : IRandom
+        {
+            public float value0;
+            public IRandom source;
+            public IRandom Source { get => source ??= Randoms.main; set => source = value; }
+            public float Unit => Sharpen(Source.Unit, 1f + value0);
+            public Pow(float value0, IRandom source = default) { this.value0 = value0; this.source = source; }
+            public static implicit operator Pow(float f) => new(f - 1f);
+            public static Pow operator +(Pow a, Pow b) => new(a.value0 + b.value0, a.source);
+            public static Pow operator -(Pow a) => new(-a.value0, a.source);
+            public static Pow operator -(Pow a, Pow b) => new(a.value0 - b.value0, a.source);
+            public static float operator *(Pow a, float b) => (1f + a.value0) * b;
+            public static float operator *(float b, Pow a) => (1f + a.value0) * b;
+            public static float operator /(Pow a, float b) => (1f + a.value0) / b;
+            public static float operator /(float b, Pow a) => b / (1f + a.value0);
+            // Maps r in [0,1] into [-1,+1] (so .5~>0f), performs the given power (reapplying sign), then maps back to [0,1).
+            public static float Sharpen(float r, float pow)
             {
-                Pivot = pivot; Fuzz = fuzz;
-            }
-            public T Pivot;
-            public T Fuzz;
-        }
-        // Returns a value in [0, +1) (though apparently unity is [0,+1]?!).
-        // You can give it a wider implementation for more chaos, but if you do you MUST
-        // remain centered on .5. Better is to weight the distribution of results (see: Easings, Distribution, etc).
-        public static float Unit(this UnitRandom thiz) => (thiz ?? @default).Invoke();
+                // Adjust to be in (-1,+1) instead of [0,1).
+                r *= 2f;
+                r -= 1f;
 
-        /// Returns a random value in [min, max) with the same underlying distribution as UnitRandom.
-        public static float Range(this UnitRandom thiz, float min, float max)
-        {
-            float @return = min;
-            float delta = max - min;
-            if (delta < 0f) return @return;
-            return @return + delta * thiz.Unit();
+                // Take the power in absval, then return the sign so we're still in (-1,1)
+                float sign = Arith.Sign(r);
+                r *= sign;
+                r = Arith.Pow(r, pow);
+                r *= sign;
+
+                // Adjust back to [0,1).
+                r += 1f;
+                r /= 2f;
+                return r;
+            }
         }
-        /// Returns a random value in [min, max) with the same underlying distribution as UnitRandom.
-        public static int Range(this UnitRandom thiz, int min, int max) => (int)System.Math.Floor(min + (max - min) * thiz.Unit());
+        /// Real actual system random function.
+        public class System : IRandom
+        {
+            public const float Max = int.MaxValue;
+            public global::System.Random Random;
+            public System(int seed) : this(new global::System.Random(seed)) { }
+            public System(global::System.Random random = default) => Random = random ?? new global::System.Random(0);
+            public System(IRandom source) : this(source switch
+            {
+                System system => system.Random.Next(),
+                _ => (int)(int.MaxValue * source.Unit),
+            })
+            { }
+            public float Unit => Random.Next() / Max;
+
+            public void Reseed(int seed) => Random = new(seed);
+        }
+        [SuppressMessage("IDE", "IDE1006")]
+        public static System main { get; private set; } = new();
+        /// Create a new domain under which the old main is set aside and the new one used.
+        /// This is great for re-seeding main, random generating in a domain, etc.
+        public ref struct Scoped
+        {
+            public readonly System was;
+            internal Scoped(int seed = -1)
+            {
+                if (seed == -1) seed = main.Random.Next();
+                was = main;
+                Randoms.main = new(seed);
+            }
+            public void Dispose() => Randoms.main = was;
+        }
+        public static Scoped Scope(int seed = -1) => new(seed);
 
         /// Returns a random position in the cube [min, max) as per Range on each axis.
         /// This works for any Arith type.
-        public static T Range<T>(this UnitRandom thiz, T min, T max)
+        public static T Range<T>(this IRandom thiz, T min, T max)
         {
             IArith<T> arith = Arith<T>.Default;
             T accum = default;
@@ -83,55 +123,51 @@ namespace BDUtil.Math
             return accum;
         }
 
-        public static bool RandomTrue(this UnitRandom thiz, float odds = .5f)
-        => thiz.Unit() < odds;
-
         /// Returns a random position in the Extent as per Range(float).
-        public static float RandomValue(this UnitRandom thiz, Extent extent)
-                => thiz.Range(extent.min, extent.max);
-        /// Returns a random position in the ExtentInt as per Range(int).
-        public static int RandomValue(this UnitRandom thiz, ExtentInt extent)
+        public static float Range(this IRandom thiz, Interval extent)
         => thiz.Range(extent.min, extent.max);
+        /// Returns a random position in the ExtentInt -- including the endpoint.
+        public static int Range(this IRandom thiz, IntervalInt extent)
+        => thiz.Range(extent.min, extent.max + 1);
 
-        public static T RandomValue<T>(this UnitRandom thiz, IReadOnlyList<T> items)
-        => items[thiz.Range(0, items.Count)];
+        /// Chooses one item from the list at even odds.
+        public static T Range<T>(this IRandom thiz, IReadOnlyList<T> items)
+        => items[thiz.Index(items)];
+        /// Chooses one item from the list at the given odds.
+        public static T Range<T>(this IRandom thiz, IReadOnlyList<T> items, float totalOdds, IEnumerable<float> odds)
+        => items[thiz.Index(totalOdds, odds)];
 
-
-        public static float Fuzzed(this UnitRandom thiz, float target, float fuzz, float @base = 0f)
+        public static int Index<T>(this IRandom thiz, IReadOnlyList<T> items)
+        => items?.Count > 0 ? thiz.Range(0, items.Count) : -1;
+        /// Generates a random number in [0, totalOdds), then decrements each `odds` from that value until <=0.
+        /// IOW, gets an index from odds with the given probabilities.
+        /// If you use totalOdds < sum(odds), you can ensure later values can't be selected.
+        /// It's an error to use totalOdds > sum(odds).
+        public static int Index(this IRandom thiz, float totalOdds, IEnumerable<float> odds)
         {
-            if (float.IsNaN(target)) target = @base;
-            if (float.IsNaN(fuzz)) return target;
-            return thiz.Range(target - fuzz, target + fuzz);
-        }
-        public static T Fuzzed<T>(this UnitRandom thiz, Fuzzy<T> fuzzed, T @base = default)
-        => thiz.Fuzzed(fuzzed.Pivot, fuzzed.Fuzz, @base);
-        public static T Fuzzed<T>(this UnitRandom thiz, T target, T fuzz, T @base = default)
-        {
-            T @return = default;
-            for (int i = 0; i < Arith<T>.Default.Axes; ++i)
+            float odd = thiz.Range(0, totalOdds);
+            int i = 0;
+            foreach (float o in odds)
             {
-                float baseI = Arith<T>.Default.GetAxis(@base, i);
-                float targetI = Arith<T>.Default.GetAxis(target, i);
-                float fuzzI = Arith<T>.Default.GetAxis(fuzz, i);
-                float fuzzed = thiz.Fuzzed(targetI, fuzzI, baseI);
-                Arith<T>.Default.SetAxis(ref @return, i, fuzzed);
+                if ((odd -= o) <= 0f) return i;
+                i++;
             }
-            return @return;
+            throw new NotSupportedException();
         }
-        static readonly List<int> keeps = new();
-        // Returns (non-reentrant!!!) an ordered list of indices [0,count) randomly sampled to retain odds elements (round up).
+
+        // Returns (non-reentrant & reused!!!) an ordered list of indices [0,count) randomly sampled to retain odds elements (round up, no replacement).
         // Takes O(n) in `count`, even if `odds` is miniscule.
-        public static IEnumerable<int> RandomIndices(this UnitRandom thiz, int count, float odds)
+        public static IReadOnlyList<int> Deal(this IRandom thiz, int count, float odds)
         {
             float rem = odds * count;
             int choices = (int)rem;
             rem -= choices;
-            if (thiz.RandomTrue(rem)) choices++;
-            return thiz.RandomIndices(count, choices);
+            if (thiz.Odds(rem)) choices++;
+            return thiz.Deal(count, choices);
         }
-        // Returns (non-reentrant!!!) an ordered list of indices [0,count) randomly sampled choices times
+        // Returns (non-reentrant & reused!!!) an ordered list of indices [0,count) randomly sampled choices times without replacement.
         // Takes O(n) in `count`, even if `odds` is miniscule.
-        public static IEnumerable<int> RandomIndices(this UnitRandom thiz, int count, int choices)
+        public static IReadOnlyList<int> Deal(this IRandom thiz, int count, int choices)
         {
             keeps.Clear();
             for (
@@ -142,5 +178,28 @@ namespace BDUtil.Math
             ) keeps.RemoveAt(thiz.Range(0, keeps.Count));
             return keeps;
         }
+
+        /// Returns target|base + x where x in [-fuzz,+fuzz], and |base means "override":"target, or base if target is NaN".
+        public static float Fuzz(this IRandom thiz, float target, float fuzz, float @base = 0f)
+        {
+            if (float.IsNaN(target)) target = @base;
+            if (float.IsNaN(fuzz) || fuzz == 0f) return target;
+            return thiz.Range(target - fuzz, target + fuzz);
+        }
+        /// Does Fuzz(float) per-axis of `T` (which is the purpose of the override semantic).
+        public static T Fuzz<T>(this IRandom thiz, T target, T fuzz, T @base = default)
+        {
+            T @return = default;
+            for (int i = 0; i < Arith<T>.Default.Axes; ++i)
+            {
+                float baseI = Arith<T>.Default.GetAxis(@base, i);
+                float targetI = Arith<T>.Default.GetAxis(target, i);
+                float fuzzI = Arith<T>.Default.GetAxis(fuzz, i);
+                float fuzzed = thiz.Fuzz(targetI, fuzzI, baseI);
+                Arith<T>.Default.SetAxis(ref @return, i, fuzzed);
+            }
+            return @return;
+        }
+        static readonly List<int> keeps = new();
     }
 }

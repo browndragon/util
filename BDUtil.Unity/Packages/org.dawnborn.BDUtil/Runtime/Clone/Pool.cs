@@ -101,7 +101,8 @@ namespace BDUtil.Clone
                 Postfab posttag = Postfab.InstantiateInactiveCloneWithRoot(asset, prefab, fabType);
                 postfab = posttag.gameObject;
             }
-            postfab.transform.SetFromLocalSnapshot(prefab.transform.GetLocalSnapshot());
+            Transforms.Snapshot snapshot = new(prefab.transform);
+            snapshot.ApplyTo(postfab.transform);
             // TODO: should we actually be doing this? It's probably pretty expensive...
             SceneManager.MoveGameObjectToScene(postfab, SceneManager.GetActiveScene());
             if (activate) postfab.SetActive(true);
@@ -126,13 +127,16 @@ namespace BDUtil.Clone
             {
                 if (c is not Transform) throw new ArgumentException($"Can't break open {prefab?.IDStr()}; it has at least {c} which won't get copied");
             }
-            Matrix4x4 parent = prefab.transform.GetLocalSnapshot().Matrix;
+            // Transforms.Snapshot snapshot = new(prefab.transform);
+            // Matrix4x4 parent = snapshot.Matrix;
             foreach (Transform child in prefab.GetChildren())
             {
                 Postfab targetPostfab = child.GetComponent<Postfab>();
                 GameObject model = targetPostfab != null ? targetPostfab.Asset : child.gameObject;
                 GameObject clone = Acquire(model, false);
-                clone.transform.SetFromLocalSnapshot(parent * child.transform.GetLocalSnapshot().Matrix);
+                Transforms.Snapshot childSnapshot = new(child.transform);
+                // childSnapshot = parent * childSnapshot.Matrix;
+                childSnapshot.ApplyTo(clone.transform);
                 if (awake) clone.SetActive(true);
                 clones?.Add(clone);
             }
@@ -171,8 +175,7 @@ namespace BDUtil.Clone
                 tag.SafeDestroy();
                 return;
             }
-            List<GameObject> cache = caches.Collection.GetValueOrDefault(tag.Link);
-            if (cache == null) cache = caches.Collection[tag.Link] = new();
+            List<GameObject> cache = caches.Collection.GetValueOrDefault(tag.Link) ?? (caches.Collection[tag.Link] = new());
             if (cache.Count >= PerCacheLimit)
             {
                 if (!PreDestroyMessage.IsEmpty()) postfab.SendMessage(PreDestroyMessage, SendMessageOptions.DontRequireReceiver);

@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace BDUtil.Math.Editor
 {
-    [CustomPropertyDrawer(typeof(Extent))]
-    public class ExtentDrawer : PropertyDrawer
+    [CustomPropertyDrawer(typeof(IntervalInt))]
+    public class IntervalIntDrawer : PropertyDrawer
     {
         public override float GetPropertyHeight(SerializedProperty property,
                                                 GUIContent label)
@@ -18,13 +18,14 @@ namespace BDUtil.Math.Editor
             SerializedProperty maxProp = property.FindPropertyRelative("max");
             scratchGC[0] = new("Min");
             scratchGC[1] = new("Max");
-            scratchData[0] = minProp.floatValue;
-            scratchData[1] = maxProp.floatValue;
-            EditorGUI.MultiFloatField(position, label, scratchGC, scratchData);
-            minProp.floatValue = scratchData[0];
-            maxProp.floatValue = scratchData[1];
+            scratchData[0] = minProp.intValue;
+            scratchData[1] = maxProp.intValue;
+            position = EditorGUI.PrefixLabel(position, label);
+            EditorGUI.MultiIntField(position, scratchGC, scratchData);
+            minProp.intValue = scratchData[0];
+            maxProp.intValue = scratchData[1];
         }
         static readonly GUIContent[] scratchGC = new GUIContent[2];
-        static readonly float[] scratchData = new float[2];
+        static readonly int[] scratchData = new int[2];
     }
 }

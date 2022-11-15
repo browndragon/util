@@ -1,5 +1,3 @@
-using System;
-
 namespace BDUtil
 {
     public interface IHas

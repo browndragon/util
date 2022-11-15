@@ -376,6 +376,7 @@ GameObject:
   - component: {fileID: 825809882}
   - component: {fileID: 825809881}
   - component: {fileID: 825809880}
+  - component: {fileID: 825809885}
   m_Layer: 0
   m_Name: Create
   m_TagString: Untagged
@@ -464,17 +465,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Library: {fileID: 11400000, guid: c1b68ea4fd4454df3b9b0fdf0c870cb2, type: 2}
-  chaos: 1
-  power: 1
-  speed: 1
+  Chooser:
+    Category: 
+    Index: 0
+    Cost: 0
+    Strategy: 0
   CanInterrupt: 1
-  Category: 
-  Strategy: 0
   Inertia: 0
-  Index: -1
   Delay:
-    Length: 0
+    Now: 0
     Start: NaN
+    Length: 0
 --- !u!212 &825809883
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -542,3 +543,35 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &825809885
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 825809879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f98b5d24a45a541e1a31f52c62fe1842, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Loop: 1
+  Delay:
+    Now: 0
+    Start: NaN
+    Length: 0.25
+  Event:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 825809882}
+        m_TargetAssemblyTypeName: BDUtil.Library.Player, org.dawnborn.bdutil.Runtime
+        m_MethodName: PlayCurrentCategory
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2

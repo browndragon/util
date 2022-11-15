@@ -1,6 +1,6 @@
 using System;
+using System.Collections.Generic;
 using BDUtil.Math;
-using UnityEngine;
 
 namespace BDUtil
 {
@@ -11,7 +11,7 @@ namespace BDUtil
     public struct OrNil<T> : IHas<T>, IEquatable<OrNil<T>>
     {
         public bool HasValue;
-        public T value;
+        public T value;  // Public for unity serialization...
         public T Value
         {
             get => HasValue ? value : throw new ArgumentNullException("value");
@@ -29,6 +29,8 @@ namespace BDUtil
             this.value = value;
         }
         public static implicit operator OrNil<T>(T instance) => new(instance);
+        public static bool operator ==(OrNil<T> a, OrNil<T> b) => a.Equals(b);
+        public static bool operator !=(OrNil<T> a, OrNil<T> b) => !a.Equals(b);
 
         public bool Equals(OrNil<T> other)
         {

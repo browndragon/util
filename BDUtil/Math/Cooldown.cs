@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 
 namespace BDUtil.Math
 {
@@ -22,12 +21,12 @@ namespace BDUtil.Math
         // Length of time to spend in each non-cold (which is default) state.
         // You could also call pause/restart in specific states if exit from a state requires additional logic.
         // Use Warm/Rewarm to go from None->Pre or Cool to go from Pre/Live->Post.
+        public Delay Timer;
         public float Warming, Hot, Cooling;
         public float Cold => float.PositiveInfinity;
-        [field: SerializeField] public Heats PeekHeat { get; private set; }
+        public Heats PeekHeat;
         /// ++ whenever the temperature goes hot.
-        [field: SerializeField] public int Count { get; private set; }
-        public Delay Timer;
+        public int Count;
         public int ResetCount()
         {
             GetCurrentHeat();

@@ -2,7 +2,7 @@ using BDUtil.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace BDUtil.Coroutines.Editor
+namespace BDUtil.Math.Editor
 {
     [CustomPropertyDrawer(typeof(Delay))]
     public class DelayDrawer : InspectorUtils.WideDrawer

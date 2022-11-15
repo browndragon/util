@@ -8,21 +8,31 @@ namespace BDUtil.Library
 {
 
     [CreateAssetMenu(menuName = "BDUtil/Library/Sprite")]
-    public class SpriteLibrary : PlayerLibrary<Sprite, SpriteRenderers.Snapshot, SpriteRenderers.Target>
+    public class SpriteLibrary : Library<SpriteRenderers.Target, Sprite>, Player.IPlayerLibrary
     {
-        protected override bool IsEntryForTarget(in SpriteRenderers.Target entry, Sprite obj)
-        => entry.TargetSprite.HasValue && entry.TargetSprite.Value == obj;
-
-        protected override SpriteRenderers.Target NewTarget(SpriteRenderers.Target template, Sprite fromObj)
+        public bool Play(Player player)
         {
-            template.TargetSprite = fromObj;
+            SpriteRenderer renderer = player.GetComponent<SpriteRenderer>();
+            SpriteRenderers.Target target = (SpriteRenderers.Target)player.Chooser.ChooseNext(this).Data;
+            SpriteRenderers.Snapshot final = Randoms.main.Range(target);
+            final.ApplyTo(renderer);
+            return true;
+        }
+
+        public void Validate(Player player)
+        {
+            if (player.GetComponentInChildren<SpriteRenderer>()) return;
+            Debug.LogWarning($"{player} doesn't have sprite renderer for {this}", player);
+        }
+
+        protected override bool IsEntryForObject(in SpriteRenderers.Target entry, Sprite obj)
+        => entry.Sprite == obj;
+
+        protected override SpriteRenderers.Target NewEntry(SpriteRenderers.Target template, Sprite fromObj)
+        {
+            template.Sprite = fromObj;
             return template;
         }
-        protected override SpriteRenderers.Snapshot Get(Snapshots.IFuzzControls player)
-        => player.renderer.GetLocalSnapshot();
-        protected override SpriteRenderers.Snapshot GetInitial(Snapshots.IFuzzControls player)
-        => player.rendererSnapshot;
-        protected override void Set(Snapshots.IFuzzControls player, SpriteRenderers.Snapshot local)
-        => player.renderer.SetFromLocalSnapshot(local);
+
     }
 }

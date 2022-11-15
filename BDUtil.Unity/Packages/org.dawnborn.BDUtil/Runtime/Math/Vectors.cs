@@ -145,7 +145,7 @@ namespace BDUtil.Math
         => thiz.Encapsulate(new BoundsInt(other, Vector3Int.zero));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Extent ScaledBy(in this Extent thiz, float scale, float moveCenter = 0f)
+        public static Interval ScaledBy(in this Interval thiz, float scale, float moveCenter = 0f)
         {
             float center = thiz.center + moveCenter;
             float radius = thiz.radius * scale;
@@ -242,7 +242,10 @@ namespace BDUtil.Math
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2 OfAngle(float degrees)
-        => new(Mathf.Cos(Mathf.Deg2Rad * degrees), Mathf.Sin(Mathf.Deg2Rad * degrees));
+        {
+            float radians = Mathf.Deg2Rad * degrees;
+            return new(Mathf.Cos(radians), Mathf.Sin(radians));
+        }
 
         public static void Bounce(this Bounds bounds, Vector3 position, ref Vector3 velocity)
         {

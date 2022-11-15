@@ -13,20 +13,20 @@ namespace BDUtil.Math
     [SuppressMessage("IDE", "IDE0064")]
     [SuppressMessage("IDE", "IDE1006")]
     [StructLayout(LayoutKind.Sequential)]
-    public struct ExtentInt : IEquatable<ExtentInt>
+    public struct IntervalInt : IEquatable<IntervalInt>
     {
-        public static readonly ExtentInt zero = default;
+        public static readonly IntervalInt zero = default;
 
         public int min;
         public int max;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ExtentInt(int min, int max)
+        public IntervalInt(int min, int max)
         {
             this.min = min;
             this.max = max;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ClampToBounds(ExtentInt other)
+        public void ClampToBounds(IntervalInt other)
         {
             int min = System.Math.Max(this.min, other.min);
             int max = System.Math.Min(this.max, other.max);
@@ -51,7 +51,7 @@ namespace BDUtil.Math
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(int x) => x.IsInRangeInclusive(min, max);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Overlaps(ExtentInt other) => other.min <= max && min <= other.max;
+        public bool Overlaps(IntervalInt other) => other.min <= max && min <= other.max;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(int position, int size)
         {
@@ -59,14 +59,14 @@ namespace BDUtil.Math
             max = position + size;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Equals(ExtentInt other) => this == other;
+        public bool Equals(IntervalInt other) => this == other;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(ExtentInt a, ExtentInt b) => a.min == b.min && a.max == b.max;
+        public static bool operator ==(IntervalInt a, IntervalInt b) => a.min == b.min && a.max == b.max;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(ExtentInt a, ExtentInt b) => a.min != b.min || a.max != b.max;
+        public static bool operator !=(IntervalInt a, IntervalInt b) => a.min != b.min || a.max != b.max;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override bool Equals(object obj) => obj is ExtentInt other && this == other;
+        public override bool Equals(object obj) => obj is IntervalInt other && this == other;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode() => Chain.Hash ^ min ^ max;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
