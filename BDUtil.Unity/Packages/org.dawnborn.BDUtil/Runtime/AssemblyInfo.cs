@@ -1,0 +1,5 @@
+[assembly: System.Reflection.AssemblyCompany("Brown Dragon")]
+[assembly: System.Reflection.AssemblyTitle("BDUtil")]
+[assembly: System.Reflection.AssemblyCopyright("Copyright 2022.")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("org.dawnborn.bdutil.Editor")]
+[assembly: UnityEngine.Scripting.Preserve]

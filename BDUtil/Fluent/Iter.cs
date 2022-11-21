@@ -12,6 +12,14 @@ namespace BDUtil.Fluent
     {
         /// Mostly/entirely for unit testing
         public static T[] Of<T>(params T[] args) => args;
+        /// start: start index, length: elements to remove from `start` (if negative, from thiz.Length), `value`: value to set.
+        public static void Clear<T>(this T[] thiz, int start = 0, int length = -1, T value = default)
+        {
+            if (length < 0) length += thiz.Length + 1;  // So -1 -> thiz.Length, as expected.
+            length += start;
+            if (length > thiz.Length) length = thiz.Length;
+            for (int i = start; i < length; ++i) thiz[i] = value;
+        }
         public static bool IsEmpty(this string thiz) => string.IsNullOrEmpty(thiz);
         public static bool IsEmpty(this Array thiz) => thiz == null || thiz.Length <= 0;
         public static bool IsEmpty<T>(this T[] thiz) => thiz == null || thiz.Length <= 0;

@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace BDUtil.Math
 {
+    /// 45-degree slices starting at the +x axis.
     public enum Octant
     {
         ENE = default,
@@ -12,11 +13,12 @@ namespace BDUtil.Math
         SSW,
         SSE,
         ESE,
+        Zero = -1
     }
     public static class Octants
     {
         /// Transforms a major/minor pair in the ENE octant into a major/minor pair in any other octant.
-        /// This isn't a rotation; it's
+        /// This isn't a rotation; it's a series of mirrors such that major is along +/-x/y, and minor is along the appropriate other one.
         public static Vector2Int AsVector(this Octant thiz, int major, int minor) => thiz switch
         {
             Octant.ENE => new(major, minor),
@@ -29,6 +31,8 @@ namespace BDUtil.Math
             Octant.ESE => new(major, -minor),
             _ => throw thiz.BadValue(),
         };
+        /// See MajorMinor; breaks a vector down into major & minor components. If `thiz` contains `vector`, they'll both be positive and minor<major;
+        /// otherwise one might be negative or minor >= major.
         public static void AsMajorMinor(this Octant thiz, Vector2Int vector, out int major, out int minor)
         {
             switch (thiz)
@@ -44,14 +48,21 @@ namespace BDUtil.Math
                 default: throw thiz.BadValue();
             }
         }
-        public static Octant BestOctant(this Vector2Int thiz)
+        /// Given a vector and an optional rotation bias (-22.5f?), return the best octant for that vector.
+        public static Octant BestOctant(this Vector2Int thiz, float biasAngle = 0f) => thiz == default ? Octant.Zero : BestOctant((Vector2)thiz, biasAngle);
+        /// Given a vector and an optional rotation bias (-22.5f?), return the best octant for that vector.
+        public static Octant BestOctant(this Vector2 thiz, float biasAngle = 0f) => thiz == default ? Octant.Zero : BestOctant(Vector2.SignedAngle(Vector2.right, thiz) + biasAngle);
+        /// Given an angle return the best octant for that vector.
+        public static Octant BestOctant(float angle)
         {
-            float angle = Vector2.SignedAngle(Vector2.right, thiz);
+            if (!float.IsFinite(angle)) return Octant.Zero;
             angle = Mathf.Repeat(angle, 360f);
             angle /= 45f;
             int iangle = (int)angle;
-            if (iangle == 8) iangle = 0;
+            if (iangle == 8) iangle = 0;  // This should basically never happen...
             return Enums<Octant>.FromValue(iangle);
         }
+        /// Gets the [0,360) clockwise-edge of the octant wedge.
+        public static float GetClockwiseDegrees(this Octant thiz) => thiz == Octant.Zero ? float.NaN : Enums<Octant>.GetValue(thiz) * 45f;
     }
 }

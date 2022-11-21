@@ -240,9 +240,24 @@ namespace BDUtil.Math
             return ret;
         }
 
+        // Handle constants.
+        static readonly Dictionary<float, Vector2> angleCache = new()
+        {
+            {float.NaN, Vector2.zero},
+            {0f, Vector2.right},
+            {45f, (Vector2.up + Vector2.right).normalized},
+            {90f, Vector2.up},
+            {135f, (Vector2.up + Vector2.left).normalized},
+            {180f, Vector2.left},
+            {225f, (Vector2.left + Vector2.down).normalized},
+            {270f, Vector2.down},
+            {315f, (Vector2.down + Vector2.right).normalized},
+        };
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2 OfAngle(float degrees)
         {
+            if (angleCache.TryGetValue(degrees, out Vector2 normalized)) return normalized;
             float radians = Mathf.Deg2Rad * degrees;
             return new(Mathf.Cos(radians), Mathf.Sin(radians));
         }

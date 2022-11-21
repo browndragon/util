@@ -50,5 +50,7 @@ namespace BDUtil.Pubsub
             if (!LogEvent(topic).HasFlag(LogEvents.OnDisable)) return;
             Debug.Log($"{topic}.OnDisable()");
         }
+        public void LogUnityObject(UnityEngine.Object @object) => Debug.Log(@object, this);
+        public void LogCObject(object @object) => Debug.Log(@object, this);
     }
 }
